@@ -1,8 +1,7 @@
-// apiClient.js
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -33,7 +32,7 @@ apiClient.interceptors.response.use(
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
-        const response = await axios.post('http://127.0.0.1:8000/api/auth/token/refresh/', {  
+        const response = await axios.post(import.meta.env.VITE_REFRESH_TOKEN_URL, {
           refresh: refreshToken,
         });
         const { access } = response.data;
