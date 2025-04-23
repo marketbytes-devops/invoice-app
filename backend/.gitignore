@@ -1,0 +1,35 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.sqlite3
+
+# Virtual Environment
+venv/
+env/
+*.env
+
+# Django
+db.sqlite3
+*.log
+media/
+staticfiles/
+config/settings/local.py
+
+# Migrations (optional, if you want them tracked, remove this)
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# System
+.DS_Store
+Thumbs.db
