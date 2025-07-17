@@ -1,6 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate, Link } from "react-router-dom"; // Added Link for navigation
+import { useNavigate, Link } from "react-router-dom"; 
 import apiClient from "../../api/apiClient";
 import FormField from "../../components/FormField";
 import loginImage from "../../assets/images/MB.jpg"; 

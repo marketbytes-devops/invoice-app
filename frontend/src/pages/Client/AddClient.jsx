@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import FormField from "../../components/FormField";
+import locationsData from "../../assets/Data/locationData.json"
 
 const AddClient = () => {
   const navigate = useNavigate();
@@ -23,103 +24,72 @@ const AddClient = () => {
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [loadingCountries, setLoadingCountries] = useState(false);
-  const [loadingStates, setLoadingStates] = useState(false);
-  const [loadingCities, setLoadingCities] = useState(false);
-  const [apiError, setApiError] = useState("");
 
   const selectedCountry = watch("country");
   const selectedState = watch("state");
 
-  // Fetch countries on component mount
   useEffect(() => {
-    const fetchCountries = async () => {
-      setLoadingCountries(true);
-      setApiError("");
-      try {
-        const response = await fetch("https://countriesnow.space/api/v0.1/countries");
-        const data = await response.json();
-        if (data.error) throw new Error(data.msg || "Failed to fetch countries");
-        setCountries(
-          data.data.map((country) => ({
-            value: country.country,
-            label: country.country,
-          }))
-        );
-      } catch (error) {
-        setApiError(error.message);
-        console.error("Error fetching countries:", error);
-      } finally {
-        setLoadingCountries(false);
-      }
+    const loadCountries = () => {
+      const countryOptions = locationsData.countries.map((country) => ({
+        value: country.country,
+        label: country.country,
+      }));
+      setCountries(countryOptions);
     };
-    fetchCountries();
+    loadCountries();
   }, []);
 
-  // Fetch states when country changes
   useEffect(() => {
-    const fetchStates = async () => {
+    const loadStates = () => {
       if (!selectedCountry) {
         setStates([]);
+        setCities([]);
         return;
       }
-      setLoadingStates(true);
-      setApiError("");
-      try {
-        const response = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ country: selectedCountry }),
-        });
-        const data = await response.json();
-        if (data.error) throw new Error(data.msg || "Failed to fetch states");
-        setStates(
-          data.data.states.map((state) => ({
-            value: state.name,
-            label: state.name,
-          }))
-        );
-      } catch (error) {
-        setApiError(error.message);
-        console.error("Error fetching states:", error);
-      } finally {
-        setLoadingStates(false);
+      const countryData = locationsData.countries.find(
+        (c) => c.country === selectedCountry
+      );
+      if (countryData) {
+        const stateOptions = countryData.states.map((state) => ({
+          value: state.name,
+          label: state.name,
+        }));
+        setStates(stateOptions);
+      } else {
+        setStates([]);
+        setCities([]);
       }
     };
-    fetchStates();
+    loadStates();
   }, [selectedCountry]);
 
-  // Fetch cities when state changes
   useEffect(() => {
-    const fetchCities = async () => {
+    const loadCities = () => {
       if (!selectedCountry || !selectedState) {
         setCities([]);
         return;
       }
-      setLoadingCities(true);
-      setApiError("");
-      try {
-        const response = await fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ country: selectedCountry, state: selectedState }),
-        });
-        const data = await response.json();
-        if (data.error) throw new Error(data.msg || "Failed to fetch cities");
-        setCities(
-          data.data.map((city) => ({
+      const countryData = locationsData.countries.find(
+        (c) => c.country === selectedCountry
+      );
+      if (countryData) {
+        const stateData = countryData.states.find(
+          (s) => s.name === selectedState
+        );
+        if (stateData) {
+          const cityOptions = stateData.cities.map((city) => ({
             value: city,
             label: city,
-          }))
-        );
-      } catch (error) {
-        setApiError(error.message);
-        console.error("Error fetching cities:", error);
-      } finally {
-        setLoadingCities(false);
+          }));
+          setCities(cityOptions);
+        } else {
+          setCities([]);
+        }
+      } else {
+        setCities([]);
       }
     };
-    fetchCities();
+    loadCities();
   }, [selectedCountry, selectedState]);
 
   const handleTaxTypeChange = (event) => {
@@ -156,9 +126,6 @@ const AddClient = () => {
     <div className="h-screen flex items-center justify-center">
       <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl">
         <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Add Client</h2>
-        {apiError && (
-          <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-center">{apiError}</div>
-        )}
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
           <FormField
             label="Client Name"
@@ -175,11 +142,10 @@ const AddClient = () => {
             register={register}
             type="select"
             options={countries}
-            placeholder={loadingCountries ? "Loading countries..." : "Select Country"}
+            placeholder="Select Country"
             error={errors.country}
             required
             isSearchable={true}
-            readOnly={loadingCountries}
           />
           <FormField
             label="State"
@@ -187,11 +153,10 @@ const AddClient = () => {
             register={register}
             type="select"
             options={states}
-            placeholder={loadingStates ? "Loading states..." : "Select State"}
+            placeholder="Select State"
             error={errors.state}
             required
             isSearchable={true}
-            readOnly={loadingStates}
           />
           <FormField
             label="City"
@@ -199,11 +164,10 @@ const AddClient = () => {
             register={register}
             type="select"
             options={cities}
-            placeholder={loadingCities ? "Loading cities..." : "Select City"}
+            placeholder="Select City"
             error={errors.city}
             required
             isSearchable={true}
-            readOnly={loadingCities}
           />
           <FormField
             label="Address"

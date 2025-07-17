@@ -1,0 +1,160 @@
+{
+  "countries": [
+    {
+      "country": "United States",
+      "states": [
+        {
+          "name": "California",
+          "cities": ["Los Angeles", "San Francisco", "San Diego", "San Jose", "Sacramento"]
+        },
+        {
+          "name": "New York",
+          "cities": ["New York City", "Buffalo", "Rochester", "Albany", "Syracuse"]
+        },
+        {
+          "name": "Texas",
+          "cities": ["Houston", "Austin", "Dallas", "San Antonio", "Fort Worth"]
+        },
+        {
+          "name": "Florida",
+          "cities": ["Miami", "Orlando", "Tampa", "Jacksonville", "Tallahassee"]
+        }
+      ]
+    },
+    {
+      "country": "Canada",
+      "states": [
+        {
+          "name": "Ontario",
+          "cities": ["Toronto", "Ottawa", "Mississauga", "Hamilton", "London"]
+        },
+        {
+          "name": "British Columbia",
+          "cities": ["Vancouver", "Victoria", "Kelowna", "Surrey", "Burnaby"]
+        },
+        {
+          "name": "Quebec",
+          "cities": ["Montreal", "Quebec City", "Laval", "Gatineau", "Longueuil"]
+        },
+        {
+          "name": "Alberta",
+          "cities": ["Calgary", "Edmonton", "Red Deer", "Lethbridge", "Medicine Hat"]
+        }
+      ]
+    },
+    {
+      "country": "United Kingdom",
+      "states": [
+        {
+          "name": "England",
+          "cities": ["London", "Manchester", "Birmingham", "Liverpool", "Leeds"]
+        },
+        {
+          "name": "Scotland",
+          "cities": ["Glasgow", "Edinburgh", "Aberdeen", "Dundee", "Inverness"]
+        },
+        {
+          "name": "Wales",
+          "cities": ["Cardiff", "Swansea", "Newport", "Wrexham", "Barry"]
+        },
+        {
+          "name": "Northern Ireland",
+          "cities": ["Belfast", "Derry", "Lisburn", "Newry", "Armagh"]
+        }
+      ]
+    },
+    {
+      "country": "Australia",
+      "states": [
+        {
+          "name": "New South Wales",
+          "cities": ["Sydney", "Newcastle", "Wollongong", "Maitland", "Tamworth"]
+        },
+        {
+          "name": "Victoria",
+          "cities": ["Melbourne", "Geelong", "Ballarat", "Bendigo", "Shepparton"]
+        },
+        {
+          "name": "Queensland",
+          "cities": ["Brisbane", "Gold Coast", "Cairns", "Townsville", "Toowoomba"]
+        },
+        {
+          "name": "Western Australia",
+          "cities": ["Perth", "Fremantle", "Bunbury", "Kalgoorlie", "Albany"]
+        }
+      ]
+    },
+    {
+      "country": "India",
+      "states": [
+        {
+          "name": "Maharashtra",
+          "cities": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad"]
+        },
+        {
+          "name": "Karnataka",
+          "cities": ["Bangalore", "Mysore", "Hubli", "Mangalore", "Belgaum"]
+        },
+        {
+          "name": "Delhi",
+          "cities": ["New Delhi", "Noida", "Gurgaon", "Faridabad", "Ghaziabad"]
+        },
+        {
+          "name": "Tamil Nadu",
+          "cities": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"]
+        }
+      ]
+    },
+    {
+      "country": "Brazil",
+      "states": [
+        {
+          "name": "São Paulo",
+          "cities": ["São Paulo", "Campinas", "Santos", "São José dos Campos", "Ribeirão Preto"]
+        },
+        {
+          "name": "Rio de Janeiro",
+          "cities": ["Rio de Janeiro", "Niterói", "Campos dos Goytacazes", "Volta Redonda", "Macaé"]
+        },
+        {
+          "name": "Minas Gerais",
+          "cities": ["Belo Horizonte", "Uberlândia", "Contagem", "Juiz de Fora", "Betim"]
+        }
+      ]
+    },
+    {
+      "country": "Germany",
+      "states": [
+        {
+          "name": "Bavaria",
+          "cities": ["Munich", "Nuremberg", "Augsburg", "Regensburg", "Würzburg"]
+        },
+        {
+          "name": "North Rhine-Westphalia",
+          "cities": ["Cologne", "Düsseldorf", "Dortmund", "Essen", "Bonn"]
+        },
+        {
+          "name": "Hesse",
+          "cities": ["Frankfurt", "Wiesbaden", "Darmstadt", "Kassel", "Offenbach"]
+        }
+      ]
+    },
+    {
+      "country": "Japan",
+      "states": [
+        {
+          "name": "Tokyo",
+          "cities": ["Tokyo", "Yokohama", "Kawasaki", "Saitama", "Chiba"]
+        },
+        {
+          "name": "Osaka",
+          "cities": ["Osaka", "Sakai", "Higashiōsaka", "Amagasaki", "Toyonaka"]
+        },
+        {
+          "name": "Hokkaido",
+          "cities": ["Sapporo", "Asahikawa", "Hakodate", "Kushiro", "Obihiro"]
+        }
+      ]
+    }
+  ]
+}
