@@ -81,7 +81,7 @@ const ProformaInvoice = () => {
       const response = await apiClient.patch(`invoices/invoices/${invoice.id}/`, { is_final: true });
       const updatedInvoice = response.data;
       setInvoices(invoices.map((inv) => (inv.id === invoice.id ? updatedInvoice : inv)));
-      navigate("/invoice/final-invoice-view", { state: { invoice: updatedInvoice } });
+      navigate("invoice/final-invoice-view", { state: { invoice: updatedInvoice } });
     } catch (error) {
       console.error("Error moving to final:", error);
       alert("Failed to move to final invoice.");
