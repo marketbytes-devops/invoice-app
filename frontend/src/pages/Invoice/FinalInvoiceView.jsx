@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 
 // Number to Words Conversion Function (unchanged)
@@ -61,7 +61,9 @@ const numberToWords = (num) => {
 
 const FinalInvoiceView = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const proformaInvoice = location.state?.invoice;
+  const triggerPrint = location.state?.triggerPrint || false;
   const contentRef = useRef();
 
   const [clients, setClients] = useState([]);
@@ -98,6 +100,39 @@ const FinalInvoiceView = () => {
 
     fetchData();
   }, []);
+
+  // Handle print and finalization
+  useEffect(() => {
+    if (triggerPrint && proformaInvoice) {
+      // Trigger print dialog
+      window.print();
+      // Show confirmation dialog after print
+      setTimeout(() => {
+        if (window.confirm("Did you complete printing? Click OK to finalize the invoice.")) {
+          finalizeInvoice();
+        } else {
+          // If user cancels, navigate back to proforma invoices
+          navigate("/invoice/proforma");
+        }
+      }, 500); // Small delay to ensure print dialog appears first
+    }
+  }, [triggerPrint, proformaInvoice]);
+
+  const finalizeInvoice = async () => {
+    try {
+      const response = await apiClient.patch(`invoices/invoices/${proformaInvoice.id}/`, {
+        is_final: true,
+        is_saved_final: true,
+      });
+      const updatedInvoice = response.data;
+      // Navigate to the final invoice list
+      navigate("/invoice/invoice-list", { state: { invoice: updatedInvoice } });
+    } catch (error) {
+      console.error("Error finalizing invoice:", error);
+      alert("Failed to finalize invoice. Please try again.");
+      navigate("/invoice/proforma");
+    }
+  };
 
   // Set document title for PDF filename
   useEffect(() => {

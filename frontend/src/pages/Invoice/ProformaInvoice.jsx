@@ -25,7 +25,7 @@ const ProformaInvoice = () => {
           apiClient.get("branch/branch_addresses/"),
           apiClient.get("bank/bank-accounts/"),
         ]);
-        setInvoices(invoicesResponse.data.filter((inv) => !inv.is_saved_final));
+        setInvoices(invoicesResponse.data.filter((inv) => !inv.is_final));
         setClients(clientsResponse.data);
         setBranches(branchesResponse.data);
         setBankAccounts(bankAccountsResponse.data);
@@ -76,16 +76,9 @@ const ProformaInvoice = () => {
     navigate("/invoice/edit", { state: { invoice } });
   };
 
-  const handleMoveToFinal = async (invoice) => {
-    try {
-      const response = await apiClient.patch(`invoices/invoices/${invoice.id}/`, { is_final: true });
-      const updatedInvoice = response.data;
-      setInvoices(invoices.map((inv) => (inv.id === invoice.id ? updatedInvoice : inv)));
-      navigate("/invoice/final-invoice-view", { state: { invoice: updatedInvoice } });
-    } catch (error) {
-      console.error("Error moving to final:", error);
-      alert("Failed to move to final invoice.");
-    }
+  const handleMoveToFinal = (invoice) => {
+    // Navigate to FinalInvoiceView with a flag to trigger print and finalization
+    navigate("/invoice/final-invoice-view", { state: { invoice, triggerPrint: true } });
   };
 
   const handlePreviewAndPrint = (invoice) => {

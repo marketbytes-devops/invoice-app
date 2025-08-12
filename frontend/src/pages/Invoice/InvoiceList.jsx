@@ -23,7 +23,7 @@ const InvoiceList = () => {
           apiClient.get("branch/branch_addresses/"),
           apiClient.get("bank/bank-accounts/"),
         ]);
-        setInvoices(invoicesResponse.data);
+        setInvoices(invoicesResponse.data.filter((inv) => inv.is_final && inv.is_saved_final));
         setClients(clientsResponse.data);
         setBranches(branchesResponse.data);
         setBankAccounts(bankAccountsResponse.data);
@@ -56,14 +56,17 @@ const InvoiceList = () => {
   };
 
   const handleDelete = async (invoiceId) => {
-    if (window.confirm("Are you sure you want to delete this invoice?")) {
+    if (window.confirm("Are you sure you want to move this invoice back to Proforma?")) {
       try {
-        await apiClient.delete(`/invoices/invoices/${invoiceId}/`);
+        await apiClient.patch(`/invoices/invoices/${invoiceId}/`, {
+          is_final: false,
+          is_saved_final: false
+        });
         setInvoices(invoices.filter((inv) => inv.id !== invoiceId));
-        alert("Invoice deleted successfully!");
+        alert("Invoice moved back to Proforma successfully!");
       } catch (error) {
-        console.error("Error deleting invoice:", error);
-        alert("Failed to delete invoice. Please try again.");
+        console.error("Error moving invoice to Proforma:", error);
+        alert("Failed to move invoice to Proforma. Please try again.");
       }
     }
   };
@@ -164,7 +167,7 @@ const InvoiceList = () => {
                   className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-red-700 transition-colors"
                   onClick={() => handleDelete(invoice.id)}
                 >
-                  <Trash2 size={16} /> Delete
+                  <Trash2 size={16} /> Move to Proforma
                 </button>
               </div>
             </div>
