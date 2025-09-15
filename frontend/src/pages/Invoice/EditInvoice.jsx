@@ -30,7 +30,6 @@ const EditInvoice = () => {
           taxable: invoice.tax_option,
           taxRate: invoice.tax_rate ? invoice.tax_rate.toString() : "",
           discount: parseFloat(invoice.discount || "0.00"),
-          shipping: parseFloat(invoice.shipping || "0.00"),
           amountPaid: parseFloat(invoice.amount_paid || "0.00"),
         }
       : {
@@ -40,7 +39,6 @@ const EditInvoice = () => {
           currencyType: "USD",
           paymentTerms: "Net 30",
           discount: 0,
-          shipping: 0,
           amountPaid: 0,
         },
   });
@@ -175,21 +173,20 @@ const EditInvoice = () => {
       (sum, item) => sum + parseFloat(item.itemGst || 0),
       0
     );
-    const shipping = parseFloat(watch("shipping")) || 0;
     const discount = parseFloat(watch("discount")) || 0;
     const amountPaid = parseFloat(watch("amountPaid")) || 0;
-    const totalDue = subtotal + totalTax + shipping - discount - amountPaid;
+    const totalDue = subtotal + totalTax - discount - amountPaid;
 
     setValue("subtotal", subtotal.toFixed(2));
     setValue("totalTax", totalTax.toFixed(2));
     setValue("totalDue", totalDue.toFixed(2));
 
-    return { subtotal, totalTax, shipping, discount, amountPaid, totalDue };
+    return { subtotal, totalTax, discount, amountPaid, totalDue };
   };
 
   useEffect(() => {
     calculateTotals();
-  }, [invoiceItems, watch("shipping"), watch("discount"), watch("amountPaid"), selectedTaxRate]);
+  }, [invoiceItems, watch("discount"), watch("amountPaid"), selectedTaxRate]);
 
   const onSubmit = async (data) => {
     try {
@@ -205,7 +202,6 @@ const EditInvoice = () => {
         tax_option: data.taxable,
         tax_rate: data.taxable === "yes" ? parseFloat(selectedTaxRate) : null,
         discount: parseFloat(data.discount).toString() || "0.00",
-        shipping: parseFloat(data.shipping).toString() || "0.00",
         amount_paid: parseFloat(data.amountPaid).toString() || "0.00",
         is_final: invoice.is_final || false, // Preserve existing is_final status
       };
@@ -430,7 +426,6 @@ const EditInvoice = () => {
             {invoiceType && (
               <div>
                 <h3 className="font-bold text-sm mb-2 text-gray-700">Invoice Items</h3>
-Karen
                 <div className="rounded-lg">
                   <div className="grid grid-cols-12 gap-2 mb-2 font-semibold text-gray-700 text-sm">
                     <div className="col-span-3">Item Name</div>
@@ -478,7 +473,7 @@ Karen
                         readOnly={invoiceType === "product" && item.itemName !== ""}
                       />
                       <input
-                        className="w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigfocus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2"
+                        className="w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2"
                         type="text"
                         value={item.itemGst}
                         readOnly
@@ -517,16 +512,6 @@ Karen
                 <span className="text-sm font-semibold text-gray-700">Total GST:</span>
                 <span className="text-sm text-gray-800">{watch("totalTax") || "0.00"} {selectedCurrency}</span>
               </div>
-              <FormField
-                label="Shipping"
-                name="shipping"
-                type="number"
-                register={register}
-                value={watch("shipping")}
-                onChange={(e) => setValue("shipping", e.target.value)}
-                min="0"
-                step="0.01"
-              />
               <FormField
                 label="Discount"
                 name="discount"

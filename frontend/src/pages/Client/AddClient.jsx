@@ -234,15 +234,15 @@ const AddClient = () => {
             error={errors.website}
           />
           <FormField
-            label="Invoice Series"
+            label="Invoice Category"
             name="invoiceSeries"
             register={register}
             error={errors.invoiceSeries}
             type="select"
             options={[
               { value: "", label: "Select Invoice Series" },
-              { value: "domestic", label: "Domestic" },
-              { value: "international", label: "International" },
+              { value: "domestic", label: "Sess" },
+              { value: "international", label: "Non Sess" },
             ]}
             required
           />

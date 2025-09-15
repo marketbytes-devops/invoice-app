@@ -259,8 +259,8 @@ const ViewClient = () => {
                         value={editedData.invoice_series}
                         onChange={(e) => setEditedData({ ...editedData, invoice_series: e.target.value })}
                         options={[
-                          { value: "domestic", label: "Domestic" }, // Updated to match response
-                          { value: "international", label: "International" },
+                          { value: "domestic", label: "Sess" }, // Updated to match response
+                          { value: "international", label: "Non Sess" },
                         ]}
                         register={register}
                       />

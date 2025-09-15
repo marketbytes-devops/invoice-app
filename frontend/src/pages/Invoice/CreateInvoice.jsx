@@ -21,7 +21,6 @@ const CreateInvoice = () => {
       currencyType: "USD",
       paymentTerms: "Net 30",
       discount: 0,
-      shipping: 0,
       amountPaid: 0,
     },
   });
@@ -150,21 +149,20 @@ const CreateInvoice = () => {
       (sum, item) => sum + parseFloat(item.itemGst || 0),
       0
     );
-    const shipping = parseFloat(watch("shipping")) || 0;
     const discount = parseFloat(watch("discount")) || 0;
     const amountPaid = parseFloat(watch("amountPaid")) || 0;
-    const totalDue = subtotal + totalTax + shipping - discount - amountPaid;
+    const totalDue = subtotal + totalTax - discount - amountPaid;
 
     setValue("subtotal", subtotal.toFixed(2));
     setValue("totalTax", totalTax.toFixed(2));
     setValue("totalDue", totalDue.toFixed(2));
 
-    return { subtotal, totalTax, shipping, discount, amountPaid, totalDue };
+    return { subtotal, totalTax, discount, amountPaid, totalDue };
   };
 
   useEffect(() => {
     calculateTotals();
-  }, [invoiceItems, watch("shipping"), watch("discount"), watch("amountPaid"), selectedTaxRate]);
+  }, [invoiceItems, watch("discount"), watch("amountPaid"), selectedTaxRate]);
 
   const onSubmit = async (data) => {
     if (invoiceItems.length === 0 || invoiceItems.some((item) => !item.itemName)) {
@@ -185,7 +183,6 @@ const CreateInvoice = () => {
         tax_option: data.taxable,
         tax_rate: data.taxable === "yes" ? parseFloat(selectedTaxRate) : null,
         discount: parseFloat(data.discount).toString() || "0.00",
-        shipping: parseFloat(data.shipping).toString() || "0.00",
         amount_paid: parseFloat(data.amountPaid).toString() || "0.00",
         items: [],
       };
@@ -205,8 +202,8 @@ const CreateInvoice = () => {
             data.invoiceType === "service"
               ? item.itemName
               : data.invoiceType === "product"
-              ? null
-              : item.itemName,
+                ? null
+                : item.itemName,
           quantity: item.quantity,
           unit_cost: item.unitCost.toString(),
         };
@@ -364,7 +361,7 @@ const CreateInvoice = () => {
               ]}
               placeholder="Search or select currency"
               required
-              isSearchable={true} // Enable search only for this field
+              isSearchable={true} 
             />
           </div>
 
@@ -421,9 +418,8 @@ const CreateInvoice = () => {
                         }
                       />
                       <input
-                        className={`w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2 ${
-                          invoiceType === "product" && item.itemName ? "bg-gray-200 cursor-not-allowed" : ""
-                        }`}
+                        className={`w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2 ${invoiceType === "product" && item.itemName ? "bg-gray-200 cursor-not-allowed" : ""
+                          }`}
                         type="number"
                         min="0"
                         step="0.01"
@@ -482,19 +478,6 @@ const CreateInvoice = () => {
                 </span>
               </div>
               <FormField
-                label="Shipping"
-                name="shipping"
-                type="number"
-                register={register}
-                placeholder="Enter shipping cost"
-                min="0"
-                step="0.01"
-                onChange={(e) => {
-                  setValue("shipping", e.target.value);
-                  calculateTotals();
-                }}
-              />
-              <FormField
                 label="Discount"
                 name="discount"
                 type="number"
@@ -532,9 +515,8 @@ const CreateInvoice = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`bg-black text-white hover:bg-white hover:text-black border text-sm font-bold px-3 py-3 rounded w-full col-span-2 transition-colors duration-300 ${
-              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`bg-black text-white hover:bg-white hover:text-black border text-sm font-bold px-3 py-3 rounded w-full col-span-2 transition-colors duration-300 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
           >
             {isSubmitting ? "Creating..." : "Create Invoice"}
           </button>
