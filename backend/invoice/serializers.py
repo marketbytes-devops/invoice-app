@@ -31,7 +31,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'invoice_number', 'final_invoice_number', 'invoice_type', 'client', 'branch_address', 'bank_account',
             'invoice_date', 'due_date', 'currency_type', 'payment_terms', 'tax_option', 'tax_rate','tax_name',
-            'subtotal', 'gst', 'discount', 'shipping', 'amount_paid', 'total_due', 'items', 'is_final', 'is_saved_final'
+            'subtotal', 'gst', 'discount', 'amount_paid', 'total_due', 'items', 'is_final', 'is_saved_final'
         ]
         read_only_fields = ['invoice_number', 'final_invoice_number', 'subtotal', 'gst', 'total_due']
 

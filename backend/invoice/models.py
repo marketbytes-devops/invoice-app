@@ -25,7 +25,6 @@ class Invoice(models.Model):
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    shipping = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_due = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_final = models.BooleanField(default=False) 
@@ -36,11 +35,11 @@ class Invoice(models.Model):
             items = self.items.all()
             self.subtotal = sum(item.total for item in items)
             self.gst = sum(item.total_gst for item in items)
-            self.total_due = self.subtotal + self.gst + self.shipping - self.discount - self.amount_paid
+            self.total_due = self.subtotal + self.gst - self.discount - self.amount_paid
         else:
             self.subtotal = 0
             self.gst = 0
-            self.total_due = self.shipping - self.discount - self.amount_paid
+            self.total_due = -self.discount - self.amount_paid
 
     def save(self, *args, **kwargs):
         # Check if this is an update (not a new object)
