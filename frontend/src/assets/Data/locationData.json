@@ -102,6 +102,10 @@
         {
           "name": "Tamil Nadu",
           "cities": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"]
+        },
+        {
+          "name": "Kerala",
+          "cities": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam"]
         }
       ]
     },
@@ -153,6 +157,39 @@
         {
           "name": "Hokkaido",
           "cities": ["Sapporo", "Asahikawa", "Hakodate", "Kushiro", "Obihiro"]
+        }
+      ]
+    },
+    {
+      "country": "United Arab Emirates",
+      "states": [
+        {
+          "name": "Abu Dhabi",
+          "cities": ["Abu Dhabi", "Al Ain", "Zayed City", "Khalifa City", "Mussafah"]
+        },
+        {
+          "name": "Dubai",
+          "cities": ["Dubai", "Sharjah", "Ajman", "Umm Al Quwain", "Ras Al Khaimah"]
+        },
+        {
+          "name": "Sharjah",
+          "cities": ["Sharjah", "Al Dhaid", "Kalba", "Dibba Al-Hisn", "Khor Fakkan"]
+        },
+        {
+          "name": "Ajman",
+          "cities": ["Ajman", "Al Nuaimiya", "Masfout", "Manama", "Al Rawda"]
+        },
+        {
+          "name": "Umm Al Quwain",
+          "cities": ["Umm Al Quwain", "Falaj Al Mualla", "Al Hamra", "Al Salamah", "Al Raha"]
+        },
+        {
+          "name": "Ras Al Khaimah",
+          "cities": ["Ras Al Khaimah", "Al Jazirah Al Hamra", "Dibba Al-Hisn", "Khatt", "Sha'am"]
+        },
+        {
+          "name": "Fujairah",
+          "cities": ["Fujairah", "Dibba Al-Fujairah", "Al Bidya", "Masafi", "Qidfa"]
         }
       ]
     }

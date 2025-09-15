@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import FormField from "../../components/FormField";
-import locationsData from "../../assets/Data/locationData.json"
+import locationsData from "../../assets/Data/locationData.json";
 
 const AddClient = () => {
   const navigate = useNavigate();
@@ -47,15 +47,16 @@ const AddClient = () => {
         return;
       }
       const countryData = locationsData.countries.find(
-        (c) => c.country === selectedCountry
+        (c) => c.country.toLowerCase() === selectedCountry.toLowerCase()
       );
-      if (countryData) {
+      if (countryData && countryData.states) {
         const stateOptions = countryData.states.map((state) => ({
           value: state.name,
           label: state.name,
         }));
         setStates(stateOptions);
       } else {
+        console.log("No states found for country:", selectedCountry);
         setStates([]);
         setCities([]);
       }
@@ -70,19 +71,20 @@ const AddClient = () => {
         return;
       }
       const countryData = locationsData.countries.find(
-        (c) => c.country === selectedCountry
+        (c) => c.country.toLowerCase() === selectedCountry.toLowerCase()
       );
-      if (countryData) {
+      if (countryData && countryData.states) {
         const stateData = countryData.states.find(
-          (s) => s.name === selectedState
+          (s) => s.name.toLowerCase() === selectedState.toLowerCase()
         );
-        if (stateData) {
+        if (stateData && stateData.cities) {
           const cityOptions = stateData.cities.map((city) => ({
             value: city,
             label: city,
           }));
           setCities(cityOptions);
         } else {
+          console.log("No cities found for state:", selectedState);
           setCities([]);
         }
       } else {

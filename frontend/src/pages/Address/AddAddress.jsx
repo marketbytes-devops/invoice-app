@@ -23,12 +23,14 @@ const AddAddress = () => {
         phone_code: data.phoneCode,
         phone: data.phoneNumber,
         website: data.website,
+        pincode: data.pinCode, // Matches backend field name
       });
 
       alert("Address added successfully!");
       navigate("/address/view");
     } catch (error) {
       alert("Failed to add address. Please try again.");
+      console.error("Error:", error); // Debug error
     }
   };
 
@@ -39,12 +41,13 @@ const AddAddress = () => {
           Add Branch Address
         </h2>
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
-        <FormField
+          <FormField
             label="Branch Name"
             placeholder="Enter branch name..."
             name="branchName"
             register={register}
             error={errors.branchName}
+            required
           />
           <FormField
             label="Branch Address"
@@ -52,6 +55,7 @@ const AddAddress = () => {
             name="branchAddress"
             register={register}
             error={errors.branchAddress}
+            required
           />
           <FormField
             label="State"
@@ -59,6 +63,7 @@ const AddAddress = () => {
             name="state"
             register={register}
             error={errors.state}
+            required
           />
           <FormField
             label="City"
@@ -66,6 +71,7 @@ const AddAddress = () => {
             name="city"
             register={register}
             error={errors.city}
+            required
           />
           <FormField
             label="GSTIN"
@@ -73,6 +79,7 @@ const AddAddress = () => {
             name="gstin"
             register={register}
             error={errors.gstin}
+            required
           />
           <FormField
             label="Phone Code"
@@ -81,6 +88,15 @@ const AddAddress = () => {
             register={register}
             type="text"
             error={errors.phoneCode}
+            required
+          />
+          <FormField
+            label="Pin Code"
+            placeholder="Enter pin code..."
+            name="pinCode"
+            register={register}
+            type="text" // Changed to text to preserve leading zeros
+            error={errors.pinCode}
           />
           <FormField
             label="Phone Number"
@@ -89,13 +105,13 @@ const AddAddress = () => {
             register={register}
             type="text"
             error={errors.phoneNumber}
+            required
           />
           <FormField
             label="Website"
             placeholder="Enter website URL..."
             name="website"
             register={register}
-            type="url"
             error={errors.website}
           />
           <div className="col-span-2 flex justify-center">
