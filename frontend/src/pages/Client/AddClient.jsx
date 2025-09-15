@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import FormField from "../../components/FormField";
-import { Country, State, City } from "country-state-city"; 
+import { Country, State, City } from "country-state-city";
 
 const AddClient = () => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const AddClient = () => {
       country: "",
       state: "",
       city: "",
+      phone_code: "+91", // Default phone code as per model
     },
   });
 
@@ -107,6 +108,8 @@ const AddClient = () => {
         city: data.city,
         address: data.address,
         phone: data.phone,
+        phone_code: data.phone_code,
+        pincode: data.pincode,
         tax_type: data.taxType,
         website: data.website,
         invoice_series: data.invoiceSeries,
@@ -180,6 +183,15 @@ const AddClient = () => {
             required
           />
           <FormField
+            label="Phone Code"
+            placeholder="Enter phone code (e.g., +91)"
+            name="phone_code"
+            register={register}
+            type="text"
+            error={errors.phone_code}
+            required
+          />
+          <FormField
             label="Phone"
             placeholder="Enter phone number..."
             name="phone"
@@ -187,6 +199,14 @@ const AddClient = () => {
             type="text"
             error={errors.phone}
             required
+          />
+          <FormField
+            label="Pincode"
+            placeholder="Enter pincode..."
+            name="pincode"
+            register={register}
+            type="text"
+            error={errors.pincode}
           />
           <FormField
             label="Tax Type"
@@ -199,7 +219,7 @@ const AddClient = () => {
               { value: "", label: "Select Tax Type" },
               { value: "gst", label: "GST" },
               { value: "vat", label: "VAT" },
-              { value: "none", label: "None" },
+              { value: "nil", label: "None" },
             ]}
             required
           />

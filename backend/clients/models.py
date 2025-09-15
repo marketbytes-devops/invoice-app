@@ -22,6 +22,8 @@ class Client(models.Model):
         choices=[("domestic", "Domestic"), ("international", "International")],
     )
     status = models.BooleanField(default=True)
+    phone_code = models.CharField(max_length=5, default='+91')
+    pincode = models.CharField(max_length=10, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if self.tax_type == "gst":

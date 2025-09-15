@@ -300,10 +300,6 @@ const ProformaInvoice = () => {
                 {selectedInvoice.currency_type}
               </p>
               <p>
-                <strong>Shipping:</strong> {selectedInvoice.shipping}{" "}
-                {selectedInvoice.currency_type}
-              </p>
-              <p>
                 <strong>Amount Paid:</strong> {selectedInvoice.amount_paid}{" "}
                 {selectedInvoice.currency_type}
               </p>

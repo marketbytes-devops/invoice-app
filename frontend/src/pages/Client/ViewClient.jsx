@@ -36,9 +36,11 @@ const ViewClient = () => {
       city: client.city,
       address: client.address,
       phone: client.phone,
+      phone_code: client.phone_code,
+      pincode: client.pincode,
       tax_type: client.tax_type,
-      gst: client.gst === "0.00" ? "" : client.gst, 
-      vat: client.vat === "0.00" ? "" : client.vat, 
+      gst: client.gst === "0.00" ? "" : client.gst,
+      vat: client.vat === "0.00" ? "" : client.vat,
       website: client.website,
       invoice_series: client.invoice_series,
       status: client.status.toString(),
@@ -101,7 +103,9 @@ const ViewClient = () => {
                 <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">State</th>
                 <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">City</th>
                 <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">Address</th>
+                <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">Phone Code</th>
                 <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">Phone</th>
+                <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">Pincode</th>
                 <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">Tax Type</th>
                 <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">GST/VAT</th>
                 <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">Website</th>
@@ -182,6 +186,19 @@ const ViewClient = () => {
                   <td className="p-4 align-middle">
                     {editingClient === client.id ? (
                       <FormField
+                        name={`phone_code-${client.id}`}
+                        type="text"
+                        value={editedData.phone_code}
+                        onChange={(e) => setEditedData({ ...editedData, phone_code: e.target.value })}
+                        register={register}
+                      />
+                    ) : (
+                      client.phone_code
+                    )}
+                  </td>
+                  <td className="p-4 align-middle">
+                    {editingClient === client.id ? (
+                      <FormField
                         name={`phone-${client.id}`}
                         type="text"
                         value={editedData.phone}
@@ -195,6 +212,19 @@ const ViewClient = () => {
                   <td className="p-4 align-middle">
                     {editingClient === client.id ? (
                       <FormField
+                        name={`pincode-${client.id}`}
+                        type="text"
+                        value={editedData.pincode}
+                        onChange={(e) => setEditedData({ ...editedData, pincode: e.target.value })}
+                        register={register}
+                      />
+                    ) : (
+                      client.pincode || "-"
+                    )}
+                  </td>
+                  <td className="p-4 align-middle">
+                    {editingClient === client.id ? (
+                      <FormField
                         name={`tax_type-${client.id}`}
                         type="select"
                         value={editedData.tax_type}
@@ -202,7 +232,7 @@ const ViewClient = () => {
                         options={[
                           { value: "gst", label: "GST" },
                           { value: "vat", label: "VAT" },
-                          { value: "nil", label: "None" }, // Changed to "nil" to match API
+                          { value: "nil", label: "None" },
                         ]}
                         register={register}
                       />
@@ -259,7 +289,7 @@ const ViewClient = () => {
                         value={editedData.invoice_series}
                         onChange={(e) => setEditedData({ ...editedData, invoice_series: e.target.value })}
                         options={[
-                          { value: "domestic", label: "Sess" }, // Updated to match response
+                          { value: "domestic", label: "Sess" },
                           { value: "international", label: "Non Sess" },
                         ]}
                         register={register}

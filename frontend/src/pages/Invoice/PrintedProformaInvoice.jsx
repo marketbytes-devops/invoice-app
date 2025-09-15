@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 
-// Number to Words Conversion Function (unchanged)
+// Number to Words Conversion Function
 const numberToWords = (num) => {
   const ones = [
     "",
@@ -159,7 +159,6 @@ const PrintedProformaInvoice = () => {
     payment_terms,
     subtotal,
     gst,
-    shipping,
     discount,
     amount_paid,
     tax_option,
@@ -352,21 +351,6 @@ const PrintedProformaInvoice = () => {
                       className="text-right font-bold p-2 whitespace-nowrap"
                     >
                       {gst || 0} {currency_type}
-                    </td>
-                  </tr>
-                )}
-                {/* Conditionally render Shipping */}
-                {shipping && parseFloat(shipping) > 0 && (
-                  <tr className="bg-gray-100">
-                    <td colSpan="3" className="p-2"></td>
-                    <td className="text-right font-bold p-2 whitespace-nowrap">
-                      Shipping:
-                    </td>
-                    <td
-                      colSpan="2"
-                      className="text-right font-bold p-2 whitespace-nowrap"
-                    >
-                      {shipping} {currency_type}
                     </td>
                   </tr>
                 )}
