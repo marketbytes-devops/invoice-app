@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import FormField from "../../components/FormField";
-import locationsData from "../../assets/Data/locationData.json";
+import { Country, State, City } from "country-state-city"; 
 
 const AddClient = () => {
   const navigate = useNavigate();
@@ -30,9 +30,9 @@ const AddClient = () => {
 
   useEffect(() => {
     const loadCountries = () => {
-      const countryOptions = locationsData.countries.map((country) => ({
-        value: country.country,
-        label: country.country,
+      const countryOptions = Country.getAllCountries().map((country) => ({
+        value: country.name,
+        label: country.name,
       }));
       setCountries(countryOptions);
     };
@@ -46,11 +46,11 @@ const AddClient = () => {
         setCities([]);
         return;
       }
-      const countryData = locationsData.countries.find(
-        (c) => c.country.toLowerCase() === selectedCountry.toLowerCase()
+      const country = Country.getAllCountries().find(
+        (c) => c.name.toLowerCase() === selectedCountry.toLowerCase()
       );
-      if (countryData && countryData.states) {
-        const stateOptions = countryData.states.map((state) => ({
+      if (country && country.isoCode) {
+        const stateOptions = State.getStatesOfCountry(country.isoCode).map((state) => ({
           value: state.name,
           label: state.name,
         }));
@@ -70,17 +70,17 @@ const AddClient = () => {
         setCities([]);
         return;
       }
-      const countryData = locationsData.countries.find(
-        (c) => c.country.toLowerCase() === selectedCountry.toLowerCase()
+      const country = Country.getAllCountries().find(
+        (c) => c.name.toLowerCase() === selectedCountry.toLowerCase()
       );
-      if (countryData && countryData.states) {
-        const stateData = countryData.states.find(
+      if (country && country.isoCode) {
+        const state = State.getStatesOfCountry(country.isoCode).find(
           (s) => s.name.toLowerCase() === selectedState.toLowerCase()
         );
-        if (stateData && stateData.cities) {
-          const cityOptions = stateData.cities.map((city) => ({
-            value: city,
-            label: city,
+        if (state && state.isoCode) {
+          const cityOptions = City.getCitiesOfState(country.isoCode, state.isoCode).map((city) => ({
+            value: city.name,
+            label: city.name,
           }));
           setCities(cityOptions);
         } else {
