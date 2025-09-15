@@ -5,14 +5,40 @@ import apiClient from "../../api/apiClient";
 // Number to Words Conversion Function (unchanged)
 const numberToWords = (num) => {
   const ones = [
-    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
   ];
   const teens = [
-    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
-    "Seventeen", "Eighteen", "Nineteen",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
   ];
   const tens = [
-    "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety",
+    "",
+    "",
+    "Twenty",
+    "Thirty",
+    "Forty",
+    "Fifty",
+    "Sixty",
+    "Seventy",
+    "Eighty",
+    "Ninety",
   ];
 
   if (num === 0) return "Zero";
@@ -24,7 +50,9 @@ const numberToWords = (num) => {
     else {
       const millions = Math.floor(num / 1000000);
       const remainder = num % 1000000;
-      return `${convertBelowHundred(millions)} Million ${convertMillions(remainder)}`.trim();
+      return `${convertBelowHundred(millions)} Million ${convertMillions(
+        remainder
+      )}`.trim();
     }
   };
 
@@ -33,7 +61,9 @@ const numberToWords = (num) => {
     else {
       const thousands = Math.floor(num / 1000);
       const remainder = num % 1000;
-      return `${convertBelowThousand(thousands)} Thousand ${convertBelowThousand(remainder)}`.trim();
+      return `${convertBelowThousand(
+        thousands
+      )} Thousand ${convertBelowThousand(remainder)}`.trim();
     }
   };
 
@@ -42,7 +72,9 @@ const numberToWords = (num) => {
     else {
       const hundreds = Math.floor(num / 100);
       const remainder = num % 100;
-      return `${ones[hundreds]} Hundred ${convertBelowHundred(remainder)}`.trim();
+      return `${ones[hundreds]} Hundred ${convertBelowHundred(
+        remainder
+      )}`.trim();
     }
   };
 
@@ -108,7 +140,11 @@ const FinalInvoiceView = () => {
       window.print();
       // Show confirmation dialog after print
       setTimeout(() => {
-        if (window.confirm("Did you complete printing? Click OK to finalize the invoice.")) {
+        if (
+          window.confirm(
+            "Did you complete printing? Click OK to finalize the invoice."
+          )
+        ) {
           finalizeInvoice();
         } else {
           // If user cancels, navigate back to proforma invoices
@@ -120,10 +156,13 @@ const FinalInvoiceView = () => {
 
   const finalizeInvoice = async () => {
     try {
-      const response = await apiClient.patch(`invoices/invoices/${proformaInvoice.id}/`, {
-        is_final: true,
-        is_saved_final: true,
-      });
+      const response = await apiClient.patch(
+        `invoices/invoices/${proformaInvoice.id}/`,
+        {
+          is_final: true,
+          is_saved_final: true,
+        }
+      );
       const updatedInvoice = response.data;
       // Navigate to the final invoice list
       navigate("/invoice/invoice-list", { state: { invoice: updatedInvoice } });
@@ -137,7 +176,10 @@ const FinalInvoiceView = () => {
   // Set document title for PDF filename
   useEffect(() => {
     if (proformaInvoice) {
-      const invoiceNumber = proformaInvoice.final_invoice_number || proformaInvoice.invoice_number || "Invoice";
+      const invoiceNumber =
+        proformaInvoice.final_invoice_number ||
+        proformaInvoice.invoice_number ||
+        "Invoice";
       document.title = `${invoiceNumber}`;
     }
     return () => {
@@ -237,7 +279,12 @@ const FinalInvoiceView = () => {
                   {branchDetails?.branch_name || "Unknown Branch"}
                 </p>
                 <h6 className="font-bold mt-5">Address</h6>
-                <p>{branchDetails?.branch_address || "N/A"}</p>
+                <p>
+                  {branchDetails?.branch_address || "N/A"},{" "}
+                  {branchDetails?.city || "N/A"},{" "}
+                  {branchDetails?.state || "N/A"},{" "}
+                  {branchDetails?.pincode || "N/A"}
+                </p>
                 <p className="mt-5">
                   <b>GSTIN:</b> {branchDetails?.gstin || "N/A"}
                 </p>
@@ -258,11 +305,21 @@ const FinalInvoiceView = () => {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-black text-white">
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">NO.</th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">ITEM DESCRIPTION</th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">QUANTITY</th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">Tax</th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">PRICE</th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                    NO.
+                  </th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                    ITEM DESCRIPTION
+                  </th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                    QUANTITY
+                  </th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                    Tax
+                  </th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                    PRICE
+                  </th>
                   <th className="p-4">AMOUNT</th>
                 </tr>
               </thead>
@@ -296,21 +353,25 @@ const FinalInvoiceView = () => {
                 ))}
 
                 {/* Add placeholder rows to ensure a minimum of 6 rows */}
-                {Array.from({ length: Math.max(0, 7 - items.length) }).map((_, index) => (
-                  <tr
-                    key={`placeholder-${index}`}
-                    className={`border-b border-gray-100 ${
-                      (items.length + index) % 2 === 0 ? "bg-white" : "bg-gray-100"
-                    }`}
-                  >
-                    <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
-                    <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
-                    <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
-                    <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
-                    <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
-                    <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
-                  </tr>
-                ))}
+                {Array.from({ length: Math.max(0, 7 - items.length) }).map(
+                  (_, index) => (
+                    <tr
+                      key={`placeholder-${index}`}
+                      className={`border-b border-gray-100 ${
+                        (items.length + index) % 2 === 0
+                          ? "bg-white"
+                          : "bg-gray-100"
+                      }`}
+                    >
+                      <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
+                    </tr>
+                  )
+                )}
 
                 {/* Subtotal */}
                 <tr className="bg-gray-100">
@@ -318,7 +379,10 @@ const FinalInvoiceView = () => {
                   <td className="text-right font-bold p-2 whitespace-nowrap">
                     Subtotal:
                   </td>
-                  <td colSpan="2" className="text-right font-bold p-2 whitespace-nowrap">
+                  <td
+                    colSpan="2"
+                    className="text-right font-bold p-2 whitespace-nowrap"
+                  >
                     {subtotal || 0} {currency_type}
                   </td>
                 </tr>
@@ -329,7 +393,10 @@ const FinalInvoiceView = () => {
                     <td className="text-right font-bold p-2 whitespace-nowrap">
                       {displayTaxName}:
                     </td>
-                    <td colSpan="2" className="text-right font-bold p-2 whitespace-nowrap">
+                    <td
+                      colSpan="2"
+                      className="text-right font-bold p-2 whitespace-nowrap"
+                    >
                       {gst || 0} {currency_type}
                     </td>
                   </tr>
@@ -341,7 +408,10 @@ const FinalInvoiceView = () => {
                     <td className="text-right font-bold p-2 whitespace-nowrap">
                       Shipping:
                     </td>
-                    <td colSpan="2" className="text-right font-bold p-2 whitespace-nowrap">
+                    <td
+                      colSpan="2"
+                      className="text-right font-bold p-2 whitespace-nowrap"
+                    >
                       {shipping} {currency_type}
                     </td>
                   </tr>
@@ -353,7 +423,10 @@ const FinalInvoiceView = () => {
                     <td className="text-right font-bold p-2 whitespace-nowrap">
                       Discount:
                     </td>
-                    <td colSpan="2" className="text-right font-bold p-2 whitespace-nowrap">
+                    <td
+                      colSpan="2"
+                      className="text-right font-bold p-2 whitespace-nowrap"
+                    >
                       -{discount} {currency_type}
                     </td>
                   </tr>
@@ -365,7 +438,10 @@ const FinalInvoiceView = () => {
                     <td className="text-right font-bold p-2 whitespace-nowrap">
                       Amount Paid:
                     </td>
-                    <td colSpan="2" className="text-right font-bold p-2 whitespace-nowrap">
+                    <td
+                      colSpan="2"
+                      className="text-right font-bold p-2 whitespace-nowrap"
+                    >
                       -{amount_paid} {currency_type}
                     </td>
                   </tr>
@@ -400,61 +476,175 @@ const FinalInvoiceView = () => {
           <div className="w-full flex flex-col justify-between">
             <div>
               <div>
-                <h6 className="mt-[-0.5rem] font-bold text-lg">Invoice Details</h6>
-                <div className="mt-2 mr-3" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                <h6 className="mt-[-0.5rem] font-bold text-lg">
+                  Invoice Details
+                </h6>
+                <div
+                  className="mt-2 mr-3"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.25rem",
+                  }}
+                >
                   <p style={{ display: "flex", alignItems: "center" }}>
-                    <span className="font-bold" style={{ display: "inline-block", width: "130px" }}>Invoice No</span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                    <span style={{ marginLeft: "5px" }}>{displayInvoiceNumber}</span>
+                    <span
+                      className="font-bold"
+                      style={{ display: "inline-block", width: "130px" }}
+                    >
+                      Invoice No
+                    </span>
+                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
+                      :
+                    </span>
+                    <span style={{ marginLeft: "5px" }}>
+                      {displayInvoiceNumber}
+                    </span>
                   </p>
                   <p style={{ display: "flex", alignItems: "center" }}>
-                    <span className="font-bold" style={{ display: "inline-block", width: "130px" }}>Invoice Date</span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                    <span style={{ marginLeft: "5px" }}>{invoice_date || "N/A"}</span>
+                    <span
+                      className="font-bold"
+                      style={{ display: "inline-block", width: "130px" }}
+                    >
+                      Invoice Date
+                    </span>
+                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
+                      :
+                    </span>
+                    <span style={{ marginLeft: "5px" }}>
+                      {invoice_date || "N/A"}
+                    </span>
                   </p>
                   <p style={{ display: "flex", alignItems: "center" }}>
-                    <span className="font-bold" style={{ display: "inline-block", width: "130px" }}>Due Date</span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                    <span style={{ marginLeft: "5px" }}>{due_date || "N/A"}</span>
+                    <span
+                      className="font-bold"
+                      style={{ display: "inline-block", width: "130px" }}
+                    >
+                      Due Date
+                    </span>
+                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
+                      :
+                    </span>
+                    <span style={{ marginLeft: "5px" }}>
+                      {due_date || "N/A"}
+                    </span>
                   </p>
                 </div>
               </div>
               <div>
-                <h6 className="font-bold text-lg mt-10 mb-4">Payment Information</h6>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", width: "100%" }}>
+                <h6 className="font-bold text-lg mt-10 mb-4">
+                  Payment Information
+                </h6>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.25rem",
+                    width: "100%",
+                  }}
+                >
                   <p style={{ display: "flex", alignItems: "center" }}>
-                    <span className="font-bold" style={{ display: "inline-block", width: "130px" }}>Bank Name</span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                    <span style={{ marginLeft: "5px" }}>{bankDetails?.bank_name || "N/A"}</span>
+                    <span
+                      className="font-bold"
+                      style={{ display: "inline-block", width: "130px" }}
+                    >
+                      Bank Name
+                    </span>
+                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
+                      :
+                    </span>
+                    <span style={{ marginLeft: "5px" }}>
+                      {bankDetails?.bank_name || "N/A"}
+                    </span>
                   </p>
-                  <p style={{ display: "flex", alignItems: "center", whiteSpace: "nowrap", width: "100%", height: "auto" }}>
-                    <span className="font-bold" style={{ display: "inline-block", width: "130px" }}>Account Number</span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                    <span style={{ marginLeft: "5px", whiteSpace: "nowrap", maxWidth: "200px" }}>{bankDetails?.account_number || "N/A"}</span>
+                  <p
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      whiteSpace: "nowrap",
+                      width: "100%",
+                      height: "auto",
+                    }}
+                  >
+                    <span
+                      className="font-bold"
+                      style={{ display: "inline-block", width: "130px" }}
+                    >
+                      Account Number
+                    </span>
+                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
+                      :
+                    </span>
+                    <span
+                      style={{
+                        marginLeft: "5px",
+                        whiteSpace: "nowrap",
+                        maxWidth: "200px",
+                      }}
+                    >
+                      {bankDetails?.account_number || "N/A"}
+                    </span>
                   </p>
                   <p style={{ display: "flex", alignItems: "center" }}>
-                    <span className="font-bold" style={{ display: "inline-block", width: "130px" }}>IFSC Code</span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                    <span style={{ marginLeft: "5px" }}>{bankDetails?.ifsc_code || "N/A"}</span>
+                    <span
+                      className="font-bold"
+                      style={{ display: "inline-block", width: "130px" }}
+                    >
+                      IFSC Code
+                    </span>
+                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
+                      :
+                    </span>
+                    <span style={{ marginLeft: "5px" }}>
+                      {bankDetails?.ifsc_code || "N/A"}
+                    </span>
                   </p>
                   <p style={{ display: "flex", alignItems: "center" }}>
-                    <span className="font-bold" style={{ display: "inline-block", width: "128px" }}>SWIFT Code</span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                    <span style={{ marginLeft: "5px" }}>{bankDetails?.swift_code || "N/A"}</span>
+                    <span
+                      className="font-bold"
+                      style={{ display: "inline-block", width: "128px" }}
+                    >
+                      SWIFT Code
+                    </span>
+                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
+                      :
+                    </span>
+                    <span style={{ marginLeft: "5px" }}>
+                      {bankDetails?.swift_code || "N/A"}
+                    </span>
                   </p>
                   <p style={{ display: "flex", alignItems: "center" }}>
-                    <span className="font-bold" style={{ display: "inline-block", width: "128px" }}>MICR Code</span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                    <span style={{ marginLeft: "5px" }}>{bankDetails?.micr_code || "N/A"}</span>
+                    <span
+                      className="font-bold"
+                      style={{ display: "inline-block", width: "128px" }}
+                    >
+                      MICR Code
+                    </span>
+                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
+                      :
+                    </span>
+                    <span style={{ marginLeft: "5px" }}>
+                      {bankDetails?.micr_code || "N/A"}
+                    </span>
                   </p>
                 </div>
                 <h6 className="font-bold text-lg mt-10">Payment Terms</h6>
                 <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font" style={{ display: "inline-block", width: "130px" }}>{payment_terms || "N/A"}</span>
+                  <span
+                    className="font"
+                    style={{ display: "inline-block", width: "130px" }}
+                  >
+                    {payment_terms || "N/A"}
+                  </span>
                 </p>
                 <h6 className="font-bold text-lg mt-3">Currency</h6>
                 <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font" style={{ display: "inline-block", width: "130px" }}>{currency_type || "N/A"}</span>
+                  <span
+                    className="font"
+                    style={{ display: "inline-block", width: "130px" }}
+                  >
+                    {currency_type || "N/A"}
+                  </span>
                 </p>
               </div>
             </div>
@@ -475,13 +665,25 @@ const FinalInvoiceView = () => {
 
         <div className="mb-4">
           <h4 className="font-bold">Note:</h4>
-          <p className="text-justify" style={{ maxWidth: "100%", wordWrap: "break-word" }}>
-            <p>Please make the payment of {total_due || 0} {currency_type || "N/A"}{" "}
-            to the bank account details provided above. Upon receiving the payment, will</p>
-            <p> proceed with the services/products as agreed and provide a receipt 
-              for the payment received. Thank you for choosing{" "}</p>
-            <p>{branchDetails?.branch_name || "Unknown Branch"}. If you have any questions or require further assistance, please don’t hesitate to
-            contact us at {branchDetails?.phone || "N/A"}.</p>
+          <p
+            className="text-justify"
+            style={{ maxWidth: "100%", wordWrap: "break-word" }}
+          >
+            <p>
+              Please make the payment of {total_due || 0}{" "}
+              {currency_type || "N/A"} to the bank account details provided
+              above. Upon receiving the payment, will
+            </p>
+            <p>
+              {" "}
+              proceed with the services/products as agreed and provide a receipt
+              for the payment received. Thank you for choosing{" "}
+            </p>
+            <p>
+              {branchDetails?.branch_name || "Unknown Branch"}. If you have any
+              questions or require further assistance, please don’t hesitate to
+              contact us at {branchDetails?.phone || "N/A"}.
+            </p>
           </p>
         </div>
       </div>

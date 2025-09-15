@@ -19,7 +19,12 @@ const ProformaInvoice = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [invoicesResponse, clientsResponse, branchesResponse, bankAccountsResponse] = await Promise.all([
+        const [
+          invoicesResponse,
+          clientsResponse,
+          branchesResponse,
+          bankAccountsResponse,
+        ] = await Promise.all([
           apiClient.get("invoices/invoices/"),
           apiClient.get("clients/clients/"),
           apiClient.get("branch/branch_addresses/"),
@@ -45,12 +50,18 @@ const ProformaInvoice = () => {
 
   const getBranchName = (branchId) => {
     const branch = branches.find((b) => b.id === branchId);
-    return branch ? `${branch.branch_address} - ${branch.city}` : `Branch ID: ${branchId}`;
+    return branch
+      ? `${branch.branch_address}, ${branch.city}, ${branch.state}, ${
+          branch.pincode || "N/A"
+        }`
+      : `Branch ID: ${branchId}`;
   };
 
   const getBankAccountDetails = (bankAccountId) => {
     const bankAccount = bankAccounts.find((ba) => ba.id === bankAccountId);
-    return bankAccount ? `${bankAccount.bank_name} (${bankAccount.account_number})` : `Bank Account ID: ${bankAccountId}`;
+    return bankAccount
+      ? `${bankAccount.bank_name} (${bankAccount.account_number})`
+      : `Bank Account ID: ${bankAccountId}`;
   };
 
   const handleView = (invoice) => {
@@ -78,7 +89,9 @@ const ProformaInvoice = () => {
 
   const handleMoveToFinal = (invoice) => {
     // Navigate to FinalInvoiceView with a flag to trigger print and finalization
-    navigate("/invoice/final-invoice-view", { state: { invoice, triggerPrint: true } });
+    navigate("/invoice/final-invoice-view", {
+      state: { invoice, triggerPrint: true },
+    });
   };
 
   const handlePreviewAndPrint = (invoice) => {
@@ -94,7 +107,9 @@ const ProformaInvoice = () => {
   const filteredInvoices = invoices.filter((invoice) => {
     const invoiceDate = new Date(invoice.invoice_date);
     const invoiceYear = invoiceDate.getFullYear().toString();
-    const invoiceMonth = (invoiceDate.getMonth() + 1).toString().padStart(2, "0"); // Months are 0-based
+    const invoiceMonth = (invoiceDate.getMonth() + 1)
+      .toString()
+      .padStart(2, "0"); // Months are 0-based
 
     const yearMatch = filterYear ? invoiceYear === filterYear : true;
     const monthMatch = filterMonth ? invoiceMonth === filterMonth : true;
@@ -102,13 +117,16 @@ const ProformaInvoice = () => {
     return yearMatch && monthMatch;
   });
 
-  if (loading) return <p className="text-center text-gray-600">Loading invoices...</p>;
+  if (loading)
+    return <p className="text-center text-gray-600">Loading invoices...</p>;
   if (error) return <p className="text-center text-red-600">{error}</p>;
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-extrabold text-gray-800">Proforma Invoices</h1>
+        <h1 className="text-xl font-extrabold text-gray-800">
+          Proforma Invoices
+        </h1>
         <div className="flex space-x-4">
           <select
             value={filterYear}
@@ -116,7 +134,11 @@ const ProformaInvoice = () => {
             className="border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">All Years</option>
-            {[...new Set(invoices.map((inv) => new Date(inv.invoice_date).getFullYear()))]
+            {[
+              ...new Set(
+                invoices.map((inv) => new Date(inv.invoice_date).getFullYear())
+              ),
+            ]
               .sort()
               .map((year) => (
                 <option key={year} value={year}>
@@ -158,18 +180,23 @@ const ProformaInvoice = () => {
                   <h5 className="text-lg font-semibold text-gray-800">
                     Invoice {invoice.invoice_number}
                   </h5>
-                  <p className="text-sm text-gray-500">{getClientName(invoice.client)}</p>
+                  <p className="text-sm text-gray-500">
+                    {getClientName(invoice.client)}
+                  </p>
                 </div>
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-gray-600">
-                  <span className="font-medium">Date:</span> {invoice.invoice_date}
+                  <span className="font-medium">Date:</span>{" "}
+                  {invoice.invoice_date}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-medium">Branch:</span> {getBranchName(invoice.branch_address)}
+                  <span className="font-medium">Branch:</span>{" "}
+                  {getBranchName(invoice.branch_address)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-medium">Bank:</span> {getBankAccountDetails(invoice.bank_account)}
+                  <span className="font-medium">Bank:</span>{" "}
+                  {getBankAccountDetails(invoice.bank_account)}
                 </p>
                 <p className="text-sm text-gray-600">
                   <span className="font-medium">Type:</span>{" "}
@@ -187,7 +214,9 @@ const ProformaInvoice = () => {
                   <span className="font-medium">Status:</span>{" "}
                   <span
                     className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                      invoice.is_final ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-700"
+                      invoice.is_final
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-gray-100 text-gray-700"
                     }`}
                   >
                     {invoice.is_final ? "Final (Pending Save)" : "Proforma"}
@@ -226,22 +255,66 @@ const ProformaInvoice = () => {
               Invoice: {selectedInvoice.invoice_number}
             </h2>
             <div className="space-y-2">
-              <p><strong>Client:</strong> {getClientName(selectedInvoice.client)}</p>
-              <p><strong>Branch:</strong> {getBranchName(selectedInvoice.branch_address)}</p>
-              <p><strong>Bank Account:</strong> {getBankAccountDetails(selectedInvoice.bank_account)}</p>
-              <p><strong>Invoice Date:</strong> {selectedInvoice.invoice_date}</p>
-              <p><strong>Due Date:</strong> {selectedInvoice.due_date}</p>
-              <p><strong>Currency:</strong> {selectedInvoice.currency_type}</p>
-              <p><strong>Payment Terms:</strong> {selectedInvoice.payment_terms}</p>
-              <p><strong>Tax Option:</strong> {selectedInvoice.tax_option}</p>
-              <p><strong>Tax Rate:</strong> {selectedInvoice.tax_rate ? `${selectedInvoice.tax_rate}%` : "N/A"}</p>
-              <p><strong>Subtotal:</strong> {selectedInvoice.subtotal} {selectedInvoice.currency_type}</p>
-              <p><strong>GST:</strong> {selectedInvoice.gst} {selectedInvoice.currency_type}</p>
-              <p><strong>Discount:</strong> {selectedInvoice.discount} {selectedInvoice.currency_type}</p>
-              <p><strong>Shipping:</strong> {selectedInvoice.shipping} {selectedInvoice.currency_type}</p>
-              <p><strong>Amount Paid:</strong> {selectedInvoice.amount_paid} {selectedInvoice.currency_type}</p>
-              <p><strong>Total Due:</strong> {selectedInvoice.total_due} {selectedInvoice.currency_type}</p>
-              <p><strong>Status:</strong> {selectedInvoice.is_final ? "Final (Pending Save)" : "Proforma"}</p>
+              <p>
+                <strong>Client:</strong> {getClientName(selectedInvoice.client)}
+              </p>
+              <p>
+                <strong>Branch:</strong>{" "}
+                {getBranchName(selectedInvoice.branch_address)}
+              </p>
+              <p>
+                <strong>Bank Account:</strong>{" "}
+                {getBankAccountDetails(selectedInvoice.bank_account)}
+              </p>
+              <p>
+                <strong>Invoice Date:</strong> {selectedInvoice.invoice_date}
+              </p>
+              <p>
+                <strong>Due Date:</strong> {selectedInvoice.due_date}
+              </p>
+              <p>
+                <strong>Currency:</strong> {selectedInvoice.currency_type}
+              </p>
+              <p>
+                <strong>Payment Terms:</strong> {selectedInvoice.payment_terms}
+              </p>
+              <p>
+                <strong>Tax Option:</strong> {selectedInvoice.tax_option}
+              </p>
+              <p>
+                <strong>Tax Rate:</strong>{" "}
+                {selectedInvoice.tax_rate
+                  ? `${selectedInvoice.tax_rate}%`
+                  : "N/A"}
+              </p>
+              <p>
+                <strong>Subtotal:</strong> {selectedInvoice.subtotal}{" "}
+                {selectedInvoice.currency_type}
+              </p>
+              <p>
+                <strong>GST:</strong> {selectedInvoice.gst}{" "}
+                {selectedInvoice.currency_type}
+              </p>
+              <p>
+                <strong>Discount:</strong> {selectedInvoice.discount}{" "}
+                {selectedInvoice.currency_type}
+              </p>
+              <p>
+                <strong>Shipping:</strong> {selectedInvoice.shipping}{" "}
+                {selectedInvoice.currency_type}
+              </p>
+              <p>
+                <strong>Amount Paid:</strong> {selectedInvoice.amount_paid}{" "}
+                {selectedInvoice.currency_type}
+              </p>
+              <p>
+                <strong>Total Due:</strong> {selectedInvoice.total_due}{" "}
+                {selectedInvoice.currency_type}
+              </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                {selectedInvoice.is_final ? "Final (Pending Save)" : "Proforma"}
+              </p>
             </div>
 
             {selectedInvoice.items.length > 0 && (
@@ -262,9 +335,15 @@ const ProformaInvoice = () => {
                       <tr key={item.id} className="border-b">
                         <td className="p-2 text-sm">{item.name}</td>
                         <td className="p-2 text-sm">{item.quantity}</td>
-                        <td className="p-2 text-sm">{item.unit_cost} {selectedInvoice.currency_type}</td>
-                        <td className="p-2 text-sm">{item.total} {selectedInvoice.currency_type}</td>
-                        <td className="p-2 text-sm">{item.total_gst} {selectedInvoice.currency_type}</td>
+                        <td className="p-2 text-sm">
+                          {item.unit_cost} {selectedInvoice.currency_type}
+                        </td>
+                        <td className="p-2 text-sm">
+                          {item.total} {selectedInvoice.currency_type}
+                        </td>
+                        <td className="p-2 text-sm">
+                          {item.total_gst} {selectedInvoice.currency_type}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
