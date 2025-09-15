@@ -16,7 +16,7 @@ class Client(models.Model):
     tax_type = models.CharField(max_length=3, choices=CLIENT_TAX_CHOICES)
     gst = models.CharField(max_length=20, blank=True, null=True)
     vat = models.CharField(max_length=20, blank=True, null=True)
-    website = models.URLField()
+    website = models.CharField(max_length=250)
     invoice_series = models.CharField(
         max_length=20,
         choices=[("domestic", "Domestic"), ("international", "International")],

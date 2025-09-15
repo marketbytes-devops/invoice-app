@@ -9,7 +9,7 @@ class Branch(models.Model):
     gstin = models.CharField(max_length=15)
     phone_code = models.CharField(max_length=5, default='+91')
     phone = models.CharField(max_length=15)
-    website = models.URLField()
+    website = models.CharField(max_length=250)
     series_prefix = models.CharField(max_length=10, blank=True, null=True, default='')  
     last_invoice_number = models.IntegerField(default=0)
     last_reset_date = models.DateField(null=True, blank=True)
