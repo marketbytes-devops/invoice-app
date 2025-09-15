@@ -13,6 +13,7 @@ class Branch(models.Model):
     series_prefix = models.CharField(max_length=10, blank=True, null=True, default='')  
     last_invoice_number = models.IntegerField(default=0)
     last_reset_date = models.DateField(null=True, blank=True)
+    pincode = models.CharField(max_length=10, blank=True, null=True)
     
     def __str__(self):
         return f"{self.branch_address}, {self.city}, {self.state}"

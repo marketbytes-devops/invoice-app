@@ -3,7 +3,7 @@ import apiClient from "../../api/apiClient";
 import { Pencil, Trash2, Check, XCircle } from "lucide-react";
 import FormField from "../../components/FormField";
 import { useForm } from "react-hook-form";
- 
+
 const ViewAddress = () => {
   const { register } = useForm();
   const [addresses, setAddresses] = useState([]);
@@ -11,14 +11,15 @@ const ViewAddress = () => {
   const [error, setError] = useState(null);
   const [editingAddress, setEditingAddress] = useState(null);
   const [editedData, setEditedData] = useState({});
- 
+
   useEffect(() => {
     fetchAddresses();
   }, []);
- 
+
   const fetchAddresses = async () => {
     try {
       const response = await apiClient.get("branch/branch_addresses/");
+      console.log("API Response:", response.data); 
       setAddresses(response.data);
       setLoading(false);
     } catch (err) {
@@ -26,21 +27,22 @@ const ViewAddress = () => {
       setLoading(false);
     }
   };
- 
+
   const handleEdit = (address) => {
-  setEditingAddress(address.id);
-  setEditedData({
-    branch_name: address.branch_name, // Corrected to use address.branch_name
-    branch_address: address. branch_address,
-    state: address.state,
-    city: address.city,
-    gstin: address.gstin,
-    phone_code: address.phone_code,
-    phone: address.phone,
-    website: address.website,
-  });
-};
- 
+    setEditingAddress(address.id);
+    setEditedData({
+      branch_name: address.branch_name,
+      branch_address: address.branch_address,
+      state: address.state,
+      city: address.city,
+      gstin: address.gstin,
+      phone_code: address.phone_code,
+      phone: address.phone,
+      website: address.website,
+      pincode: address.pincode,
+    });
+  };
+
   const handleUpdate = async (id) => {
     try {
       await apiClient.put(`branch/branch_addresses/${id}/`, editedData);
@@ -51,12 +53,12 @@ const ViewAddress = () => {
       alert("Failed to update address. Please try again.");
     }
   };
- 
+
   const handleCancelEdit = () => {
     setEditingAddress(null);
     setEditedData({});
   };
- 
+
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this address?")) {
       try {
@@ -68,7 +70,7 @@ const ViewAddress = () => {
       }
     }
   };
- 
+
   return (
     <div className="h-screen flex items-center justify-center">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-6xl py-6 overflow-x-auto">
@@ -99,6 +101,9 @@ const ViewAddress = () => {
                 </th>
                 <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">
                   City
+                </th>
+                <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">
+                  Pincode
                 </th>
                 <th className="p-4 font-bold border-b border-gray-500 text-xs text-gray-800">
                   GSTIN
@@ -195,6 +200,23 @@ const ViewAddress = () => {
                   <td className="p-4 align-middle">
                     {editingAddress === address.id ? (
                       <FormField
+                        label="Edit Pincode"
+                        name={`pincode-${address.id}`}
+                        type="text"
+                        value={editedData.pincode || ""}
+                        onChange={(e) =>
+                          setEditedData({ ...editedData, pincode: e.target.value })
+                        }
+                        className="w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-200"
+                        register={register}
+                      />
+                    ) : (
+                      address.pincode || "N/A"
+                    )}
+                  </td>
+                  <td className="p-4 align-middle">
+                    {editingAddress === address.id ? (
+                      <FormField
                         label="Edit GSTIN"
                         name={`gstin-${address.id}`}
                         type="text"
@@ -248,8 +270,8 @@ const ViewAddress = () => {
                       <FormField
                         label="Edit Website"
                         name={`website-${address.id}`}
-                        type="url"
-                        value={editedData.website}
+                        type="text"
+                        value={editedData.website || ""}
                         onChange={(e) =>
                           setEditedData({ ...editedData, website: e.target.value })
                         }
@@ -257,7 +279,7 @@ const ViewAddress = () => {
                         register={register}
                       />
                     ) : (
-                      address.website
+                      address.website || "N/A"
                     )}
                   </td>
                   <td className="p-4 align-middle text-center">
@@ -302,6 +324,5 @@ const ViewAddress = () => {
     </div>
   );
 };
- 
+
 export default ViewAddress;
- 
