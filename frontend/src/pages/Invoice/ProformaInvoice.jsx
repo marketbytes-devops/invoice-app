@@ -86,11 +86,9 @@ const ProformaInvoice = () => {
   const handleEdit = (invoice) => {
     navigate("/invoice/edit", { state: { invoice } });
   };
-
   const handleMoveToFinal = (invoice) => {
-    // Navigate to FinalInvoiceView with a flag to trigger print and finalization
-    navigate("/invoice/final-invoice-view", {
-      state: { invoice, triggerPrint: true },
+    navigate("/invoice/printed-proforma-invoice", {
+      state: { invoice, isFinalizing: true },
     });
   };
 

@@ -40,9 +40,7 @@ const numberToWords = (num) => {
     "Eighty",
     "Ninety",
   ];
-
   if (num === 0) return "Zero";
-
   const convertMillions = (num) => {
     if (num < 100) return convertBelowHundred(num);
     else if (num < 1000) return convertBelowThousand(num);
@@ -55,7 +53,6 @@ const numberToWords = (num) => {
       )}`.trim();
     }
   };
-
   const convertBelowMillion = (num) => {
     if (num < 1000) return convertBelowThousand(num);
     else {
@@ -66,7 +63,6 @@ const numberToWords = (num) => {
       )} Thousand ${convertBelowThousand(remainder)}`.trim();
     }
   };
-
   const convertBelowThousand = (num) => {
     if (num < 100) return convertBelowHundred(num);
     else {
@@ -77,7 +73,6 @@ const numberToWords = (num) => {
       )}`.trim();
     }
   };
-
   const convertBelowHundred = (num) => {
     if (num < 10) return ones[num];
     else if (num < 20) return teens[num - 10];
@@ -87,7 +82,6 @@ const numberToWords = (num) => {
       return `${tens[tensPlace]} ${ones[onesPlace]}`.trim();
     }
   };
-
   return convertMillions(num);
 };
 
@@ -95,7 +89,6 @@ const PrintedProformaInvoice = () => {
   const location = useLocation();
   const proformaInvoice = location.state?.invoice;
   const contentRef = useRef();
-
   const [clients, setClients] = useState([]);
   const [branches, setBranches] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
@@ -127,7 +120,6 @@ const PrintedProformaInvoice = () => {
         console.error("Error fetching data:", error);
       }
     };
-
     fetchData();
   }, []);
 
@@ -169,12 +161,10 @@ const PrintedProformaInvoice = () => {
   const clientDetails = clients.find((c) => c.id === client) || {};
   const branchDetails = branches.find((b) => b.id === branch_address) || {};
   const bankDetails = bankAccounts.find((ba) => ba.id === bank_account) || {};
-
   const displayTaxName =
     tax_name ||
     (tax_rate && taxes.find((t) => t.percentage === tax_rate)?.name) ||
     "Tax";
-
   const displayInvoiceNumber = final_invoice_number || invoice_number || "N/A";
   const totalInWords = numberToWords(Math.round(total_due)) || "N/A";
 
@@ -215,12 +205,19 @@ const PrintedProformaInvoice = () => {
                   {clientDetails?.client_name || "Unknown Client"}
                 </p>
                 <h6 className="font-bold mt-5">Address</h6>
-                <p>{clientDetails?.address || "N/A"}</p>
+                <p>
+                  {clientDetails?.address || "N/A"},{" "}
+                  {clientDetails?.city || "N/A"},{" "}
+                  {clientDetails?.state || "N/A"},{" "}
+                  {clientDetails?.pincode || "N/A"}
+                </p>
                 <p className="mt-5">
-                  <b>GSTIN:</b> {clientDetails?.gst || "N/A"}
+                  <b>GSTIN:</b>{" "}
+                  {clientDetails?.gst || clientDetails?.vat || "N/A"}
                 </p>
                 <p>
-                  <b>P:</b> {clientDetails?.phone || "N/A"}
+                  <b>P:</b> {clientDetails?.phone_code || ""}{" "}
+                  {clientDetails?.phone || "N/A"}
                 </p>
                 <p>
                   <b>W:</b> {clientDetails?.website || "N/A"}
@@ -242,7 +239,8 @@ const PrintedProformaInvoice = () => {
                   <b>GSTIN:</b> {branchDetails?.gstin || "N/A"}
                 </p>
                 <p>
-                  <b>P:</b> {branchDetails?.phone || "N/A"}
+                  <b>P:</b> {branchDetails?.phone_code || ""}{" "}
+                  {branchDetails?.phone || "N/A"}
                 </p>
                 <p>
                   <b>W:</b> {branchDetails?.website || "N/A"}
@@ -251,7 +249,6 @@ const PrintedProformaInvoice = () => {
             </div>
           </div>
         </div>
-
         {/* Main Invoice Content */}
         <div className="grid grid-cols-[7fr_4fr] gap-4 mb-5 items-start">
           <div className="w-full">
@@ -304,7 +301,6 @@ const PrintedProformaInvoice = () => {
                     </td>
                   </tr>
                 ))}
-
                 {/* Add placeholder rows to ensure a minimum of 6 rows */}
                 {Array.from({ length: Math.max(0, 7 - items.length) }).map(
                   (_, index) => (
@@ -325,7 +321,6 @@ const PrintedProformaInvoice = () => {
                     </tr>
                   )
                 )}
-
                 {/* Subtotal */}
                 <tr className="bg-gray-100">
                   <td colSpan="3" className="p-2"></td>
@@ -409,7 +404,6 @@ const PrintedProformaInvoice = () => {
               </tbody>
             </table>
           </div>
-
           {/* Right Column */}
           <div className="w-full flex flex-col justify-between">
             <div>
@@ -435,7 +429,9 @@ const PrintedProformaInvoice = () => {
                     <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
                       :
                     </span>
-                    <span style={{ marginLeft: "5px" }}>{invoice_number}</span>
+                    <span style={{ marginLeft: "5px" }}>
+                      {displayInvoiceNumber}
+                    </span>
                   </p>
                   <p style={{ display: "flex", alignItems: "center" }}>
                     <span
@@ -598,7 +594,6 @@ const PrintedProformaInvoice = () => {
             </div>
           </div>
         </div>
-
         <div className="mb-4">
           <h4 className="font-bold">Note:</h4>
           <p
@@ -608,7 +603,7 @@ const PrintedProformaInvoice = () => {
             <p>
               Please make the payment of {total_due || 0}{" "}
               {currency_type || "N/A"} to the bank account details provided
-              above. Upon receiving the payment, will
+              above. Upon receiving the payment, we will
             </p>
             <p>
               {" "}
@@ -618,12 +613,12 @@ const PrintedProformaInvoice = () => {
             <p>
               {branchDetails?.branch_name || "Unknown Branch"}. If you have any
               questions or require further assistance, please don’t hesitate to
-              contact us at {branchDetails?.phone || "N/A"}.
+              contact us at {branchDetails?.phone_code || ""}{" "}
+              {branchDetails?.phone || "N/A"}.
             </p>
           </p>
         </div>
       </div>
-
       {/* Native Print Button */}
       <div className="text-center mt-8 w-full max-w-[27cm] mr-[0.5cm] no-print">
         <button
