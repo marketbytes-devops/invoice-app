@@ -261,7 +261,12 @@ const FinalInvoiceView = () => {
                   {clientDetails?.client_name || "Unknown Client"}
                 </p>
                 <h6 className="font-bold mt-5">Address</h6>
-                <p>{clientDetails?.address || "N/A"}</p>
+                <p>
+                  {clientDetails?.address || "N/A"},{" "}
+                  {clientDetails?.city || "N/A"},{" "}
+                  {clientDetails?.state || "N/A"},{" "}
+                  {clientDetails?.pincode || "N/A"}
+                </p>
                 <p className="mt-5">
                   <b>GSTIN:</b> {clientDetails?.gst || "N/A"}
                 </p>
