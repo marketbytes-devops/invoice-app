@@ -4,88 +4,21 @@ import apiClient from "../../api/apiClient";
 
 // Number to Words Conversion Function
 const numberToWords = (num) => {
-  const ones = [
-    "",
-    "One",
-    "Two",
-    "Three",
-    "Four",
-    "Five",
-    "Six",
-    "Seven",
-    "Eight",
-    "Nine",
-  ];
-  const teens = [
-    "Ten",
-    "Eleven",
-    "Twelve",
-    "Thirteen",
-    "Fourteen",
-    "Fifteen",
-    "Sixteen",
-    "Seventeen",
-    "Eighteen",
-    "Nineteen",
-  ];
-  const tens = [
-    "",
-    "",
-    "Twenty",
-    "Thirty",
-    "Forty",
-    "Fifty",
-    "Sixty",
-    "Seventy",
-    "Eighty",
-    "Ninety",
-  ];
+  const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+  const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
   if (num === 0) return "Zero";
-  const convertMillions = (num) => {
-    if (num < 100) return convertBelowHundred(num);
-    else if (num < 1000) return convertBelowThousand(num);
-    else if (num < 1000000) return convertBelowMillion(num);
-    else {
-      const millions = Math.floor(num / 1000000);
-      const remainder = num % 1000000;
-      return `${convertBelowHundred(millions)} Million ${convertMillions(
-        remainder
-      )}`.trim();
-    }
-  };
-  const convertBelowMillion = (num) => {
-    if (num < 1000) return convertBelowThousand(num);
-    else {
-      const thousands = Math.floor(num / 1000);
-      const remainder = num % 1000;
-      return `${convertBelowThousand(
-        thousands
-      )} Thousand ${convertBelowThousand(remainder)}`.trim();
-    }
-  };
-  const convertBelowThousand = (num) => {
-    if (num < 100) return convertBelowHundred(num);
-    else {
-      const hundreds = Math.floor(num / 100);
-      const remainder = num % 100;
-      return `${ones[hundreds]} Hundred ${convertBelowHundred(
-        remainder
-      )}`.trim();
-    }
-  };
-  const convertBelowHundred = (num) => {
-    if (num < 10) return ones[num];
-    else if (num < 20) return teens[num - 10];
-    else {
-      const tensPlace = Math.floor(num / 10);
-      const onesPlace = num % 10;
-      return `${tens[tensPlace]} ${ones[onesPlace]}`.trim();
-    }
-  };
+
+  const convertBelowHundred = (n) => (n < 10 ? ones[n] : n < 20 ? teens[n - 10] : `${tens[Math.floor(n / 10)]} ${ones[n % 10]}`.trim());
+  const convertBelowThousand = (n) => n < 100 ? convertBelowHundred(n) : `${ones[Math.floor(n / 100)]} Hundred ${convertBelowHundred(n % 100)}`.trim();
+  const convertBelowMillion = (n) => n < 1000 ? convertBelowThousand(n) : `${convertBelowThousand(Math.floor(n / 1000))} Thousand ${convertBelowThousand(n % 1000)}`.trim();
+  const convertMillions = (n) => n < 1000000 ? convertBelowMillion(n) : `${convertBelowHundred(Math.floor(n / 1000000))} Million ${convertMillions(n % 1000000)}`.trim();
+
   return convertMillions(num);
 };
 
-// Confirmation Modal Component
+// Confirmation Modal
 const ConfirmModal = ({ open, onClose, onConfirm }) => {
   if (!open) return null;
 
@@ -127,19 +60,19 @@ const PrintedProformaInvoice = () => {
   const [taxes, setTaxes] = useState([]);
   const [logoUrl, setLogoUrl] = useState("");
 
-  // Modal & Print State
+  // Modal state
   const [showConfirm, setShowConfirm] = useState(false);
-  const [printRequested, setPrintRequested] = useState(false);
 
+  /* ------------------- Fetch Data ------------------- */
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [
-          clientsResponse,
-          branchesResponse,
-          bankAccountsResponse,
-          taxesResponse,
-          logoResponse,
+          clientsRes,
+          branchesRes,
+          bankAccountsRes,
+          taxesRes,
+          logoRes,
         ] = await Promise.all([
           apiClient.get("clients/clients/"),
           apiClient.get("branch/branch_addresses/"),
@@ -147,48 +80,52 @@ const PrintedProformaInvoice = () => {
           apiClient.get("invoices/taxes/"),
           apiClient.get("invoices/settings/logo/"),
         ]);
-        setClients(clientsResponse.data || []);
-        setBranches(branchesResponse.data || []);
-        setBankAccounts(bankAccountsResponse.data || []);
-        setTaxes(taxesResponse.data || []);
-        setLogoUrl(logoResponse.data.logo_image);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        setClients(clientsRes.data || []);
+        setBranches(branchesRes.data || []);
+        setBankAccounts(bankAccountsRes.data || []);
+        setTaxes(taxesRes.data || []);
+        setLogoUrl(logoRes.data.logo_image);
+      } catch (e) {
+        console.error("Error fetching data:", e);
       }
     };
     fetchData();
   }, []);
 
-  // Set document title for PDF filename
+  /* ------------------- Set Page Title ------------------- */
   useEffect(() => {
-    if (proformaInvoice && proformaInvoice.invoice_number) {
-      document.title = `${proformaInvoice.invoice_number}`;
+    if (proformaInvoice?.invoice_number) {
+      document.title = proformaInvoice.invoice_number;
     }
     return () => {
-      document.title = "Proforma Invoice"; // Reset title on unmount
+      document.title = "Proforma Invoice";
     };
   }, [proformaInvoice]);
 
-  // Print handler
+  /* ------------------- Print Button ------------------- */
   const handlePrint = () => {
-    setPrintRequested(true);
     window.print();
   };
 
-  // Detect when print dialog closes
+  /* ------------------- Intercept Back Button ------------------- */
   useEffect(() => {
-    if (!printRequested) return;
-
-    const onAfterPrint = () => {
-      setPrintRequested(false);
-      setShowConfirm(true); // Show modal after print
+    const handlePopState = (e) => {
+      e.preventDefault();
+      setShowConfirm(true);
+      // Keep user on current page until they choose
+      window.history.pushState(null, "", window.location.href);
     };
 
-    window.addEventListener("afterprint", onAfterPrint);
-    return () => window.removeEventListener("afterprint", onAfterPrint);
-  }, [printRequested]);
+    // Push current state so back button triggers popstate
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
 
-  // Move to Final Invoice
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  /* ------------------- Move to Final Invoice ------------------- */
   const moveToFinal = async () => {
     try {
       await apiClient.patch(`/invoices/invoices/${proformaInvoice.id}/`, {
@@ -209,12 +146,15 @@ const PrintedProformaInvoice = () => {
 
   const handleConfirmNo = () => {
     setShowConfirm(false);
+    window.history.back(); // Go back normally
   };
 
+  /* ------------------- Guard ------------------- */
   if (!proformaInvoice) {
     return <div className="text-center py-10">No invoice data available.</div>;
   }
 
+  /* ------------------- Destructure Invoice ------------------- */
   const {
     invoice_number,
     final_invoice_number,
@@ -239,15 +179,19 @@ const PrintedProformaInvoice = () => {
   const clientDetails = clients.find((c) => c.id === client) || {};
   const branchDetails = branches.find((b) => b.id === branch_address) || {};
   const bankDetails = bankAccounts.find((ba) => ba.id === bank_account) || {};
+
   const displayTaxName =
     tax_name ||
     (tax_rate && taxes.find((t) => t.percentage === tax_rate)?.name) ||
     "Tax";
+
   const displayInvoiceNumber = final_invoice_number || invoice_number || "N/A";
   const totalInWords = numberToWords(Math.round(total_due)) || "N/A";
 
+  /* ------------------- Render ------------------- */
   return (
     <div className="flex flex-col items-center bg-white min-h-screen">
+      {/* Invoice Content */}
       <div
         className="max-w-[27cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-sans print-container"
         ref={contentRef}
@@ -265,13 +209,11 @@ const PrintedProformaInvoice = () => {
             )}
           </div>
           <div className="w-3/4 flex flex-col">
-            {/* PROFORMA INVOICE Heading - Right Center */}
             <div className="flex justify-end mb-2">
               <div className="w-1/2 text-center">
                 <h3 className="font-extrabold text-3xl">PROFORMA INVOICE</h3>
               </div>
             </div>
-            {/* Client and Branch Details */}
             <div className="w-full flex">
               <div className="w-1/2" style={{ marginTop: "0.5cm" }}>
                 <h4 className="font-weight: 100;">Invoice to:</h4>
@@ -376,7 +318,6 @@ const PrintedProformaInvoice = () => {
                     </td>
                   </tr>
                 ))}
-                {/* Placeholder rows to ensure minimum 7 rows */}
                 {Array.from({ length: Math.max(0, 7 - items.length) }).map(
                   (_, index) => (
                     <tr
@@ -396,7 +337,6 @@ const PrintedProformaInvoice = () => {
                     </tr>
                   )
                 )}
-                {/* Subtotal */}
                 <tr className="bg-gray-100">
                   <td colSpan="3" className="p-2"></td>
                   <td className="text-right font-bold p-2 whitespace-nowrap">
@@ -409,7 +349,6 @@ const PrintedProformaInvoice = () => {
                     {subtotal || 0} {currency_type}
                   </td>
                 </tr>
-                {/* Tax */}
                 {tax_option === "yes" && (
                   <tr className="bg-gray-100">
                     <td colSpan="3" className="p-2"></td>
@@ -424,7 +363,6 @@ const PrintedProformaInvoice = () => {
                     </td>
                   </tr>
                 )}
-                {/* Discount */}
                 {discount && parseFloat(discount) > 0 && (
                   <tr className="bg-gray-100">
                     <td colSpan="3" className="p-2"></td>
@@ -439,7 +377,6 @@ const PrintedProformaInvoice = () => {
                     </td>
                   </tr>
                 )}
-                {/* Amount Paid */}
                 {amount_paid && parseFloat(amount_paid) > 0 && (
                   <tr className="bg-gray-100">
                     <td colSpan="3" className="p-2"></td>
@@ -454,7 +391,6 @@ const PrintedProformaInvoice = () => {
                     </td>
                   </tr>
                 )}
-                {/* Grand Total */}
                 <tr className="bg-black text-white font-extrabold">
                   <td colSpan="2" className="text-right px-2 py-4">
                     <p className="text-left">Grand Total:</p>
@@ -467,7 +403,6 @@ const PrintedProformaInvoice = () => {
                     </p>
                   </td>
                 </tr>
-                {/* Total in Words */}
                 <tr className="bg-black text-white font-extrabold">
                   <td colSpan="2" className="text-left px-2 py-4">
                     <p className="text-left">Total in Words:</p>
@@ -700,14 +635,14 @@ const PrintedProformaInvoice = () => {
       {/* Print Button */}
       <div className="text-center mt-8 w-full max-w-[27cm] mr-[0.5cm] no-print">
         <button
-          className="bg-black text-white hover:bg-white hover:text-black border text-sm font-bold px-3 py-3 rounded w-full transition-colors duration-300"
           onClick={handlePrint}
+          className="bg-black text-white hover:bg-white hover:text-black border text-sm font-bold px-3 py-3 rounded w-full transition-colors duration-300"
         >
           Print Invoice
         </button>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* Confirmation Modal (on Back button) */}
       <ConfirmModal
         open={showConfirm}
         onClose={handleConfirmNo}
