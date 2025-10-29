@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 
 // Number to Words Conversion Function
@@ -85,15 +85,51 @@ const numberToWords = (num) => {
   return convertMillions(num);
 };
 
+// Confirmation Modal Component
+const ConfirmModal = ({ open, onClose, onConfirm }) => {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+        <h3 className="text-lg font-semibold mb-4">Move to Final Invoice?</h3>
+        <p className="text-sm text-gray-600 mb-6">
+          This will save the invoice as final and move it to the final invoice list.
+        </p>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+          >
+            No
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+          >
+            Yes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const PrintedProformaInvoice = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const proformaInvoice = location.state?.invoice;
   const contentRef = useRef();
+
   const [clients, setClients] = useState([]);
   const [branches, setBranches] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
   const [taxes, setTaxes] = useState([]);
   const [logoUrl, setLogoUrl] = useState("");
+
+  // Modal & Print State
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [printRequested, setPrintRequested] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,8 +169,50 @@ const PrintedProformaInvoice = () => {
     };
   }, [proformaInvoice]);
 
+  // Print handler
+  const handlePrint = () => {
+    setPrintRequested(true);
+    window.print();
+  };
+
+  // Detect when print dialog closes
+  useEffect(() => {
+    if (!printRequested) return;
+
+    const onAfterPrint = () => {
+      setPrintRequested(false);
+      setShowConfirm(true); // Show modal after print
+    };
+
+    window.addEventListener("afterprint", onAfterPrint);
+    return () => window.removeEventListener("afterprint", onAfterPrint);
+  }, [printRequested]);
+
+  // Move to Final Invoice
+  const moveToFinal = async () => {
+    try {
+      await apiClient.patch(`/invoices/invoices/${proformaInvoice.id}/`, {
+        is_final: true,
+        is_saved_final: true,
+      });
+      navigate("/invoice/invoice-list");
+    } catch (err) {
+      console.error("Failed to finalize invoice:", err);
+      alert("Failed to move to final invoice. Please try again.");
+    }
+  };
+
+  const handleConfirmYes = () => {
+    setShowConfirm(false);
+    moveToFinal();
+  };
+
+  const handleConfirmNo = () => {
+    setShowConfirm(false);
+  };
+
   if (!proformaInvoice) {
-    return <div>No invoice data available.</div>;
+    return <div className="text-center py-10">No invoice data available.</div>;
   }
 
   const {
@@ -167,10 +245,6 @@ const PrintedProformaInvoice = () => {
     "Tax";
   const displayInvoiceNumber = final_invoice_number || invoice_number || "N/A";
   const totalInWords = numberToWords(Math.round(total_due)) || "N/A";
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   return (
     <div className="flex flex-col items-center bg-white min-h-screen">
@@ -249,6 +323,7 @@ const PrintedProformaInvoice = () => {
             </div>
           </div>
         </div>
+
         {/* Main Invoice Content */}
         <div className="grid grid-cols-[7fr_4fr] gap-4 mb-5 items-start">
           <div className="w-full">
@@ -301,7 +376,7 @@ const PrintedProformaInvoice = () => {
                     </td>
                   </tr>
                 ))}
-                {/* Add placeholder rows to ensure a minimum of 6 rows */}
+                {/* Placeholder rows to ensure minimum 7 rows */}
                 {Array.from({ length: Math.max(0, 7 - items.length) }).map(
                   (_, index) => (
                     <tr
@@ -334,7 +409,7 @@ const PrintedProformaInvoice = () => {
                     {subtotal || 0} {currency_type}
                   </td>
                 </tr>
-                {/* Tax (if applicable) */}
+                {/* Tax */}
                 {tax_option === "yes" && (
                   <tr className="bg-gray-100">
                     <td colSpan="3" className="p-2"></td>
@@ -349,7 +424,7 @@ const PrintedProformaInvoice = () => {
                     </td>
                   </tr>
                 )}
-                {/* Conditionally render Discount */}
+                {/* Discount */}
                 {discount && parseFloat(discount) > 0 && (
                   <tr className="bg-gray-100">
                     <td colSpan="3" className="p-2"></td>
@@ -364,7 +439,7 @@ const PrintedProformaInvoice = () => {
                     </td>
                   </tr>
                 )}
-                {/* Conditionally render Amount Paid */}
+                {/* Amount Paid */}
                 {amount_paid && parseFloat(amount_paid) > 0 && (
                   <tr className="bg-gray-100">
                     <td colSpan="3" className="p-2"></td>
@@ -404,6 +479,7 @@ const PrintedProformaInvoice = () => {
               </tbody>
             </table>
           </div>
+
           {/* Right Column */}
           <div className="w-full flex flex-col justify-between">
             <div>
@@ -594,6 +670,7 @@ const PrintedProformaInvoice = () => {
             </div>
           </div>
         </div>
+
         <div className="mb-4">
           <h4 className="font-bold">Note:</h4>
           <p
@@ -619,7 +696,8 @@ const PrintedProformaInvoice = () => {
           </p>
         </div>
       </div>
-      {/* Native Print Button */}
+
+      {/* Print Button */}
       <div className="text-center mt-8 w-full max-w-[27cm] mr-[0.5cm] no-print">
         <button
           className="bg-black text-white hover:bg-white hover:text-black border text-sm font-bold px-3 py-3 rounded w-full transition-colors duration-300"
@@ -628,6 +706,13 @@ const PrintedProformaInvoice = () => {
           Print Invoice
         </button>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        open={showConfirm}
+        onClose={handleConfirmNo}
+        onConfirm={handleConfirmYes}
+      />
     </div>
   );
 };
