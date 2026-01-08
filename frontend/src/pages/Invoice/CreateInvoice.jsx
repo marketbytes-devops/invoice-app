@@ -2,7 +2,73 @@ import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
-import FormField from "../../components/FormField";
+import SearchableSelect from "../../components/SearchableSelect";
+import ConfirmationModal from "../../components/ConfirmationModal";
+import {
+  FileText,
+  Calendar,
+  Building2,
+  User,
+  CreditCard,
+  DollarSign,
+  Clock,
+  Percent,
+  Plus,
+  Trash2,
+  ArrowLeft,
+  Save,
+  Hash,
+  CheckCircle,
+  Disc,
+  X
+} from "lucide-react";
+
+// Custom Input Component to match AddBankAccount styles
+const CustomInput = ({
+  label,
+  register,
+  name,
+  rules,
+  error,
+  icon: Icon,
+  onChange: customOnChange,
+  className,
+  type = "text",
+  ...props
+}) => {
+  const registration = register ? register(name, rules) : {};
+  const { onChange, ...rest } = registration;
+
+  return (
+    <div className={`space-y-2 ${className || ""}`}>
+      {label && (
+        <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">
+          {label}
+        </label>
+      )}
+      <div className="relative">
+        {Icon && (
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Icon className="h-5 w-5 text-gray-400" />
+          </div>
+        )}
+        <input
+          type={type}
+          {...rest}
+          onChange={(e) => {
+            if (onChange) onChange(e);
+            if (customOnChange) customOnChange(e);
+          }}
+          className={`w-full bg-gray-50 border ${error ? "border-red-500" : "border-gray-300"
+            } rounded-2xl ${Icon ? "pl-12" : "pl-4"
+            } pr-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 transition-all outline-none text-black font-semibold placeholder-gray-400`}
+          {...props}
+        />
+      </div>
+      {error && <p className="text-red-500 text-xs px-1">{error.message}</p>}
+    </div>
+  );
+};
 
 const CreateInvoice = () => {
   const navigate = useNavigate();
@@ -38,6 +104,7 @@ const CreateInvoice = () => {
   const [selectedTaxRate, setSelectedTaxRate] = useState("0%");
   const [invoiceType, setInvoiceType] = useState("");
   const [currencies, setCurrencies] = useState([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,20 +143,15 @@ const CreateInvoice = () => {
         setProducts(productsResponse.data);
         setServices(servicesResponse.data);
 
-        console.log("Raw clients from API:", rawClients);
-
         if (currenciesResponse.ok) {
           const currenciesData = await currenciesResponse.json();
           if (currenciesData.result === "success") {
             const currencyList = Object.keys(currenciesData.rates);
             setCurrencies(currencyList);
-            console.log("Currencies fetched successfully:", currencyList);
           } else {
-            console.error("API returned error:", currenciesData.error);
             setCurrencies(["USD", "EUR", "GBP", "INR"]);
           }
         } else {
-          console.warn("Currency fetch failed, using fallback currencies");
           setCurrencies(["USD", "EUR", "GBP", "INR"]);
         }
       } catch (error) {
@@ -211,12 +273,17 @@ const CreateInvoice = () => {
       });
 
       await Promise.all(itemPromises);
-      alert("Invoice and items created successfully!");
-      navigate("/invoice/proforma");
+      await Promise.all(itemPromises);
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("Error submitting invoice or items:", error.response?.data || error.message);
       alert("Failed to create invoice or items.");
     }
+  };
+
+  const handleModalClose = () => {
+    setShowSuccessModal(false);
+    navigate("/invoice/proforma");
   };
 
   const selectedCurrency = watch("currencyType");
@@ -225,327 +292,444 @@ const CreateInvoice = () => {
   const roundingDifference = (roundedTotalDue - totalDue).toFixed(2);
   const roundingDisplay = roundingDifference >= 0 ? `+${roundingDifference}` : roundingDifference;
 
-  // Filter active clients explicitly
   const activeClients = clients.filter((c) => {
     const isInactive = c.status === "inactive" || c.status === false;
     return !isInactive;
   });
 
-  console.log("Clients passed to dropdown:", activeClients);
-
   return (
-    <div className="grid min-h-screen p-4">
-      <h2 className="text-xl font-extrabold mb-4 text-gray-800">Create New Invoice</h2>
-      <div className="bg-gray-50 p-8 rounded-lg shadow-xl w-full">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <FormField
-              label="Invoice Type"
-              name="invoiceType"
-              register={register}
-              type="select"
-              options={[
-                { value: "", label: "Select Invoice Type" },
-                { value: "product", label: "Product" },
-                { value: "service", label: "Service" },
-              ]}
-              onChange={(e) => setInvoiceType(e.target.value)}
-              placeholder="Select invoice type"
-              required
-            />
-            <FormField
-              label="Taxable"
-              name="taxable"
-              register={register}
-              type="radio"
-              options={[
-                { value: "yes", label: "Yes" },
-                { value: "no", label: "No" },
-              ]}
-              onChange={(e) => setTaxable(e.target.value)}
-              required
-            />
-            {taxable === "yes" && (
-              <FormField
-                label="Tax Rate"
-                name="taxRate"
-                register={register}
-                type="select"
-                options={[
-                  { value: "", label: "Select Tax Rate" },
-                  ...taxes.map((tax) => ({
-                    value: tax.percentage,
-                    label: `${tax.name} ${tax.percentage}%`,
-                  })),
-                ]}
-                onChange={(e) => setSelectedTaxRate(e.target.value)}
-                placeholder="Select tax rate"
+    <div className="p-4 w-full mx-auto space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+        <div className="flex items-center space-x-4 w-full md:w-auto">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-3 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-800" />
+          </button>
+          <div className="p-3 bg-black rounded-2xl shadow-lg shadow-black/10">
+            <FileText className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Create New Invoice</h1>
+            <p className="text-sm text-gray-800 font-medium">Create and manage your invoices</p>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+          <button type="button" onClick={() => navigate("/address/add")} className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold bg-white border border-gray-200 hover:bg-gray-50 rounded-xl text-gray-700 transition-colors whitespace-nowrap shadow-sm">
+            <Plus className="w-3.5 h-3.5" /> Branch
+          </button>
+          <button type="button" onClick={() => navigate("/clients/add")} className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold bg-white border border-gray-200 hover:bg-gray-50 rounded-xl text-gray-700 transition-colors whitespace-nowrap shadow-sm">
+            <Plus className="w-3.5 h-3.5" /> Client
+          </button>
+          <button type="button" onClick={() => navigate("/bank-account/add")} className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold bg-white border border-gray-200 hover:bg-gray-50 rounded-xl text-gray-700 transition-colors whitespace-nowrap shadow-sm">
+            <Plus className="w-3.5 h-3.5" /> Bank
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-[2rem] border border-gray-300 shadow-sm p-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+
+          {/* General Information */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-6">
+              <FileText className="w-5 h-5" /> General Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Controller
+                name="invoiceType"
+                control={control}
+                rules={{ required: "Invoice Type is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Invoice Type"
+                    options={[
+                      { value: "product", label: "Product" },
+                      { value: "service", label: "Service" },
+                    ]}
+                    value={value}
+                    onChange={(val) => {
+                      onChange(val);
+                      setInvoiceType(val);
+                    }}
+                    placeholder="Select Type"
+                    error={errors.invoiceType}
+                    icon={FileText}
+                  />
+                )}
               />
-            )}
-            <FormField
-              label="Branch"
-              name="branchAddress"
-              type="select"
-              options={[
-                { value: "", label: "Select Branch" },
-                ...branches.map((b) => ({
-                  value: b.id,
-                  label: `${b.branch_address} - ${b.city}`,
-                })),
-              ]}
-              register={register}
-              placeholder="Select branch"
-              required
-            />
-            <FormField
-              label="Client"
-              name="clientName"
-              type="select"
-              options={[
-                { value: "", label: "Select Client" },
-                ...activeClients.map((c) => ({
-                  value: c.id,
-                  label: `${c.client_name}, ${c.country}, ${c.state}, ${c.city}, ${c.address}, ${c.phone}, ${c.tax_type}, ${c.gst}, ${c.vat}, ${c.website}, ${c.invoice_series}, ${c.status}`,
-                })),
-              ]}
-              register={register}
-              placeholder="Select client"
-              required
-            />
-            <div className="flex items-center justify-between gap-4">
-              <FormField
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-1">
+                <Controller
+                  name="taxable"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field: { value, onChange } }) => (
+                    <SearchableSelect
+                      label="Taxable"
+                      options={[
+                        { value: "yes", label: "Yes" },
+                        { value: "no", label: "No" },
+                      ]}
+                      value={value}
+                      onChange={(val) => {
+                        onChange(val);
+                        setTaxable(val);
+                      }}
+                      placeholder="Taxable?"
+                      error={errors.taxable}
+                      icon={CheckCircle}
+                    />
+                  )}
+                />
+
+                {taxable === "yes" && (
+                  <Controller
+                    name="taxRate"
+                    control={control}
+                    render={({ field: { value, onChange } }) => (
+                      <SearchableSelect
+                        label="Tax Rate"
+                        options={taxes.map((tax) => ({
+                          value: tax.percentage,
+                          label: `${tax.name} ${tax.percentage}%`,
+                        }))}
+                        value={selectedTaxRate}
+                        onChange={(val) => {
+                          onChange(val);
+                          setSelectedTaxRate(val);
+                        }}
+                        placeholder="Select Rate"
+                        icon={Percent}
+                      />
+                    )}
+                  />
+                )}
+              </div>
+
+              <Controller
+                name="branchAddress"
+                control={control}
+                rules={{ required: "Branch is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Branch"
+                    options={branches.map((b) => ({
+                      value: b.id,
+                      label: b.branch_name,
+                    }))}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Select Branch"
+                    error={errors.branchAddress}
+                    icon={Building2}
+                  />
+                )}
+              />
+
+              <Controller
+                name="clientName"
+                control={control}
+                rules={{ required: "Client is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Client"
+                    options={activeClients.map((c) => ({
+                      value: c.id,
+                      label: c.client_name,
+                    }))}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Select Client"
+                    error={errors.clientName}
+                    icon={User}
+                  />
+                )}
+              />
+
+              <CustomInput
                 label="Invoice Date"
-                placeholder="Select invoice date"
-                type="date"
                 name="invoiceDate"
-                register={register}
-                error={errors.invoiceDate}
-                required
-              />
-              <FormField
-                label="Due Date"
-                placeholder="Select due date"
                 type="date"
-                name="dueDate"
                 register={register}
-                error={errors.dueDate}
-                required
+                rules={{ required: "Date is required" }}
+                error={errors.invoiceDate}
+                icon={Calendar}
               />
+
+              <CustomInput
+                label="Due Date"
+                name="dueDate"
+                type="date"
+                register={register}
+                rules={{ required: "Due Date is required" }}
+                error={errors.dueDate}
+                icon={Calendar}
+                className="md:col-start-2"
+              />
+
+              <Controller
+                name="bankAccount"
+                control={control}
+                rules={{ required: "Bank Account is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Bank Account"
+                    options={bankAccounts.map((a) => ({
+                      value: a.id,
+                      label: `${a.bank_name} - ${a.account_holder_name} - ${a.account_number}`,
+                    }))}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Select Bank Account"
+                    error={errors.bankAccount}
+                    icon={CreditCard}
+                  />
+                )}
+              />
+
+              <Controller
+                name="currencyType"
+                control={control}
+                rules={{ required: "Currency is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Currency"
+                    options={currencies.map((c) => ({
+                      value: c,
+                      label: c,
+                    }))}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Select Currency"
+                    error={errors.currencyType}
+                    icon={DollarSign}
+                    displaySelectedValue={true}
+                  />
+                )}
+              />
+
+              <div className="col-span-1 md:col-span-2">
+                <Controller
+                  name="paymentTerms"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <SearchableSelect
+                      label="Payment Terms"
+                      options={["Credit", "Debit", "UPI", "Net Banking"].map((t) => ({ value: t, label: t }))}
+                      value={value}
+                      onChange={onChange}
+                      placeholder="Select Terms"
+                      icon={Clock}
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="md:hidden"></div>
             </div>
-            <FormField
-              label="Bank Account"
-              name="bankAccount"
-              type="select"
-              options={[
-                { value: "", label: "Select Bank Account" },
-                ...bankAccounts.map((a) => ({
-                  value: a.id,
-                  label: `${a.bank_name} (${a.account_number})`,
-                })),
-              ]}
-              register={register}
-              placeholder="Select bank account"
-              required
-            />
-            <FormField
-              label="Currency Type"
-              name="currencyType"
-              register={register}
-              type="select"
-              options={[
-                { value: "", label: "Select Currency" },
-                ...currencies.map((currency) => ({
-                  value: currency,
-                  label: currency,
-                })),
-              ]}
-              placeholder="Search or select currency"
-              required
-              isSearchable={true} 
-            />
           </div>
 
-          <div className="space-y-4">
-            <FormField
-              label="Payment Terms"
-              name="paymentTerms"
-              type="select"
-              options={[
-                { value: "", label: "Select Payment Terms" },
-                ...["Credit", "Debit", "UPI", "Net Banking"].map((t) => ({ value: t, label: t })),
-              ]}
-              register={register}
-              placeholder="Select payment terms"
-            />
-            {invoiceType && (
-              <div>
-                <h3 className="font-bold text-sm mb-2 text-gray-700">Invoice Items</h3>
-                <div className="rounded-lg">
-                  <div className="grid grid-cols-12 gap-2 mb-2 font-semibold text-gray-700 text-sm">
-                    <div className="col-span-3">Item Name</div>
-                    <div className="col-span-2">Quantity</div>
-                    <div className="col-span-2">Unit Cost</div>
-                    <div className="col-span-2">Item Tax</div>
-                    <div className="col-span-2">Total</div>
-                    <div className="col-span-1"></div>
-                  </div>
-                  {invoiceItems.map((item, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-2 mb-4 items-center">
-                      <FormField
-                        name={`itemName-${index}`}
-                        type="select"
-                        register={register}
-                        options={[
-                          { value: "", label: "Select Item" },
-                          ...(invoiceType === "product" ? products : services).map((prod) => ({
-                            value: prod.name,
-                            label: `${prod.name}`,
-                          })),
-                        ]}
-                        onChange={(e) => updateItem(index, "itemName", e.target.value)}
+          <div className="w-full h-px bg-gray-100" />
+
+          {/* Items Section */}
+          {invoiceType && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-6">
+                <Disc className="w-5 h-5" /> Invoice Items
+              </h3>
+
+              <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4 space-y-4">
+                {/* Header Row (Hidden on mobile) */}
+                <div className="hidden md:grid grid-cols-12 gap-4 px-2 mb-2 font-semibold text-xs text-gray-500 uppercase tracking-wider">
+                  <div className="col-span-4">Item Details</div>
+                  <div className="col-span-2">Quantity</div>
+                  <div className="col-span-2">Unit Cost</div>
+                  <div className="col-span-2">Tax</div>
+                  <div className="col-span-2 text-right">Total</div>
+                </div>
+
+                {invoiceItems.map((item, index) => (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <div className="col-span-12 md:col-span-4">
+                      <SearchableSelect
+                        placeholder="Select Item"
+                        options={(invoiceType === "product" ? products : services).map((prod) => ({
+                          value: prod.name,
+                          label: prod.name,
+                        }))}
                         value={item.itemName}
-                        className="col-span-3"
-                        required
+                        onChange={(val) => updateItem(index, "itemName", val)}
+                        icon={invoiceType === "product" ? Disc : FileText}
                       />
-                      <input
-                        className="w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2"
+                    </div>
+
+                    <div className="col-span-6 md:col-span-2">
+                      <CustomInput
+                        name={`qty-${index}`}
                         type="number"
                         min="1"
                         value={item.quantity}
-                        placeholder="Enter quantity"
-                        onChange={(e) =>
-                          updateItem(index, "quantity", parseInt(e.target.value) || 1)
-                        }
+                        onChange={(e) => updateItem(index, "quantity", parseInt(e.target.value) || 1)}
+                        placeholder="Qty"
                       />
-                      <input
-                        className={`w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2 ${invoiceType === "product" && item.itemName ? "bg-gray-200 cursor-not-allowed" : ""
-                          }`}
+                    </div>
+
+                    <div className="col-span-6 md:col-span-2">
+                      <CustomInput
+                        name={`cost-${index}`}
                         type="number"
                         min="0"
                         step="0.01"
                         value={item.unitCost}
-                        placeholder="Enter unit cost"
                         onChange={(e) =>
                           invoiceType === "service" &&
                           updateItem(index, "unitCost", parseFloat(e.target.value) || 0)
                         }
                         readOnly={invoiceType === "product" && item.itemName !== ""}
+                        placeholder="Cost"
+                        className={invoiceType === "product" ? "opacity-75" : ""}
                       />
-                      <input
-                        className="w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2"
-                        type="text"
-                        value={item.itemGst}
-                        placeholder="GST"
-                        readOnly
-                      />
-                      <input
-                        className="w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2"
-                        type="number"
-                        value={item.total}
-                        placeholder="Total"
-                        readOnly
-                      />
+                    </div>
+
+                    <div className="col-span-6 md:col-span-2 relative">
+                      <div className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-700">
+                        {item.itemGst}
+                      </div>
+                    </div>
+
+                    <div className="col-span-6 md:col-span-2 flex items-center justify-between">
+                      <div className="font-bold text-gray-900 ml-auto">
+                        {item.total}
+                      </div>
                       <button
                         type="button"
-                        className="text-red-500 col-span-1 hover:text-red-700"
                         onClick={() => removeItem(index)}
+                        className="ml-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                       >
-                        ✕
+                        <X className="w-5 h-5" />
                       </button>
                     </div>
-                  ))}
-                  <button
-                    type="button"
-                    className="bg-gray-700 text-white px-3 py-3 rounded hover:bg-gray-800 transition-colors"
-                    onClick={addItem}
-                  >
-                    Add Item
-                  </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addItem}
+                  className="w-full py-4 flex items-center justify-center space-x-2 border-2 border-dashed border-gray-300 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-gray-500 hover:text-black font-semibold"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Add Another Item</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Totals Section */}
+          <div className="flex justify-end">
+            <div className="w-full space-y-4">
+              {/* Grid 1: Subtotal, Tax, Discount, Amount Paid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">Subtotal</span>
+                  <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
+                    {watch("subtotal") || "0.00"} {selectedCurrency}
+                  </div>
                 </div>
+
+                <div className="space-y-1">
+                  <span className="text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">Total Tax</span>
+                  <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
+                    {watch("totalTax") || "0.00"} {selectedCurrency}
+                  </div>
+                </div>
+
+                <CustomInput
+                  label="Discount"
+                  name="discount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  register={register}
+                  onChange={(e) => {
+                    setValue("discount", e.target.value);
+                    calculateTotals();
+                  }}
+                  icon={Percent}
+                />
+
+                <CustomInput
+                  label="Amount Paid"
+                  name="amountPaid"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  register={register}
+                  onChange={(e) => {
+                    setValue("amountPaid", e.target.value);
+                    calculateTotals();
+                  }}
+                  icon={DollarSign}
+                />
               </div>
-            )}
-            <div className="mt-6 space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm font-semibold text-gray-700">Subtotal:</span>
-                <span className="text-sm text-gray-800">
-                  {watch("subtotal") || "0.00"} {selectedCurrency}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-semibold text-gray-700">Total Tax:</span>
-                <span className="text-sm text-gray-800">
-                  {watch("totalTax") || "0.00"} {selectedCurrency}
-                </span>
-              </div>
-              <FormField
-                label="Discount"
-                name="discount"
-                type="number"
-                register={register}
-                placeholder="Enter discount"
-                min="0"
-                step="0.01"
-                onChange={(e) => {
-                  setValue("discount", e.target.value);
-                  calculateTotals();
-                }}
-              />
-              <FormField
-                label="Amount Paid"
-                name="amountPaid"
-                type="number"
-                register={register}
-                placeholder="Enter amount paid"
-                min="0"
-                step="0.01"
-                onChange={(e) => {
-                  setValue("amountPaid", e.target.value);
-                  calculateTotals();
-                }}
-              />
-              <div className="flex justify-between border-t pt-2">
-                <span className="text-sm font-bold text-gray-700">Total Due:</span>
-                <span className="text-sm font-bold text-gray-800">
-                  {watch("totalDue") || "0.00"} {selectedCurrency} (Rounded: {roundedTotalDue}{" "}
-                  {selectedCurrency} {roundingDisplay})
-                </span>
+
+              {/* Grid 2: Total Due (Full Width) */}
+              <div className="grid grid-cols-1">
+                <div className="w-full bg-black rounded-2xl p-4 text-white flex justify-between items-center shadow-lg shadow-black/10">
+                  <span className="text-sm font-bold uppercase tracking-widest">Total Due</span>
+                  <div className="text-right">
+                    <div className="text-xl font-bold">
+                      {watch("totalDue") || "0.00"} {selectedCurrency}
+                    </div>
+                    <div className="text-[10px] text-white/70">
+                      Rounded: {roundedTotalDue} {selectedCurrency} ({roundingDisplay})
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`bg-black text-white hover:bg-white hover:text-black border text-sm font-bold px-3 py-3 rounded w-full col-span-2 transition-colors duration-300 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-          >
-            {isSubmitting ? "Creating..." : "Create Invoice"}
-          </button>
-        </form>
-        <div className="mt-4 w-full flex justify-start space-x-4">
-          <button
-            type="button"
-            onClick={() => navigate("/address/add")}
-            className="w-full bg-black hover:bg-white text-white hover:text-black border text-sm font-bold px-3 py-3 rounded transition-colors duration-300"
-          >
-            Go to Add Branch
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/clients/add")}
-            className="w-full bg-black hover:bg-white text-white hover:text-black border text-sm font-bold px-3 py-3 rounded transition-colors duration-300"
-          >
-            Go to Add Client
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/bank-account/add")}
-            className="w-full bg-black hover:bg-white text-white hover:text-black border text-sm font-bold px-3 py-3 rounded transition-colors duration-300"
-          >
-            Go to Add Bank Account
-          </button>
-        </div>
-      </div>
-    </div>
+
+          <div className="flex gap-4 pt-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex-1 px-8 py-4 rounded-2xl font-semibold text-sm bg-gray-50 text-gray-800 border border-gray-300 hover:bg-gray-100 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 px-8 py-4 rounded-2xl font-semibold text-sm bg-black text-white shadow-lg shadow-black/10 hover:shadow-black/20 transition-all flex items-center justify-center space-x-2"
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  <span>Create Invoice</span>
+                </>
+              )}
+            </button>
+          </div>
+
+        </form >
+      </div >
+
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        onClose={handleModalClose}
+        title="Invoice Created"
+        message="Invoice and items created successfully!"
+        type="success"
+        showButtons={false}
+      />
+    </div >
   );
 };
 

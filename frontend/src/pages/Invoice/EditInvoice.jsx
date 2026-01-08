@@ -1,8 +1,72 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
 import apiClient from "../../api/apiClient";
-import FormField from "../../components/FormField";
+import SearchableSelect from "../../components/SearchableSelect";
+import ConfirmationModal from "../../components/ConfirmationModal";
+import {
+  FileText,
+  Calendar,
+  Building2,
+  User,
+  CreditCard,
+  DollarSign,
+  Clock,
+  Percent,
+  Plus,
+  ArrowLeft,
+  Save,
+  CheckCircle,
+  Disc,
+  X
+} from "lucide-react";
+
+// Custom Input Component
+const CustomInput = ({
+  label,
+  register,
+  name,
+  rules,
+  error,
+  icon: Icon,
+  onChange: customOnChange,
+  className,
+  type = "text",
+  ...props
+}) => {
+  const registration = register ? register(name, rules) : {};
+  const { onChange, ...rest } = registration;
+
+  return (
+    <div className={`space-y-2 ${className || ""}`}>
+      {label && (
+        <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">
+          {label}
+        </label>
+      )}
+      <div className="relative">
+        {Icon && (
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Icon className="h-5 w-5 text-gray-400" />
+          </div>
+        )}
+        <input
+          type={type}
+          {...rest}
+          onChange={(e) => {
+            if (onChange) onChange(e);
+            if (customOnChange) customOnChange(e);
+          }}
+          className={`w-full bg-gray-50 border ${error ? "border-red-500" : "border-gray-300"
+            } rounded-2xl ${Icon ? "pl-12" : "pl-4"
+            } pr-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 transition-all outline-none text-black font-semibold placeholder-gray-400`}
+          {...props}
+        />
+      </div>
+      {error && <p className="text-red-500 text-xs px-1">{error.message}</p>}
+    </div>
+  );
+};
 
 const EditInvoice = () => {
   const navigate = useNavigate();
@@ -14,33 +78,34 @@ const EditInvoice = () => {
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: invoice
       ? {
-          invoiceNumber: invoice.invoice_number,
-          invoiceType: invoice.invoice_type,
-          clientName: invoice.client.toString(),
-          branchAddress: invoice.branch_address.toString(),
-          bankAccount: invoice.bank_account.toString(),
-          invoiceDate: invoice.invoice_date,
-          dueDate: invoice.due_date,
-          currencyType: invoice.currency_type,
-          paymentTerms: invoice.payment_terms,
-          taxable: invoice.tax_option,
-          taxRate: invoice.tax_rate ? invoice.tax_rate.toString() : "",
-          discount: parseFloat(invoice.discount || "0.00"),
-          amountPaid: parseFloat(invoice.amount_paid || "0.00"),
-        }
+        invoiceNumber: invoice.invoice_number,
+        invoiceType: invoice.invoice_type,
+        clientName: invoice.client,
+        branchAddress: invoice.branch_address,
+        bankAccount: invoice.bank_account,
+        invoiceDate: invoice.invoice_date,
+        dueDate: invoice.due_date,
+        currencyType: invoice.currency_type,
+        paymentTerms: invoice.payment_terms,
+        taxable: invoice.tax_option,
+        taxRate: invoice.tax_rate || "",
+        discount: parseFloat(invoice.discount || "0.00"),
+        amountPaid: parseFloat(invoice.amount_paid || "0.00"),
+      }
       : {
-          invoiceNumber: `INV-${Date.now()}`,
-          invoiceDate: new Date().toISOString().split("T")[0],
-          taxable: "no",
-          currencyType: "USD",
-          paymentTerms: "Net 30",
-          discount: 0,
-          amountPaid: 0,
-        },
+        invoiceNumber: `INV-${Date.now()}`,
+        invoiceDate: new Date().toISOString().split("T")[0],
+        taxable: "no",
+        currencyType: "USD",
+        paymentTerms: "Net 30",
+        discount: 0,
+        amountPaid: 0,
+      },
   });
 
   const [clients, setClients] = useState([]);
@@ -49,11 +114,11 @@ const EditInvoice = () => {
   const [taxes, setTaxes] = useState([]);
   const [products, setProducts] = useState([]);
   const [services, setServices] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
   const [invoiceItems, setInvoiceItems] = useState(
     invoice?.items?.map((item) => {
-      console.log("Mapping invoice item:", item); 
       return {
-        id: item.id, 
+        id: item.id,
         itemName: item.name || "",
         quantity: item.quantity,
         unitCost: parseFloat(item.unit_cost),
@@ -70,6 +135,8 @@ const EditInvoice = () => {
     invoice?.tax_rate ? invoice.tax_rate.toString() : "0%"
   );
   const [invoiceType, setInvoiceType] = useState(invoice?.invoice_type || "");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [updatedInvoiceData, setUpdatedInvoiceData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,6 +148,7 @@ const EditInvoice = () => {
           taxesResponse,
           productsResponse,
           servicesResponse,
+          currenciesResponse,
         ] = await Promise.all([
           apiClient.get("clients/clients/"),
           apiClient.get("branch/branch_addresses/"),
@@ -88,16 +156,41 @@ const EditInvoice = () => {
           apiClient.get("invoices/taxes/"),
           apiClient.get("products/products/"),
           apiClient.get("services/services/"),
+          fetch("https://open.er-api.com/v6/latest/USD?apikey=bbc89a8a69d4fe2cca4524c2", {
+            method: "GET",
+            headers: {
+              "Accept": "application/json",
+            },
+          }).catch((err) => {
+            console.error("Fetch currencies failed:", err);
+            return { ok: false };
+          }),
         ]);
-        setClients(clientsResponse.data);
+
+        const rawClients = clientsResponse.data || [];
+        setClients(rawClients);
         setBranches(branchesResponse.data);
         setBankAccounts(bankAccountsResponse.data);
         setTaxes(taxesResponse.data);
         setProducts(productsResponse.data);
         setServices(servicesResponse.data);
-        console.log("Data loaded successfully");
+
+        if (currenciesResponse.ok) {
+          const currenciesData = await currenciesResponse.json();
+          if (currenciesData.result === "success") {
+            const currencyList = Object.keys(currenciesData.rates);
+            setCurrencies(currencyList);
+          } else {
+            setCurrencies(["USD", "EUR", "GBP", "INR"]);
+          }
+        } else {
+          setCurrencies(["USD", "EUR", "GBP", "INR"]);
+        }
       } catch (error) {
         console.error("Error initializing data", error);
+        if (currencies.length === 0) {
+          setCurrencies(["USD", "EUR", "GBP", "INR"]);
+        }
       }
     };
     fetchData();
@@ -119,7 +212,7 @@ const EditInvoice = () => {
   const removeItem = async (index) => {
     const itemToRemove = invoiceItems[index];
     console.log("Removing item:", itemToRemove);
-  
+
     if (itemToRemove.id) {
       try {
         console.log(`Deleting item with ID: ${itemToRemove.id} from backend`);
@@ -133,7 +226,7 @@ const EditInvoice = () => {
     } else {
       console.log("Item has no ID, removing locally only");
     }
-  
+
     setInvoiceItems(invoiceItems.filter((_, i) => i !== index));
   };
 
@@ -188,6 +281,11 @@ const EditInvoice = () => {
     calculateTotals();
   }, [invoiceItems, watch("discount"), watch("amountPaid"), selectedTaxRate]);
 
+  const handleModalClose = () => {
+    setShowSuccessModal(false);
+    navigate("/invoice/proforma", { state: { invoice: updatedInvoiceData } });
+  };
+
   const onSubmit = async (data) => {
     try {
       const invoiceData = {
@@ -203,18 +301,17 @@ const EditInvoice = () => {
         tax_rate: data.taxable === "yes" ? parseFloat(selectedTaxRate) : null,
         discount: parseFloat(data.discount).toString() || "0.00",
         amount_paid: parseFloat(data.amountPaid).toString() || "0.00",
-        is_final: invoice.is_final || false, // Preserve existing is_final status
+        is_final: invoice.is_final || false,
       };
-  
+
       console.log("Updated Invoice Data:", JSON.stringify(invoiceData, null, 2));
       const invoiceResponse = await apiClient.put(`invoices/invoices/${invoice.id}/`, invoiceData);
       console.log("Invoice Updated:", invoiceResponse.data);
-  
-      // Handle invoice items
+
       const existingItemsResponse = await apiClient.get(`invoices/invoices/${invoice.id}/`);
       const existingItemIds = existingItemsResponse.data.items.map((item) => item.id);
       const currentItemIds = invoiceItems.map((item) => item.id).filter((id) => id);
-  
+
       const itemsToDelete = existingItemIds.filter((id) => !currentItemIds.includes(id));
       for (const id of itemsToDelete) {
         try {
@@ -224,7 +321,7 @@ const EditInvoice = () => {
           console.error(`Error deleting item ${id}:`, error.response?.data || error.message);
         }
       }
-  
+
       for (const item of invoiceItems) {
         const itemData = {
           invoice: invoice.id,
@@ -237,7 +334,7 @@ const EditInvoice = () => {
           quantity: item.quantity,
           unit_cost: item.unitCost.toString(),
         };
-  
+
         if (item.id) {
           await apiClient.put(`invoices/invoice-items/${item.id}/`, itemData);
           console.log(`Updated item ${item.id}`);
@@ -246,13 +343,12 @@ const EditInvoice = () => {
           console.log(`Created new item ${itemResponse.data.id}`);
         }
       }
-  
-      // Fetch the updated invoice to reflect the new final_invoice_number if is_final is true
+
       const updatedInvoiceResponse = await apiClient.get(`invoices/invoices/${invoice.id}/`);
       console.log("Updated Invoice with Final Number:", updatedInvoiceResponse.data);
-  
-      alert("Invoice updated successfully!");
-      navigate("/invoice/proforma", { state: { invoice: updatedInvoiceResponse.data } });
+
+      setUpdatedInvoiceData(updatedInvoiceResponse.data);
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("Error updating invoice:", error.response?.data || error.message);
       alert("Failed to update invoice. Please check the console for details.");
@@ -265,294 +361,427 @@ const EditInvoice = () => {
   const roundingDifference = (roundedTotalDue - totalDue).toFixed(2);
   const roundingDisplay = roundingDifference >= 0 ? `+${roundingDifference}` : roundingDifference;
 
+  const activeClients = clients.filter((c) => {
+    const isInactive = c.status === "inactive" || c.status === false;
+    return !isInactive;
+  });
+
   return (
-    <div className="grid min-h-screen p-4">
-    <h2 className="text-xl font-extrabold mb-4 text-gray-800">
-      Edit Invoice: {invoice?.invoice_number}
-      </h2>
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <FormField
-              label="Invoice Type*"
-              name="invoice_type"
-              register={register}
-              type="select"
-              options={[
-                { value: "", label: "Select invoice type" },
-                { value: "product", label: "Product" },
-                { value: "service", label: "Service" },
-              ]}
-              value={invoiceType}
-              onChange={(e) => {
-                setInvoiceType(e.target.value);
-                setValue("invoiceType", e.target.value);
-              }}
-              required
-            />
-            <FormField
-              label="Taxable*"
-              name="taxable"
-              register={register}
-              type="radio"
-              options={[
-                { value: "yes", label: "Yes" },
-                { value: "no", label: "No" },
-              ]}
-              value={taxable}
-              onChange={(e) => {
-                setTaxable(e.target.value);
-                setValue("taxable", e.target.value);
-              }}
-              required
-            />
-            {taxable === "yes" && (
-              <FormField
-                label="Tax Rate"
-                name="taxRate"
-                register={register}
-                type="select"
-                options={[
-                  { value: "", label: "Select tax rate" },
-                  ...taxes.map((tax) => ({
-                    value: tax.percentage.toString(),
-                    label: `${tax.name} ${tax.percentage}%`,
-                  })),
-                ]}
-                value={selectedTaxRate}
-                onChange={(e) => {
-                  setSelectedTaxRate(e.target.value);
-                  setValue("taxRate", e.target.value);
-                }}
+    <div className="p-4 w-full mx-auto space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+        <div className="flex items-center space-x-4 w-full md:w-auto">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-3 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-800" />
+          </button>
+          <div className="p-3 bg-black rounded-2xl shadow-lg shadow-black/10">
+            <FileText className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Edit Invoice</h1>
+            <p className="text-sm text-gray-800 font-medium">{invoice?.invoice_number}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-[2rem] border border-gray-300 shadow-sm p-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+
+          {/* General Information */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-6">
+              <FileText className="w-5 h-5" /> General Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Controller
+                name="invoiceType"
+                control={control}
+                rules={{ required: "Invoice Type is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Invoice Type"
+                    options={[
+                      { value: "product", label: "Product" },
+                      { value: "service", label: "Service" },
+                    ]}
+                    value={value}
+                    onChange={(val) => {
+                      onChange(val);
+                      setInvoiceType(val);
+                    }}
+                    placeholder="Select Type"
+                    error={errors.invoiceType}
+                    icon={FileText}
+                  />
+                )}
               />
-            )}
-            <FormField
-              label="Branch*"
-              name="branchAddress"
-              type="select"
-              options={[
-                { value: "", label: "Select branch" },
-                ...branches.map((b) => ({
-                  value: b.id.toString(),
-                  label: `${b.branch_address} - ${b.city}`,
-                })),
-              ]}
-              register={register}
-              value={watch("branchAddress")}
-              onChange={(e) => setValue("branchAddress", e.target.value)}
-              required
-            />
-            <FormField
-              label="Client*"
-              name="clientName"
-              type="select"
-              options={[
-                { value: "", label: "Select client" },
-                ...clients.map((c) => ({
-                  value: c.id.toString(),
-                  label: c.client_name,
-                })),
-              ]}
-              register={register}
-              value={watch("clientName")}
-              onChange={(e) => setValue("clientName", e.target.value)}
-              required
-            />
-            <div className="flex items-center justify-between gap-4">
-              <FormField
-                label="Invoice Date*"
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-1">
+                <Controller
+                  name="taxable"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field: { value, onChange } }) => (
+                    <SearchableSelect
+                      label="Taxable"
+                      options={[
+                        { value: "yes", label: "Yes" },
+                        { value: "no", label: "No" },
+                      ]}
+                      value={value}
+                      onChange={(val) => {
+                        onChange(val);
+                        setTaxable(val);
+                      }}
+                      placeholder="Taxable?"
+                      error={errors.taxable}
+                      icon={CheckCircle}
+                    />
+                  )}
+                />
+
+                {taxable === "yes" && (
+                  <Controller
+                    name="taxRate"
+                    control={control}
+                    render={({ field: { value, onChange } }) => (
+                      <SearchableSelect
+                        label="Tax Rate"
+                        options={taxes.map((tax) => ({
+                          value: tax.percentage,
+                          label: `${tax.name} ${tax.percentage}%`,
+                        }))}
+                        value={selectedTaxRate}
+                        onChange={(val) => {
+                          onChange(val);
+                          setSelectedTaxRate(val);
+                        }}
+                        placeholder="Select Rate"
+                        icon={Percent}
+                      />
+                    )}
+                  />
+                )}
+              </div>
+
+              <Controller
+                name="branchAddress"
+                control={control}
+                rules={{ required: "Branch is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Branch"
+                    options={branches.map((b) => ({
+                      value: b.id,
+                      label: b.branch_name,
+                    }))}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Select Branch"
+                    error={errors.branchAddress}
+                    icon={Building2}
+                  />
+                )}
+              />
+
+              <Controller
+                name="clientName"
+                control={control}
+                rules={{ required: "Client is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Client"
+                    options={activeClients.map((c) => ({
+                      value: c.id,
+                      label: c.client_name,
+                    }))}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Select Client"
+                    error={errors.clientName}
+                    icon={User}
+                  />
+                )}
+              />
+
+              <CustomInput
+                label="Invoice Date"
                 name="invoiceDate"
                 type="date"
                 register={register}
-                value={watch("invoiceDate")}
-                onChange={(date) => setValue("invoiceDate", date)}
+                rules={{ required: "Date is required" }}
                 error={errors.invoiceDate}
-                required
+                icon={Calendar}
               />
-              <FormField
-                label="Due Date*"
+
+              <CustomInput
+                label="Due Date"
                 name="dueDate"
                 type="date"
                 register={register}
-                value={watch("dueDate")}
-                onChange={(date) => setValue("dueDate", date)}
+                rules={{ required: "Due Date is required" }}
                 error={errors.dueDate}
-                required
+                icon={Calendar}
               />
+
+              <Controller
+                name="bankAccount"
+                control={control}
+                rules={{ required: "Bank Account is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Bank Account"
+                    options={bankAccounts.map((a) => ({
+                      value: a.id,
+                      label: `${a.bank_name} - ${a.account_holder_name} - ${a.account_number}`,
+                    }))}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Select Bank Account"
+                    error={errors.bankAccount}
+                    icon={CreditCard}
+                  />
+                )}
+              />
+
+              <Controller
+                name="currencyType"
+                control={control}
+                rules={{ required: "Currency is required" }}
+                render={({ field: { value, onChange } }) => (
+                  <SearchableSelect
+                    label="Currency"
+                    options={currencies.map((c) => ({
+                      value: c,
+                      label: c,
+                    }))}
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Select Currency"
+                    error={errors.currencyType}
+                    icon={DollarSign}
+                    displaySelectedValue={true}
+                  />
+                )}
+              />
+
+              <div className="col-span-1 md:col-span-2">
+                <Controller
+                  name="paymentTerms"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <SearchableSelect
+                      label="Payment Terms"
+                      options={["Credit", "Debit", "UPI", "Net Banking"].map((t) => ({ value: t, label: t }))}
+                      value={value}
+                      onChange={onChange}
+                      placeholder="Select Terms"
+                      icon={Clock}
+                    />
+                  )}
+                />
+              </div>
             </div>
-            <FormField
-              label="Bank Account*"
-              name="bankAccount"
-              type="select"
-              options={[
-                { value: "", label: "Select bank account" },
-                ...bankAccounts.map((a) => ({
-                  value: a.id.toString(),
-                  label: `${a.bank_name} (${a.account_number})`,
-                })),
-              ]}
-              register={register}
-              value={watch("bankAccount")}
-              onChange={(e) => setValue("bankAccount", e.target.value)}
-              required
-            />
-            <FormField
-              label="Currency Type"
-              name="currencyType"
-              type="select"
-              options={[
-                { value: "", label: "Select currency" },
-                ...["USD", "EUR", "GBP", "INR"].map((c) => ({ value: c, label: c })),
-              ]}
-              register={register}
-              value={watch("currencyType")}
-              onChange={(e) => setValue("currencyType", e.target.value)}
-            />
           </div>
 
-          <div className="space-y-4">
-            <FormField
-              label="Payment Terms"
-              name="paymentTerms"
-              type="select"
-              options={[
-                { value: "", label: "Select payment terms" },
-                ...["Credit", "Debit", "UPI", "Net Banking"].map((t) => ({ value: t, label: t })),
-              ]}
-              register={register}
-              value={watch("paymentTerms")}
-              onChange={(e) => setValue("paymentTerms", e.target.value)}
-            />
-            {invoiceType && (
-              <div>
-                <h3 className="font-bold text-sm mb-2 text-gray-700">Invoice Items</h3>
-                <div className="rounded-lg">
-                  <div className="grid grid-cols-12 gap-2 mb-2 font-semibold text-gray-700 text-sm">
-                    <div className="col-span-3">Item Name</div>
-                    <div className="col-span-2">Quantity</div>
-                    <div className="col-span-2">Unit Cost</div>
-                    <div className="col-span-2">Item Tax</div>
-                    <div className="col-span-2">Total</div>
-                    <div className="col-span-1"></div>
-                  </div>
-                  {invoiceItems.map((item, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-2 mb-4 items-center">
-                      <FormField
-                        name={`itemName-${index}`}
-                        type="select"
-                        register={register}
-                        options={[
-                          { value: "", label: "Select Item" },
-                          ...(invoiceType === "product" ? products : services).map((prod) => ({
-                            value: prod.name,
-                            label: `${prod.name}`,
-                          })),
-                        ]}
+          <div className="w-full h-px bg-gray-100" />
+
+          {/* Items Section */}
+          {invoiceType && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-6">
+                <Disc className="w-5 h-5" /> Invoice Items
+              </h3>
+
+              <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4 space-y-4">
+                <div className="hidden md:grid grid-cols-12 gap-4 px-2 mb-2 font-semibold text-xs text-gray-500 uppercase tracking-wider">
+                  <div className="col-span-4">Item Details</div>
+                  <div className="col-span-2">Quantity</div>
+                  <div className="col-span-2">Unit Cost</div>
+                  <div className="col-span-2">Tax</div>
+                  <div className="col-span-2 text-right">Total</div>
+                </div>
+
+                {invoiceItems.map((item, index) => (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <div className="col-span-12 md:col-span-4">
+                      <SearchableSelect
+                        placeholder="Select Item"
+                        options={(invoiceType === "product" ? products : services).map((prod) => ({
+                          value: prod.name,
+                          label: prod.name,
+                        }))}
                         value={item.itemName}
-                        onChange={(e) => updateItem(index, "itemName", e.target.value)}
-                        className="col-span-3"
+                        onChange={(val) => updateItem(index, "itemName", val)}
+                        icon={invoiceType === "product" ? Disc : FileText}
                       />
-                      <input
-                        className="w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2"
+                    </div>
+
+                    <div className="col-span-6 md:col-span-2">
+                      <CustomInput
+                        name={`qty-${index}`}
                         type="number"
                         min="1"
                         value={item.quantity}
                         onChange={(e) => updateItem(index, "quantity", parseInt(e.target.value) || 1)}
+                        placeholder="Qty"
                       />
-                      <input
-                        className={`w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2 ${
-                          invoiceType === "product" && item.itemName ? "bg-gray-200 cursor-not-allowed" : ""
-                        }`}
+                    </div>
+
+                    <div className="col-span-6 md:col-span-2">
+                      <CustomInput
+                        name={`cost-${index}`}
                         type="number"
                         min="0"
                         step="0.01"
                         value={item.unitCost}
                         onChange={(e) =>
-                          invoiceType === "service" && updateItem(index, "unitCost", parseFloat(e.target.value) || 0)
+                          invoiceType === "service" &&
+                          updateItem(index, "unitCost", parseFloat(e.target.value) || 0)
                         }
                         readOnly={invoiceType === "product" && item.itemName !== ""}
+                        placeholder="Cost"
+                        className={invoiceType === "product" ? "opacity-75" : ""}
                       />
-                      <input
-                        className="w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2"
-                        type="text"
-                        value={item.itemGst}
-                        readOnly
-                      />
-                      <input
-                        className="w-full p-2 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 col-span-2"
-                        type="number"
-                        value={item.total}
-                        readOnly
-                      />
+                    </div>
+
+                    <div className="col-span-6 md:col-span-2 relative">
+                      <div className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-700">
+                        {item.itemGst}
+                      </div>
+                    </div>
+
+                    <div className="col-span-6 md:col-span-2 flex items-center justify-between">
+                      <div className="font-bold text-gray-900 ml-auto">
+                        {item.total}
+                      </div>
                       <button
                         type="button"
-                        className="text-red-500 col-span-1 hover:text-red-700"
                         onClick={() => removeItem(index)}
+                        className="ml-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                       >
-                        ✕
+                        <X className="w-5 h-5" />
                       </button>
                     </div>
-                  ))}
-                  <button
-                    type="button"
-                    className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors"
-                    onClick={addItem}
-                  >
-                    Add Item
-                  </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addItem}
+                  className="w-full py-4 flex items-center justify-center space-x-2 border-2 border-dashed border-gray-300 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-gray-500 hover:text-black font-semibold"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Add Another Item</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Totals Section */}
+          <div className="flex justify-end">
+            <div className="w-full space-y-4">
+              {/* Grid 1: Subtotal, Tax, Discount, Amount Paid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">Subtotal</span>
+                  <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
+                    {watch("subtotal") || "0.00"} {selectedCurrency}
+                  </div>
                 </div>
+
+                <div className="space-y-1">
+                  <span className="text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">Total Tax</span>
+                  <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
+                    {watch("totalTax") || "0.00"} {selectedCurrency}
+                  </div>
+                </div>
+
+                <CustomInput
+                  label="Discount"
+                  name="discount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  register={register}
+                  onChange={(e) => {
+                    setValue("discount", e.target.value);
+                    calculateTotals();
+                  }}
+                  icon={Percent}
+                />
+
+                <CustomInput
+                  label="Amount Paid"
+                  name="amountPaid"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  register={register}
+                  onChange={(e) => {
+                    setValue("amountPaid", e.target.value);
+                    calculateTotals();
+                  }}
+                  icon={DollarSign}
+                />
               </div>
-            )}
-            <div className="mt-6 space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm font-semibold text-gray-700">Subtotal:</span>
-                <span className="text-sm text-gray-800">{watch("subtotal") || "0.00"} {selectedCurrency}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-semibold text-gray-700">Total GST:</span>
-                <span className="text-sm text-gray-800">{watch("totalTax") || "0.00"} {selectedCurrency}</span>
-              </div>
-              <FormField
-                label="Discount"
-                name="discount"
-                type="number"
-                register={register}
-                value={watch("discount")}
-                onChange={(e) => setValue("discount", e.target.value)}
-                min="0"
-                step="0.01"
-              />
-              <FormField
-                label="Amount Paid"
-                name="amountPaid"
-                type="number"
-                register={register}
-                value={watch("amountPaid")}
-                onChange={(e) => setValue("amountPaid", e.target.value)}
-                min="0"
-                step="0.01"
-              />
-              <div className="flex justify-between border-t pt-2">
-                <span className="text-sm font-bold text-gray-700">Total Due:</span>
-                <span className="text-sm font-bold text-gray-800">
-                  {watch("totalDue") || "0.00"} {selectedCurrency} (Rounded: {roundedTotalDue} {selectedCurrency} {roundingDisplay})
-                </span>
+
+              {/* Grid 2: Total Due (Full Width) */}
+              <div className="grid grid-cols-1">
+                <div className="w-full bg-black rounded-2xl p-4 text-white flex justify-between items-center shadow-lg shadow-black/10">
+                  <span className="text-sm font-bold uppercase tracking-widest">Total Due</span>
+                  <div className="text-right">
+                    <div className="text-xl font-bold">
+                      {watch("totalDue") || "0.00"} {selectedCurrency}
+                    </div>
+                    <div className="text-[10px] text-white/70">
+                      Rounded: {roundedTotalDue} {selectedCurrency} ({roundingDisplay})
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`bg-black text-white hover:bg-white hover:text-black border text-sm font-bold px-3 py-3 rounded w-full col-span-2 transition-colors duration-300 ${
-              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {isSubmitting ? "Updating..." : "Update Invoice"}
-          </button>
+
+          <div className="flex gap-4 pt-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex-1 px-8 py-4 rounded-2xl font-semibold text-sm bg-gray-50 text-gray-800 border border-gray-300 hover:bg-gray-100 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 px-8 py-4 rounded-2xl font-semibold text-sm bg-black text-white shadow-lg shadow-black/10 hover:shadow-black/20 transition-all flex items-center justify-center space-x-2"
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  <span>Update Invoice</span>
+                </>
+              )}
+            </button>
+          </div>
+
         </form>
-        <div className="mt-4 flex justify-start space-x-4"></div>
       </div>
-    </div>
+
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        onClose={handleModalClose}
+        title="Invoice Updated"
+        message="Invoice updated successfully!"
+        type="success"
+        showButtons={false}
+      />
+    </div >
   );
 };
 

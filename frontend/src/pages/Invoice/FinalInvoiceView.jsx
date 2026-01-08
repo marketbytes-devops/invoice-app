@@ -231,7 +231,7 @@ const FinalInvoiceView = () => {
   return (
     <div className="flex flex-col items-center bg-white min-h-screen">
       <div
-        className="max-w-[27cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-sans print-container"
+        className="max-w-[27cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-['Poppins'] print-container"
         ref={contentRef}
         style={{ overflow: "visible" }}
       >
@@ -256,55 +256,73 @@ const FinalInvoiceView = () => {
             {/* Client and Branch Details */}
             <div className="w-full flex">
               <div className="w-1/2" style={{ marginTop: "0.5cm" }}>
-                <h4 className="font-weight: 100;">Invoice to:</h4>
+              <div className="w-[80%]">
+                <h4 className="font-weight: 100;">Invoice to :</h4>
                 <p className="font-bold text-xl">
                   {clientDetails?.client_name || "Unknown Client"}
                 </p>
                 <h6 className="font-bold mt-5">Address</h6>
                 <p>
-                  {clientDetails?.address || "N/A"},{" "}
-                  {clientDetails?.city || "N/A"},{" "}
-                  {clientDetails?.state || "N/A"},{" "}
-                  {clientDetails?.pincode || "N/A"}
+                  {[
+                    clientDetails?.address,
+                    clientDetails?.city,
+                    clientDetails?.state,
+                    clientDetails?.pincode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ") || "N/A"}
                 </p>
-                <p className="mt-5">
-                  <b>GSTIN:</b> {clientDetails?.gst || "N/A"}
+                </div>
+                <div className="mt-5">
+                {clientDetails?.gstin && (
+                  <p>
+                    <b>GSTIN :</b> {clientDetails?.gstin}
+                  </p>
+                )}
+                <p>
+                  <b>P :</b> {clientDetails?.phone || "N/A"}
                 </p>
                 <p>
-                  <b>P:</b> {clientDetails?.phone || "N/A"}
+                  <b>W :</b> {clientDetails?.website || "N/A"}
                 </p>
-                <p>
-                  <b>W:</b> {clientDetails?.website || "N/A"}
-                </p>
+                </div>
               </div>
               <div className="w-1/2" style={{ marginTop: "0.5cm" }}>
-                <h4 className="font-weight: 100;">Invoice from:</h4>
+                <h4 className="font-weight: 100;">Invoice from :</h4>
                 <p className="font-bold text-xl">
                   {branchDetails?.branch_name || "Unknown Branch"}
                 </p>
                 <h6 className="font-bold mt-5">Address</h6>
                 <p>
-                  {branchDetails?.branch_address || "N/A"},{" "}
-                  {branchDetails?.city || "N/A"},{" "}
-                  {branchDetails?.state || "N/A"},{" "}
-                  {branchDetails?.pincode || "N/A"}
+                  {[
+                    branchDetails?.branch_address,
+                    branchDetails?.city,
+                    branchDetails?.state,
+                    branchDetails?.pincode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ") || "N/A"}
                 </p>
-                <p className="mt-5">
-                  <b>GSTIN:</b> {branchDetails?.gstin || "N/A"}
+                <div className="mt-5">
+                {branchDetails?.gstin && (
+                  <p>
+                    <b>GSTIN :</b> {branchDetails?.gstin}
+                  </p>
+                )}
+                <p>
+                  <b>P :</b> {branchDetails?.phone || "N/A"}
                 </p>
                 <p>
-                  <b>P:</b> {branchDetails?.phone || "N/A"}
+                  <b>W :</b> {branchDetails?.website || "N/A"}
                 </p>
-                <p>
-                  <b>W:</b> {branchDetails?.website || "N/A"}
-                </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Invoice Content */}
-        <div className="grid grid-cols-[7fr_4fr] gap-4 mb-5 items-start">
+        <div className="grid grid-cols-[7fr_5fr] gap-4 mb-5 items-start">
           <div className="w-full">
             <table className="w-full border-collapse text-sm">
               <thead>
@@ -331,9 +349,8 @@ const FinalInvoiceView = () => {
                 {items.map((item, index) => (
                   <tr
                     key={index}
-                    className={`border-b border-gray-100 ${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-100"
-                    }`}
+                    className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"
+                      }`}
                   >
                     <td className="p-6 whitespace-nowrap border-r-4 border-white">
                       {index + 1}
@@ -361,11 +378,10 @@ const FinalInvoiceView = () => {
                   (_, index) => (
                     <tr
                       key={`placeholder-${index}`}
-                      className={`border-b border-gray-100 ${
-                        (items.length + index) % 2 === 0
-                          ? "bg-white"
-                          : "bg-gray-100"
-                      }`}
+                      className={`border-b border-gray-100 ${(items.length + index) % 2 === 0
+                        ? "bg-white"
+                        : "bg-gray-100"
+                        }`}
                     >
                       <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
                       <td className="p-6 whitespace-nowrap border-r-4 border-white"></td>
@@ -381,7 +397,7 @@ const FinalInvoiceView = () => {
                 <tr className="bg-gray-100">
                   <td colSpan="3" className="p-2"></td>
                   <td className="text-right font-bold p-2 whitespace-nowrap">
-                    Subtotal:
+                    Subtotal :
                   </td>
                   <td
                     colSpan="2"
@@ -395,7 +411,7 @@ const FinalInvoiceView = () => {
                   <tr className="bg-gray-100">
                     <td colSpan="3" className="p-2"></td>
                     <td className="text-right font-bold p-2 whitespace-nowrap">
-                      {displayTaxName}:
+                      {displayTaxName} :
                     </td>
                     <td
                       colSpan="2"
@@ -410,7 +426,7 @@ const FinalInvoiceView = () => {
                   <tr className="bg-gray-100">
                     <td colSpan="3" className="p-2"></td>
                     <td className="text-right font-bold p-2 whitespace-nowrap">
-                      Discount:
+                      Discount :
                     </td>
                     <td
                       colSpan="2"
@@ -425,7 +441,7 @@ const FinalInvoiceView = () => {
                   <tr className="bg-gray-100">
                     <td colSpan="3" className="p-2"></td>
                     <td className="text-right font-bold p-2 whitespace-nowrap">
-                      Amount Paid:
+                      Amount Paid :
                     </td>
                     <td
                       colSpan="2"
@@ -473,51 +489,21 @@ const FinalInvoiceView = () => {
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "0.25rem",
+                    gap: "1rem",
                   }}
                 >
-                  <p style={{ display: "flex", alignItems: "center" }}>
-                    <span
-                      className="font-bold"
-                      style={{ display: "inline-block", width: "130px" }}
-                    >
-                      Invoice No
-                    </span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
-                      :
-                    </span>
-                    <span style={{ marginLeft: "5px" }}>
-                      {displayInvoiceNumber}
-                    </span>
-                  </p>
-                  <p style={{ display: "flex", alignItems: "center" }}>
-                    <span
-                      className="font-bold"
-                      style={{ display: "inline-block", width: "130px" }}
-                    >
-                      Invoice Date
-                    </span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
-                      :
-                    </span>
-                    <span style={{ marginLeft: "5px" }}>
-                      {invoice_date || "N/A"}
-                    </span>
-                  </p>
-                  <p style={{ display: "flex", alignItems: "center" }}>
-                    <span
-                      className="font-bold"
-                      style={{ display: "inline-block", width: "130px" }}
-                    >
-                      Due Date
-                    </span>
-                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
-                      :
-                    </span>
-                    <span style={{ marginLeft: "5px" }}>
-                      {due_date || "N/A"}
-                    </span>
-                  </p>
+                  <div className="flex flex-col">
+                    <span className="font-bold">Invoice No :</span>
+                    <span>{displayInvoiceNumber}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold">Invoice Date :</span>
+                    <span>{invoice_date || "N/A"}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold">Due Date :</span>
+                    <span>{due_date || "N/A"}</span>
+                  </div>
                 </div>
               </div>
               <div>
@@ -535,7 +521,7 @@ const FinalInvoiceView = () => {
                   <p style={{ display: "flex", alignItems: "center" }}>
                     <span
                       className="font-bold"
-                      style={{ display: "inline-block", width: "130px" }}
+                      style={{ display: "inline-block", minWidth: "150px" }}
                     >
                       Bank Name
                     </span>
@@ -557,7 +543,7 @@ const FinalInvoiceView = () => {
                   >
                     <span
                       className="font-bold"
-                      style={{ display: "inline-block", width: "130px" }}
+                      style={{ display: "inline-block", minWidth: "150px" }}
                     >
                       Account Number
                     </span>
@@ -577,7 +563,7 @@ const FinalInvoiceView = () => {
                   <p style={{ display: "flex", alignItems: "center" }}>
                     <span
                       className="font-bold"
-                      style={{ display: "inline-block", width: "130px" }}
+                      style={{ display: "inline-block", minWidth: "150px" }}
                     >
                       IFSC Code
                     </span>
@@ -591,7 +577,7 @@ const FinalInvoiceView = () => {
                   <p style={{ display: "flex", alignItems: "center" }}>
                     <span
                       className="font-bold"
-                      style={{ display: "inline-block", width: "128px" }}
+                      style={{ display: "inline-block", minWidth: "150px" }}
                     >
                       SWIFT Code
                     </span>
@@ -605,7 +591,7 @@ const FinalInvoiceView = () => {
                   <p style={{ display: "flex", alignItems: "center" }}>
                     <span
                       className="font-bold"
-                      style={{ display: "inline-block", width: "128px" }}
+                      style={{ display: "inline-block", minWidth: "150px" }}
                     >
                       MICR Code
                     </span>

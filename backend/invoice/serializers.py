@@ -25,11 +25,12 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
 class InvoiceSerializer(serializers.ModelSerializer):
     items = InvoiceItemSerializer(many=True, required=False)
     tax_name = serializers.CharField(read_only=True)
+    client_name = serializers.CharField(source='client.client_name', read_only=True)
 
     class Meta:
         model = Invoice
         fields = [
-            'id', 'invoice_number', 'final_invoice_number', 'invoice_type', 'client', 'branch_address', 'bank_account',
+            'id', 'invoice_number', 'final_invoice_number', 'invoice_type', 'client', 'client_name', 'branch_address', 'bank_account',
             'invoice_date', 'due_date', 'currency_type', 'payment_terms', 'tax_option', 'tax_rate','tax_name',
             'subtotal', 'gst', 'discount', 'amount_paid', 'total_due', 'items', 'is_final', 'is_saved_final'
         ]

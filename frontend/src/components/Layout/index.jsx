@@ -4,14 +4,14 @@ import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import { motion } from 'framer-motion';
 import apiClient from '../../api/apiClient';
- 
+
 const MEDIA_URL = 'http://127.0.0.1:8000';
- 
+
 const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [userAvatar, setUserAvatar] = useState(null);
   const [username, setUsername] = useState('');
- 
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -24,30 +24,36 @@ const Layout = () => {
         setUsername('User');
       }
     };
- 
+
     fetchProfile();
   }, []);
- 
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-r from-gray-200 via-gray-100 to-gray-50">
       <Topbar
+        isSidebarOpen={isSidebarOpen}
         toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         userAvatar={userAvatar}
         username={username}
       />
-      <div className="flex flex-1">
+      <div className="flex flex-1 p-4 pt-20 gap-4 h-screen overflow-hidden">
         <Sidebar isOpen={isSidebarOpen} />
         <motion.main
-          className="flex-1 py-20 px-4 bg-gradient-to-l from-gray-200 to-gray-300"
-          initial={{ marginLeft: 300 }}
-          animate={{ marginLeft: isSidebarOpen ? 300 : 0 }}
+          className="flex-1 overflow-auto rounded-3xl bg-white border border-gray-100 shadow-sm"
+          initial={false}
+          animate={{
+            marginLeft: isSidebarOpen ? 296 : 0,
+            width: isSidebarOpen ? 'calc(100% - 296px)' : '100%'
+          }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
-          <Outlet />
+          <div className="p-8 max-w-full mx-auto">
+            <Outlet />
+          </div>
         </motion.main>
       </div>
     </div>
   );
 };
- 
+
 export default Layout;

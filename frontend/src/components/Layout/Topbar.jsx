@@ -1,45 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Text, Settings, User, LogOut, Search } from 'lucide-react';
+import { PanelLeft, PanelRight, Settings, User, LogOut, Search, Plus, FileText, UserPlus, Package, Building2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
 import apiClient from '../../api/apiClient';
-import logo from "../../assets/images/logo.png";
+import ConfirmationModal from '../ConfirmationModal';
 
-const Topbar = ({ toggleSidebar }) => {
+const Topbar = ({ toggleSidebar, isSidebarOpen, userAvatar, username }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
-  const [userData, setUserData] = useState({ username: '', avatar: 'https://placehold.co/80x80' }); 
+  const [userData, setUserData] = useState({ username: username || '', avatar: userAvatar || 'https://placehold.co/80x80' });
   const location = useLocation();
   const navigate = useNavigate();
 
   const BASE_URL = apiClient.defaults.baseURL.replace('/api', '');
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await apiClient.get('/auth/profile/');
-        const avatarUrl = response.data.avatar 
-          ? `${BASE_URL}${response.data.avatar}` 
-          : 'https://placehold.co/80x80';
-        setUserData({
-          username: response.data.username,
-          avatar: avatarUrl,
-        });
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        setUserData({ username: '', avatar: 'https://placehold.co/80x80' }); 
-      }
-    };
-    fetchUserData();
-  }, [BASE_URL]);
+    if (username && userAvatar) {
+      setUserData({ username, avatar: userAvatar });
+    }
+  }, [username, userAvatar]);
 
   const getPageName = () => {
     const path = location.pathname.split('/')[1];
-    return path.charAt(0).toUpperCase() + path.slice(1) || 'Dashboard';
+    if (!path) return 'Dashboard';
+    return path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
   };
 
   useEffect(() => {
@@ -52,74 +41,31 @@ const Topbar = ({ toggleSidebar }) => {
       setIsLoading(true);
       setIsSearchDropdownOpen(true);
       try {
-        const [
-          invoicesResponse,
-          productsResponse,
-          servicesResponse,
-          clientsResponse,
-          bankAccountsResponse,
-          addressesResponse,
-          taxesResponse,
-        ] = await Promise.all([
-          apiClient.get("invoices/invoices/"),
-          apiClient.get("products/products/"),
-          apiClient.get("services/services/"),
-          apiClient.get("clients/clients/"),
-          apiClient.get("bank/bank-accounts/"),
-          apiClient.get("branch/branch_addresses/"),
-          apiClient.get("invoices/taxes/"),
-        ]);
-        const results = [
-          ...invoicesResponse.data.map((item) => ({
-            type: "Invoice",
-            id: item.id,
-            name: item.invoice_number || `Invoice ${item.id}`,
-            path: `/invoice/proforma`,
-          })),
-          ...productsResponse.data.map((item) => ({
-            type: "Product",
-            id: item.id,
-            name: item.name,
-            path: "/products/view",
-          })),
-          ...servicesResponse.data.map((item) => ({
-            type: "Service",
-            id: item.id,
-            name: item.name,
-            path: "/services/view",
-          })),
-          ...clientsResponse.data.map((item) => ({
-            type: "Client",
-            id: item.id,
-            name: item.client_name,
-            path: "/clients/view",
-          })),
-          ...bankAccountsResponse.data.map((item) => ({
-            type: "Bank Account",
-            id: item.id,
-            name: item.bank_name,
-            path: "/bank-account/view",
-          })),
-          ...addressesResponse.data.map((item) => ({
-            type: "Address",
-            id: item.id,
-            name: item.branch_address,
-            path: "/address/view",
-          })),
-          ...taxesResponse.data.map((item) => ({
-            type: "Tax",
-            id: item.id,
-            name: item.name,
-            path: "/tax/view",
-          })),
-        ].filter((item) =>
-          item.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-        );
+        const endpoints = [
+          "invoices/invoices/",
+          "products/products/",
+          "services/services/",
+          "clients/clients/",
+          "bank/bank-accounts/",
+          "branch/branch_addresses/",
+          "invoices/taxes/"
+        ];
 
-        setSearchResults(results);
+        const responses = await Promise.all(endpoints.map(ep => apiClient.get(ep)));
+
+        const results = [
+          ...responses[0].data.map(item => ({ type: "Invoice", name: item.invoice_number || `Inv #${item.id}`, path: `/invoice/proforma` })),
+          ...responses[1].data.map(item => ({ type: "Product", name: item.name, path: "/products/view" })),
+          ...responses[2].data.map(item => ({ type: "Service", name: item.name, path: "/services/view" })),
+          ...responses[3].data.map(item => ({ type: "Client", name: item.client_name, path: "/clients/view" })),
+          ...responses[4].data.map(item => ({ type: "Bank Account", name: item.bank_name, path: "/bank-account/view" })),
+          ...responses[5].data.map(item => ({ type: "Address", name: item.branch_address, path: "/address/view" })),
+          ...responses[6].data.map(item => ({ type: "Tax", name: item.name, path: "/tax/view" })),
+        ].filter(item => item.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()));
+
+        setSearchResults(results.slice(0, 8));
       } catch (error) {
         console.error("Search failed:", error);
-        setSearchResults([]);
       } finally {
         setIsLoading(false);
       }
@@ -128,156 +74,233 @@ const Topbar = ({ toggleSidebar }) => {
     fetchSearchResults();
   }, [debouncedSearchQuery]);
 
-  const handleResultClick = (path) => {
-    setSearchQuery("");
-    setSearchResults([]);
-    setIsSearchDropdownOpen(false);
-    navigate(path);
-  };
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = () => {
-    apiClient.post('/auth/logout/', { 
-      refresh: localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token')
-    })
-      .then(() => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        sessionStorage.removeItem('access_token');
-        sessionStorage.removeItem('refresh_token');
-        navigate('/login');
-      })
-      .catch(error => {
-        console.error('Logout failed:', error);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        sessionStorage.removeItem('access_token');
-        sessionStorage.removeItem('refresh_token');
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    const refresh = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
+    apiClient.post('/auth/logout/', { refresh })
+      .finally(() => {
+        ['access_token', 'refresh_token'].forEach(k => {
+          localStorage.removeItem(k);
+          sessionStorage.removeItem(k);
+        });
         navigate('/login');
       });
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-16 bg-gray-100 shadow-md flex items-center justify-between px-4 z-50">
-      <div className="flex items-center">
-        <div className='flex items-center justify-center w-[255px]'>
-          <img src={logo} alt="Crossroads" className="w-10 rounded-full" />
-        </div>
+    <header className="fixed top-3 left-4 right-4 h-14 bg-white/80 backdrop-blur-md border border-gray-200 shadow-lg shadow-gray-200/30 flex items-center justify-between px-6 z-[60] rounded-2xl">
+      {/* Left section: Toggle & Breadcrumb */}
+      <div className="flex items-center space-x-4">
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded-xs transition-all duration-200 relative overflow-hidden group"
+          className="p-1.5 hover:bg-black hover:text-white rounded-lg transition-all text-gray-800"
         >
-          <div className="absolute inset-0" />
-          <Text
-            className="w-10 h-10 border p-2 border-gray-300 hover:border-none hover:bg-gray-200 rounded-lg text-gray-800 relative transition-colors duration-300 group-hover:text-gray-800"
-            strokeWidth={1.5}
-          />
+          {isSidebarOpen ? (
+            <PanelLeft size={20} strokeWidth={2} />
+          ) : (
+            <PanelRight size={20} strokeWidth={2} />
+          )}
         </button>
-        <div className="relative ml-4">
-          <div className="relative flex items-center">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" strokeWidth={1.5} size={18} />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => debouncedSearchQuery && setIsSearchDropdownOpen(true)}
-              placeholder="Search here..."
-              className="w-64 px-4 py-2 pl-10 border rounded bg-gray-100 text-gray-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-200"
-              disabled={isLoading}
-              aria-label="Search Input"
-            />
-            {isLoading && (
-              <span className="ml-4 text-xs font-medium text-blue-500">
-                Searching...
-              </span>
-            )}
-            {isSearchDropdownOpen && (
-              <div
-                className="absolute top-12 left-0 bg-white shadow-lg rounded-md w-[300px] max-h-[400px] overflow-y-auto z-50"
-                onMouseLeave={() => setIsSearchDropdownOpen(false)}
-              >
-                {searchResults.length > 0 ? (
-                  searchResults.map((result) => (
-                    <div
-                      key={`${result.type}-${result.id}`}
-                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition-all duration-200"
-                      onClick={() => handleResultClick(result.path)}
-                    >
-                      <span className="font-bold">{result.type}:</span> {result.name}
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-4 py-2 text-sm text-gray-500">
-                    No results found
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="ml-4 text-sm font-medium text-gray-800">
-          {getPageName()}
+
+        <div className="h-6 w-px bg-gray-100 mx-2 hidden sm:block" />
+
+        <div className="hidden sm:flex items-center text-sm font-medium">
+          <span className="text-gray-400">Pages</span>
+          <span className="mx-2 text-gray-300">/</span>
+          <span className="text-black">{getPageName()}</span>
         </div>
       </div>
-      <div className="relative flex items-center mr-12">
-        <button
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="p-2 rounded-xs transition-all duration-200 relative overflow-hidden group"
-        >
-          <div className="absolute inset-0" />
-          <Settings
-            className="w-10 h-10 border p-2 border-gray-300 hover:border-none hover:bg-gray-200 rounded-full text-gray-800 relative transition-colors duration-300 group-hover:text-gray-800"
-            strokeWidth={1.5}
+
+      {/* Middle section: Search */}
+      <div className="flex-1 max-w-md mx-8 relative">
+        <div className="relative group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-800 group-focus-within:text-black transition-colors" size={16} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search dashboard..."
+            className="w-full bg-gray-50 border-none rounded-full py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-black/5 focus:bg-white transition-all outline-none text-black placeholder:text-gray-400"
           />
-        </button>
-        {isDropdownOpen && (
-          <div className="absolute top-16 -right-12 w-48 bg-white rounded-md shadow-lg z-20">
-            <button
-              onClick={() => {
-                navigate('/profile');
-                setIsDropdownOpen(false);
-              }}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-800 rounded-t-md transition-all duration-200 relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gray-100 transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
-              <User
-                strokeWidth={1.5}
-                className="w-5 h-5 mr-2 text-gray-800 relative transition-colors duration-300 group-hover:text-gray-800"
-              />
-              <span className="relative transition-colors duration-300 group-hover:text-gray-800">
-                Profile Settings
-              </span>
-            </button>
-            <button
-              onClick={() => {
-                handleLogout();
-                setIsDropdownOpen(false);
-              }}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-800 rounded-b-md transition-all duration-200 relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gray-100 transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
-              <LogOut
-                strokeWidth={1.5}
-                className="w-5 h-5 mr-2 text-gray-800 relative transition-colors duration-300 group-hover:text-gray-800"
-              />
-              <span className="relative transition-colors duration-300 group-hover:text-gray-800">
-                Logout
-              </span>
-            </button>
+        </div>
+
+        {/* Search Results Dropdown */}
+        {isSearchDropdownOpen && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 shadow-2xl rounded-2xl overflow-hidden py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+            {isLoading ? (
+              <div className="px-4 py-3 text-xs text-gray-400 flex items-center">
+                <div className="w-3 h-3 border-2 border-gray-200 border-t-black rounded-full animate-spin mr-2" />
+                Searching...
+              </div>
+            ) : searchResults.length > 0 ? (
+              searchResults.map((res, i) => (
+                <button
+                  key={i}
+                  className="w-full px-4 py-2.5 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
+                  onClick={() => { navigate(res.path); setSearchQuery(''); setIsSearchDropdownOpen(false); }}
+                >
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter w-12">{res.type}</span>
+                  <span className="text-sm text-gray-700 truncate">{res.name}</span>
+                </button>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-sm text-gray-400">No results found</div>
+            )}
           </div>
         )}
-        <div className="flex items-center space-x-2">
-          <img
-            src={userData.avatar}
-            alt="Profile"
-            className="w-10 h-10 object-cover rounded-full cursor-pointer ml-2"
-            onError={(e) => (e.target.src = 'https://placehold.co/80x80')}
-          />
-          <span className="text-sm font-medium text-gray-800 ml-2">
-            {userData.username}
-          </span>
+      </div>
+
+      {/* Right section: Quick Actions & Profile */}
+      <div className="flex items-center space-x-2">
+        {/* Quick Actions Button */}
+        <div className="relative">
+          <button
+            onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
+            className="relative p-2 hover:bg-black hover:text-white rounded-xl transition-all text-gray-800 font-semibold flex items-center gap-2 px-3"
+          >
+            <Plus size={18} strokeWidth={2.5} />
+            <span className="hidden sm:inline text-sm">Quick Actions</span>
+          </button>
+
+          {/* Quick Actions Dropdown */}
+          {isQuickActionsOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setIsQuickActionsOpen(false)} />
+              <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-100 shadow-2xl rounded-2xl overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                  <h3 className="text-sm font-bold text-gray-900">Quick Actions</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Create and manage quickly</p>
+                </div>
+
+                <div className="py-2">
+                  <button
+                    onClick={() => { navigate('/invoice/proforma'); setIsQuickActionsOpen(false); }}
+                    className="w-full flex items-center px-4 py-3 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-all font-medium group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center mr-3 transition-colors">
+                      <FileText size={18} className="text-blue-600" strokeWidth={2.5} />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold">Create Invoice</p>
+                      <p className="text-xs text-gray-500">New proforma invoice</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => { navigate('/clients/add'); setIsQuickActionsOpen(false); }}
+                    className="w-full flex items-center px-4 py-3 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-all font-medium group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-green-50 group-hover:bg-green-100 flex items-center justify-center mr-3 transition-colors">
+                      <UserPlus size={18} className="text-green-600" strokeWidth={2.5} />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold">Add Client</p>
+                      <p className="text-xs text-gray-500">New customer</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => { navigate('/products/add'); setIsQuickActionsOpen(false); }}
+                    className="w-full flex items-center px-4 py-3 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-all font-medium group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-purple-50 group-hover:bg-purple-100 flex items-center justify-center mr-3 transition-colors">
+                      <Package size={18} className="text-purple-600" strokeWidth={2.5} />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold">Add Product</p>
+                      <p className="text-xs text-gray-500">New product/service</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => { navigate('/bank-account/add'); setIsQuickActionsOpen(false); }}
+                    className="w-full flex items-center px-4 py-3 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-all font-medium group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-orange-50 group-hover:bg-orange-100 flex items-center justify-center mr-3 transition-colors">
+                      <Building2 size={18} className="text-orange-600" strokeWidth={2.5} />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold">Add Bank Account</p>
+                      <p className="text-xs text-gray-500">New bank details</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* User Profile */}
+        <div className="relative">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center space-x-3 p-1 pl-3 hover:bg-gray-50 rounded-full transition-all group border border-transparent hover:border-gray-100"
+          >
+            <span className="hidden md:block text-sm font-semibold text-gray-700 group-hover:text-black">
+              {userData.username}
+            </span>
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
+              <img
+                src={userData.avatar}
+                alt="Profile"
+                className="w-full h-full object-cover"
+                onError={(e) => (e.target.src = 'https://placehold.co/80x80')}
+              />
+            </div>
+          </button>
+
+          {/* User Dropdown */}
+          {isDropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
+              <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-100 shadow-2xl rounded-2xl overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                <div className="px-4 py-3 border-b border-gray-50 mb-1 bg-gray-50">
+                  <p className="text-xs text-gray-500">Logged in as</p>
+                  <p className="text-sm font-semibold truncate">{userData.username}</p>
+                </div>
+
+                <button
+                  onClick={() => { navigate('/profile'); setIsDropdownOpen(false); }}
+                  className="w-full flex items-center px-4 py-2.5 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-all font-medium"
+                >
+                  <User size={16} className="mr-3 text-gray-800" /> My Profile
+                </button>
+
+                <button
+                  onClick={() => { navigate('/additional-settings'); setIsDropdownOpen(false); }}
+                  className="w-full flex items-center px-4 py-2.5 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-all font-medium"
+                >
+                  <Settings size={16} className="mr-3 text-gray-800" /> Settings
+                </button>
+
+                <div className="h-px bg-gray-50 my-1" />
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-all font-bold"
+                >
+                  <LogOut size={16} className="mr-3" /> Logout
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
-    </div>
+      <ConfirmationModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title="Confirm Logout"
+        message="Are you sure you want to log out?"
+        type="danger"
+        confirmText="Logout"
+        onConfirm={confirmLogout}
+      />
+    </header >
   );
 };
 

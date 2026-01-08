@@ -187,7 +187,8 @@ SIMPLE_JWT = {
 }
 
 # CORS settings (for frontend-backend communication)
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+# CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+CORS_ALLOWED_ORIGINS = ["http://localhost:5176"]
 
 CORS_ALLOW_CREDENTIALS = True
 

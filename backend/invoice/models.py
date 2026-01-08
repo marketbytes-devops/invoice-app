@@ -51,15 +51,15 @@ class Invoice(models.Model):
         else:
             # For new invoices, generate invoice_number if not final
             if not self.invoice_number and not self.is_final:
-                last_invoice = Invoice.objects.filter(invoice_number__startswith="INV-").order_by("-id").first()
-                if last_invoice and last_invoice.invoice_number.startswith("INV-"):
+                last_invoice = Invoice.objects.filter(invoice_number__startswith="MB-").order_by("-id").first()
+                if last_invoice and last_invoice.invoice_number.startswith("MB-"):
                     try:
                         new_number = int(last_invoice.invoice_number.split("-")[-1]) + 1
                     except ValueError:
                         new_number = 1
                 else:
                     new_number = 1
-                self.invoice_number = f"INV-{str(new_number).zfill(5)}"
+                self.invoice_number = f"MB-{str(new_number).zfill(5)}"
 
         if self.tax_option == 'yes' and self.tax_rate and not self.tax_name:
             tax = Tax.objects.filter(percentage=self.tax_rate).first()

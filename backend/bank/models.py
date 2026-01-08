@@ -2,12 +2,13 @@ from django.db import models
 from django.utils import timezone
  
 class BankAccount(models.Model):
-    bank_name = models.CharField(max_length=255)
-    account_number = models.CharField(max_length=255)
-    account_type = models.CharField(max_length=50) 
-    ifsc_code = models.CharField(max_length=20)
-    swift_code = models.CharField(max_length=20)
-    micr_code = models.CharField(max_length=20)
+    bank_name = models.CharField(max_length=255, blank=True, null=True)
+    account_holder_name = models.CharField(max_length=255, blank=True, null=True)
+    account_number = models.CharField(max_length=255, blank=True, null=True)
+    account_type = models.CharField(max_length=50, blank=True, null=True) 
+    ifsc_code = models.CharField(max_length=20, blank=True, null=True)
+    swift_code = models.CharField(max_length=20, blank=True, null=True)
+    micr_code = models.CharField(max_length=20, blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
  

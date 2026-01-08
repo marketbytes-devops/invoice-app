@@ -195,7 +195,7 @@ const PrintedProformaInvoice = () => {
     <div className="flex flex-col items-center bg-white min-h-screen">
       {/* ==== INVOICE CONTENT (unchanged) ==== */}
       <div
-        className="max-w-[27cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-sans print-container"
+        className="max-w-[27cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-['Poppins'] print-container"
         ref={contentRef}
         style={{ overflow: "visible" }}
       >
@@ -219,59 +219,76 @@ const PrintedProformaInvoice = () => {
 
             <div className="w-full flex">
               <div className="w-1/2" style={{ marginTop: "0.5cm" }}>
-                <h4 className="font-weight: 100;">Invoice to:</h4>
+              <div className="w-[80%]">
+                <h4 className="font-weight: 100;">Invoice to :</h4>
                 <p className="font-bold text-xl">
                   {clientDetails?.client_name || "Unknown Client"}
                 </p>
                 <h6 className="font-bold mt-5">Address</h6>
                 <p>
-                  {clientDetails?.address || "N/A"},{" "}
-                  {clientDetails?.city || "N/A"},{" "}
-                  {clientDetails?.state || "N/A"},{" "}
-                  {clientDetails?.pincode || "N/A"}
+                  {[
+                    clientDetails?.address,
+                    clientDetails?.city,
+                    clientDetails?.state,
+                    clientDetails?.pincode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ") || "N/A"}
                 </p>
-                <p className="mt-5">
-                  <b>GSTIN:</b>{" "}
-                  {clientDetails?.gst || clientDetails?.vat || "N/A"}
-                </p>
+              </div>
+                <div className="mt-5">
+                {clientDetails?.gstin && (
+                  <p>
+                    <b>GSTIN :</b> {clientDetails?.gstin}
+                  </p>
+                )}
                 <p>
-                  <b>P:</b> {clientDetails?.phone_code || ""}{" "}
+                  <b>P :</b> {clientDetails?.phone_code || ""}{" "}
                   {clientDetails?.phone || "N/A"}
                 </p>
                 <p>
-                  <b>W:</b> {clientDetails?.website || "N/A"}
+                  <b>W :</b> {clientDetails?.website || "N/A"}
                 </p>
+                </div>
               </div>
 
               <div className="w-1/2" style={{ marginTop: "0.5cm" }}>
-                <h4 className="font-weight: 100;">Invoice from:</h4>
+                <h4 className="font-weight: 100;">Invoice from :</h4>
                 <p className="font-bold text-xl">
                   {branchDetails?.branch_name || "Unknown Branch"}
                 </p>
                 <h6 className="font-bold mt-5">Address</h6>
                 <p>
-                  {branchDetails?.branch_address || "N/A"},{" "}
-                  {branchDetails?.city || "N/A"},{" "}
-                  {branchDetails?.state || "N/A"},{" "}
-                  {branchDetails?.pincode || "N/A"}
+                  {[
+                    branchDetails?.branch_address,
+                    branchDetails?.city,
+                    branchDetails?.state,
+                    branchDetails?.pincode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ") || "N/A"}
                 </p>
-                <p className="mt-5">
-                  <b>GSTIN:</b> {branchDetails?.gstin || "N/A"}
-                </p>
+                <div className="mt-5">
+                {branchDetails?.gstin && (
+                  <p>
+                    <b>GSTIN :</b> {branchDetails?.gstin}
+                  </p>
+                )}
                 <p>
-                  <b>P:</b> {branchDetails?.phone_code || ""}{" "}
+                  <b>P :</b> {branchDetails?.phone_code || ""}{" "}
                   {branchDetails?.phone || "N/A"}
                 </p>
                 <p>
-                  <b>W:</b> {branchDetails?.website || "N/A"}
+                  <b>W :</b> {branchDetails?.website || "N/A"}
                 </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Table + Right Column */}
-        <div className="grid grid-cols-[7fr_4fr] gap-4 mb-5 items-start">
+        <div className="grid grid-cols-[7fr_5fr] gap-4 mb-5 items-start">
           <div className="w-full">
             <table className="w-full border-collapse text-sm">
               <thead>
@@ -315,8 +332,8 @@ const PrintedProformaInvoice = () => {
 
                 <tr className="bg-gray-100">
                   <td colSpan="3"></td>
-                  <td className="text-right font-bold p-2">Subtotal:</td>
-                  <td colSpan="2" className="text-right font-bold p-2">
+                  <td className="text-right font-bold p-2 whitespace-nowrap">Subtotal :</td>
+                  <td colSpan="2" className="text-right font-bold p-2 whitespace-nowrap">
                     {subtotal || 0} {currency_type}
                   </td>
                 </tr>
@@ -324,8 +341,8 @@ const PrintedProformaInvoice = () => {
                 {tax_option === "yes" && (
                   <tr className="bg-gray-100">
                     <td colSpan="3"></td>
-                    <td className="text-right font-bold p-2">{displayTaxName}:</td>
-                    <td colSpan="2" className="text-right font-bold p-2">
+                    <td className="text-right font-bold p-2 whitespace-nowrap">{displayTaxName} :</td>
+                    <td colSpan="2" className="text-right font-bold p-2 whitespace-nowrap">
                       {gst || 0} {currency_type}
                     </td>
                   </tr>
@@ -334,8 +351,8 @@ const PrintedProformaInvoice = () => {
                 {discount && parseFloat(discount) > 0 && (
                   <tr className="bg-gray-100">
                     <td colSpan="3"></td>
-                    <td className="text-right font-bold p-2">Discount:</td>
-                    <td colSpan="2" className="text-right font-bold p-2">
+                    <td className="text-right font-bold p-2 whitespace-nowrap">Discount :</td>
+                    <td colSpan="2" className="text-right font-bold p-2 whitespace-nowrap">
                       -{discount} {currency_type}
                     </td>
                   </tr>
@@ -344,23 +361,23 @@ const PrintedProformaInvoice = () => {
                 {amount_paid && parseFloat(amount_paid) > 0 && (
                   <tr className="bg-gray-100">
                     <td colSpan="3"></td>
-                    <td className="text-right font-bold p-2">Amount Paid:</td>
-                    <td colSpan="2" className="text-right font-bold p-2">
+                    <td className="text-right font-bold p-2 whitespace-nowrap">Amount Paid :</td>
+                    <td colSpan="2" className="text-right font-bold p-2 whitespace-nowrap">
                       -{amount_paid} {currency_type}
                     </td>
                   </tr>
                 )}
 
                 <tr className="bg-black text-white font-extrabold">
-                  <td colSpan="2" className="text-right px-2 py-4">Grand Total:</td>
-                  <td colSpan="4" className="text-right px-2 py-4">
+                  <td colSpan="2" className="text-right px-2 py-4 whitespace-nowrap">Grand Total :</td>
+                  <td colSpan="4" className="text-right px-2 py-4 whitespace-nowrap">
                     {total_due || 0} {currency_type}
                   </td>
                 </tr>
 
                 <tr className="bg-black text-white font-extrabold">
-                  <td colSpan="2" className="text-left px-2 py-4">Total in Words:</td>
-                  <td colSpan="4" className="text-right px-2 py-4">{totalInWords}</td>
+                  <td colSpan="2" className="text-left px-2 py-4 whitespace-nowrap">Total in Words :</td>
+                  <td colSpan="4" className="text-right px-2 py-4 whitespace-nowrap">{totalInWords}</td>
                 </tr>
               </tbody>
             </table>
@@ -370,48 +387,45 @@ const PrintedProformaInvoice = () => {
           <div className="w-full flex flex-col justify-between">
             <div>
               <h6 className="mt-[-0.5rem] font-bold text-lg">Invoice Details</h6>
-              <div className="mt-2 mr-3" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font-bold" style={{ width: "130px" }}>Invoice No</span>
-                  <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                  <span style={{ marginLeft: "5px" }}>{displayInvoiceNumber}</span>
-                </p>
-                <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font-bold" style={{ width: "130px" }}>Invoice Date</span>
-                  <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                  <span style={{ marginLeft: "5px" }}>{invoice_date || "N/A"}</span>
-                </p>
-                <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font-bold" style={{ width: "130px" }}>Due Date</span>
-                  <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
-                  <span style={{ marginLeft: "5px" }}>{due_date || "N/A"}</span>
-                </p>
+              <div className="mt-2 mr-3" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div className="flex flex-col">
+                  <span className="font-bold">Invoice No :</span>
+                  <span>{displayInvoiceNumber}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold">Invoice Date :</span>
+                  <span>{invoice_date || "N/A"}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold">Due Date :</span>
+                  <span>{due_date || "N/A"}</span>
+                </div>
               </div>
 
               <h6 className="font-bold text-lg mt-10 mb-4">Payment Information</h6>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                 <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font-bold" style={{ width: "130px" }}>Bank Name</span>
+                  <span className="font-bold" style={{ width: "130px", minWidth: "150px" }}>Bank Name</span>
                   <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
                   <span style={{ marginLeft: "5px" }}>{bankDetails?.bank_name || "N/A"}</span>
                 </p>
                 <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font-bold" style={{ width: "130px" }}>Account Number</span>
+                  <span className="font-bold" style={{ width: "130px", minWidth: "150px" }}>Account Number</span>
                   <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
                   <span style={{ marginLeft: "5px", whiteSpace: "nowrap" }}>{bankDetails?.account_number || "N/A"}</span>
                 </p>
                 <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font-bold" style={{ width: "130px" }}>IFSC Code</span>
+                  <span className="font-bold" style={{ width: "130px", minWidth: "150px" }}>IFSC Code</span>
                   <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
                   <span style={{ marginLeft: "5px" }}>{bankDetails?.ifsc_code || "N/A"}</span>
                 </p>
                 <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font-bold" style={{ width: "128px" }}>SWIFT Code</span>
+                  <span className="font-bold" style={{ width: "128px", minWidth: "150px" }}>SWIFT Code</span>
                   <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
                   <span style={{ marginLeft: "5px" }}>{bankDetails?.swift_code || "N/A"}</span>
                 </p>
                 <p style={{ display: "flex", alignItems: "center" }}>
-                  <span className="font-bold" style={{ width: "128px" }}>MICR Code</span>
+                  <span className="font-bold" style={{ width: "128px", minWidth: "150px" }}>MICR Code</span>
                   <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
                   <span style={{ marginLeft: "5px" }}>{bankDetails?.micr_code || "N/A"}</span>
                 </p>

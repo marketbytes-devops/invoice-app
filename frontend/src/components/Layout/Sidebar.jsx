@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import apiClient from "../../api/apiClient";
+import ConfirmationModal from "../ConfirmationModal";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -7,99 +9,86 @@ import {
   Users,
   ReceiptIndianRupee,
   CreditCard,
-  ChevronDown,
+  ChevronRight,
   FolderCog,
   UserCog,
   SquareKanban,
   MapPinHouse,
   Folders,
+  Circle,
+  LogOut,
 } from "lucide-react";
 
 const iconComponents = {
-  LayoutDashboard: LayoutDashboard,
-  Settings: Settings,
-  Users: Users,
-  ReceiptIndianRupee: ReceiptIndianRupee,
-  CreditCard: CreditCard,
-  ChevronDown: ChevronDown,
-  SquareKanban: SquareKanban,
-  FolderCog: FolderCog,
-  UserCog: UserCog,
-  MapPinHouse: MapPinHouse,
-  Folders: Folders,
+  LayoutDashboard,
+  Settings,
+  Users,
+  ReceiptIndianRupee,
+  CreditCard,
+  ChevronRight,
+  SquareKanban,
+  FolderCog,
+  UserCog,
+  MapPinHouse,
+  Folders,
+  Circle,
+  LogOut,
 };
 
 const Dropdown = ({ label, links, icon, isOpen, toggleDropdown }) => {
   const IconComponent = iconComponents[icon];
+  const location = useLocation();
 
-  const dropdownVariants = {
-    hidden: { opacity: 0, y: -10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.2,
-        ease: "easeOut",
-      },
-    },
-    exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
-  };
+  const hasActiveChild = links.some(link => location.pathname === link.to);
 
   return (
-    <div className="relative">
-      <motion.button
+    <div className="mb-2">
+      <button
         onClick={toggleDropdown}
-        className="text-sm font-medium group flex items-center p-2 rounded-xs transition-all duration-200 relative overflow-hidden text-gray-800 w-full hover:bg-gray-500 hover:text-gray-50"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        className={`w-full flex items-center justify-between px-3 py-3 rounded-2xl transition-all duration-200 ${hasActiveChild
+          ? "bg-black text-white"
+          : "text-gray-800 hover:text-gray-900 hover:bg-gray-50"
+          }`}
       >
-        <IconComponent className="w-5 h-5 mr-3 transition-colors duration-300 group-hover:text-gray-50" />
-        {label}
+        <div className="flex items-center gap-3">
+          <IconComponent className="w-4 h-4" strokeWidth={2} />
+          <span className="text-sm font-medium">{label}</span>
+        </div>
         <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
-          className="absolute right-2"
+          animate={{ rotate: isOpen ? 90 : 0 }}
+          transition={{ duration: 0.2 }}
         >
-          <ChevronDown className="w-4 h-4 ml-2 group-hover:text-gray-50" />
+          <ChevronRight className="w-3.5 h-3.5" strokeWidth={2.5} />
         </motion.div>
-      </motion.button>
+      </button>
+
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={{
-              hidden: { opacity: 0, height: 0 },
-              visible: {
-                opacity: 1,
-                height: "auto",
-                transition: {
-                  duration: 0.3,
-                  when: "beforeChildren",
-                  staggerChildren: 0.05,
-                },
-              },
-              exit: { opacity: 0, height: 0, transition: { duration: 0.2 } },
-            }}
-            className="w-full bg-white border border-gray-200 rounded-md shadow-lg overflow-y-auto mt-2"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
           >
-            {links.map((link) => (
-              <motion.div key={link.to} variants={dropdownVariants}>
-                <NavLink
-                  to={link.to}
-                  className={({ isActive }) =>
-                    `block px-4 py-2 text-sm font-medium ${
-                      isActive
-                        ? "bg-gray-500 text-gray-50"
-                        : "text-black hover:bg-gray-500 hover:text-gray-50"
-                    } transition-colors duration-300`
-                  }
-                >
-                  {link.label}
-                </NavLink>
-              </motion.div>
-            ))}
+            <div className="mt-1 ml-7 space-y-0.5">
+              {links.map((link) => {
+                const isActive = location.pathname === link.to;
+                return (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className={`flex items-center gap-2 px-3 py-3 rounded-2xl text-xs font-medium transition-all duration-200 ${isActive
+                      ? "text-black bg-gray-100"
+                      : "text-gray-800 hover:text-gray-900 hover:bg-gray-50"
+                      }`}
+                  >
+                    <Circle className={`w-1 h-1 fill-current ${isActive ? "opacity-100" : "opacity-50"}`} />
+                    {link.label}
+                  </NavLink>
+                );
+              })}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -109,31 +98,39 @@ const Dropdown = ({ label, links, icon, isOpen, toggleDropdown }) => {
 
 const Sidebar = ({ isOpen }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    const refresh = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
+    apiClient.post('/auth/logout/', { refresh })
+      .finally(() => {
+        ['access_token', 'refresh_token'].forEach(k => {
+          localStorage.removeItem(k);
+          sessionStorage.removeItem(k);
+        });
+        navigate('/login');
+      });
+  };
 
   const sidebarVariants = {
     open: {
-      width: 300,
+      width: 280,
       opacity: 1,
-      transition: { duration: 0.3, ease: "easeInOut" },
+      x: 0,
+      transition: { type: "spring", stiffness: 300, damping: 30 },
     },
     closed: {
       width: 0,
       opacity: 0,
-      transition: { duration: 0.3, ease: "easeInOut" },
+      x: -20,
+      transition: { type: "spring", stiffness: 300, damping: 30 },
     },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (i) => ({
-      opacity: 1,
-      x: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.3,
-        ease: "easeOut",
-      },
-    }),
   };
 
   const dropdownSections = {
@@ -167,153 +164,94 @@ const Sidebar = ({ isOpen }) => {
   };
 
   const navigationItems = [
-    {
-      type: "link",
-      to: "/",
-      label: "Dashboard",
-      icon: "LayoutDashboard",
-    },
-    {
-      type: "dropdown",
-      label: "Invoice",
-      icon: "Folders",
-      links: dropdownSections.invoice,
-    },
-    {
-      type: "dropdown",
-      label: "Tax",
-      icon: "ReceiptIndianRupee",
-      links: dropdownSections.tax,
-    },
-    {
-      type: "dropdown",
-      label: "Products & Services",
-      icon: "SquareKanban",
-      links: dropdownSections.productsAndServices,
-    },
-    {
-      type: "dropdown",
-      label: "Clients",
-      icon: "Users",
-      links: dropdownSections.clients,
-    },
-    {
-      type: "dropdown",
-      label: "Address",
-      icon: "MapPinHouse",
-      links: dropdownSections.address,
-    },
-    {
-      type: "dropdown",
-      label: "Bank Account",
-      icon: "CreditCard",
-      links: dropdownSections.bankAccount,
-    },
-    {
-      type: "link",
-      to: "/profile",
-      label: "Profile",
-      icon: "UserCog",
-    },
-    {
-      type: "link",
-      to: "/additional-settings",
-      label: "Additional Settings",
-      icon: "Settings",
-    },
+    { type: "link", to: "/", label: "Dashboard", icon: "LayoutDashboard" },
+    { type: "dropdown", label: "Invoice", icon: "Folders", links: dropdownSections.invoice },
+    { type: "dropdown", label: "Tax", icon: "ReceiptIndianRupee", links: dropdownSections.tax },
+    { type: "dropdown", label: "Products & Services", icon: "SquareKanban", links: dropdownSections.productsAndServices },
+    { type: "dropdown", label: "Clients", icon: "Users", links: dropdownSections.clients },
+    { type: "dropdown", label: "Address", icon: "MapPinHouse", links: dropdownSections.address },
+    { type: "dropdown", label: "Bank Account", icon: "CreditCard", links: dropdownSections.bankAccount },
+    { type: "link", to: "/profile", label: "Profile", icon: "UserCog" },
+    { type: "link", to: "/additional-settings", label: "Settings", icon: "Settings" },
   ];
 
-  const handleToggleDropdown = (index) => {
-    setOpenDropdown(openDropdown === index ? null : index);
+  const handleToggleDropdown = (label) => {
+    setOpenDropdown(openDropdown === label ? null : label);
   };
 
   return (
     <motion.aside
-      initial="closed"
+      initial={false}
       animate={isOpen ? "open" : "closed"}
       variants={sidebarVariants}
-      className="fixed top-16 bottom-0 bg-gray-100 shadow-md overflow-hidden flex flex-col z-40"
+      className="fixed top-20 left-4 bottom-4 bg-white rounded-2xl shadow-sm flex flex-col z-50 border border-gray-200 overflow-hidden"
     >
-      <motion.div
-        className="h-full p-4 pt-4 flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isOpen ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <nav className="space-y-2">
-          {navigationItems.map((item, index) => {
-            if (item.type === "link") {
-              const IconComponent = iconComponents[item.icon];
-              return (
-                <motion.div
-                  key={item.to}
-                  custom={index}
-                  initial="hidden"
-                  animate={isOpen ? "visible" : "hidden"}
-                  variants={itemVariants}
-                >
-                  <NavLink
-                    to={item.to}
-                    className={({ isActive }) =>
-                      `text-sm font-medium group flex items-center p-2 rounded-xs transition-all duration-200 relative overflow-hidden ${
-                        isActive
-                          ? "bg-gray-500 text-gray-50"
-                          : "text-black hover:bg-gray-500 hover:text-gray-50"
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <motion.div
-                          className="absolute inset-0 bg-gray-500"
-                          initial={{ opacity: 0 }}
-                          whileHover={{ opacity: isActive ? 0 : 0.2 }}
-                          transition={{ duration: 0.3 }}
-                        />
-                        <div className="relative flex items-center">
-                          <IconComponent
-                            className={`w-5 h-5 mr-3 transition-colors duration-300 ${
-                              isActive ? "text-gray-50" : "text-black group-hover:text-gray-50"
-                            }`}
-                          />
-                          <span
-                            className={`${
-                              isActive
-                                ? "text-gray-50"
-                                : "text-black group-hover:text-gray-50"
-                            } transition-colors duration-300`}
-                          >
-                            {item.label}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </NavLink>
-                </motion.div>
-              );
-            } else if (item.type === "dropdown") {
-              return (
-                <motion.div
-                  key={index}
-                  custom={index}
-                  initial="hidden"
-                  animate={isOpen ? "visible" : "hidden"}
-                  variants={itemVariants}
-                >
-                  <Dropdown
-                    label={item.label}
-                    links={item.links}
-                    icon={item.icon}
-                    isOpen={openDropdown === index}
-                    toggleDropdown={() => handleToggleDropdown(index)}
-                  />
-                </motion.div>
-              );
-            }
-            return null;
-          })}
-        </nav>
-      </motion.div>
+      {/* Brand */}
+      <div className="px-5 py-6 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-black rounded-2xl flex items-center justify-center">
+            <span className="text-white font-bold text-sm">MB</span>
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-gray-900">MarketBytes</h2>
+            <p className="text-[10px] text-gray-500 font-medium">Invoice System</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        {navigationItems.map((item) => {
+          if (item.type === "link") {
+            const IconComponent = iconComponents[item.icon];
+            const isActive = location.pathname === item.to;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={`flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-200 ${isActive
+                  ? "bg-black text-white"
+                  : "text-gray-800 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+              >
+                <IconComponent className="w-4 h-4" strokeWidth={2} />
+                <span className="text-sm font-medium">{item.label}</span>
+              </NavLink>
+            );
+          } else {
+            return (
+              <Dropdown
+                key={item.label}
+                label={item.label}
+                links={item.links}
+                icon={item.icon}
+                isOpen={openDropdown === item.label}
+                toggleDropdown={() => handleToggleDropdown(item.label)}
+              />
+            );
+          }
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-gray-100">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-gray-800 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+        >
+          <LogOut className="w-4 h-4" strokeWidth={2} />
+          <span className="text-sm font-medium">Logout</span>
+        </button>
+      </div>
+      <ConfirmationModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title="Confirm Logout"
+        message="Are you sure you want to log out?"
+        type="danger"
+        confirmText="Logout"
+        onConfirm={confirmLogout}
+      />
     </motion.aside>
   );
 };
