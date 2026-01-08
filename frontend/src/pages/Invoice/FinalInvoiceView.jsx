@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 
-// Number to Words Conversion Function
 const numberToWords = (num) => {
   const ones = [
     "",
@@ -133,12 +132,16 @@ const FinalInvoiceView = () => {
     fetchData();
   }, []);
 
-  // Handle print and finalization
   useEffect(() => {
     if (triggerPrint && proformaInvoice) {
-      // Trigger print dialog
-      window.print();
-      // Show confirmation dialog after print
+      const rawInvoiceNumber = proformaInvoice.final_invoice_number || proformaInvoice.invoice_number || "Invoice";
+      const invoiceNumber = rawInvoiceNumber.replace(/[\/\\?%*:|"<>]/g, "_");
+      document.title = invoiceNumber;
+
+      setTimeout(() => {
+        window.print();
+      }, 500);
+
       setTimeout(() => {
         if (
           window.confirm(
@@ -147,10 +150,9 @@ const FinalInvoiceView = () => {
         ) {
           finalizeInvoice();
         } else {
-          // If user cancels, navigate back to proforma invoices
           navigate("/invoice/proforma");
         }
-      }, 500); // Small delay to ensure print dialog appears first
+      }, 1000); 
     }
   }, [triggerPrint, proformaInvoice]);
 
@@ -225,7 +227,12 @@ const FinalInvoiceView = () => {
   const totalInWords = numberToWords(Math.round(total_due)) || "N/A";
 
   const handlePrint = () => {
-    window.print();
+    const rawInvoiceNumber = proformaInvoice?.final_invoice_number || proformaInvoice?.invoice_number || "Invoice";
+    const invoiceNumber = rawInvoiceNumber.replace(/[\/\\?%*:|"<>]/g, "_");
+    document.title = invoiceNumber;
+    setTimeout(() => {
+      window.print();
+    }, 500);
   };
 
   return (
@@ -256,35 +263,35 @@ const FinalInvoiceView = () => {
             {/* Client and Branch Details */}
             <div className="w-full flex">
               <div className="w-1/2" style={{ marginTop: "0.5cm" }}>
-              <div className="w-[80%]">
-                <h4 className="font-weight: 100;">Invoice to :</h4>
-                <p className="font-bold text-xl">
-                  {clientDetails?.client_name || "Unknown Client"}
-                </p>
-                <h6 className="font-bold mt-5">Address</h6>
-                <p>
-                  {[
-                    clientDetails?.address,
-                    clientDetails?.city,
-                    clientDetails?.state,
-                    clientDetails?.pincode,
-                  ]
-                    .filter(Boolean)
-                    .join(", ") || "N/A"}
-                </p>
+                <div className="w-[80%]">
+                  <h4 className="font-weight: 100;">Invoice to :</h4>
+                  <p className="font-bold text-xl">
+                    {clientDetails?.client_name || "Unknown Client"}
+                  </p>
+                  <h6 className="font-bold mt-5">Address</h6>
+                  <p>
+                    {[
+                      clientDetails?.address,
+                      clientDetails?.city,
+                      clientDetails?.state,
+                      clientDetails?.pincode,
+                    ]
+                      .filter(Boolean)
+                      .join(", ") || "N/A"}
+                  </p>
                 </div>
                 <div className="mt-5">
-                {clientDetails?.gstin && (
+                  {clientDetails?.gstin && (
+                    <p>
+                      <b>GSTIN :</b> {clientDetails?.gstin}
+                    </p>
+                  )}
                   <p>
-                    <b>GSTIN :</b> {clientDetails?.gstin}
+                    <b>P :</b> {clientDetails?.phone || "N/A"}
                   </p>
-                )}
-                <p>
-                  <b>P :</b> {clientDetails?.phone || "N/A"}
-                </p>
-                <p>
-                  <b>W :</b> {clientDetails?.website || "N/A"}
-                </p>
+                  <p>
+                    <b>W :</b> {clientDetails?.website || "N/A"}
+                  </p>
                 </div>
               </div>
               <div className="w-1/2" style={{ marginTop: "0.5cm" }}>
@@ -304,17 +311,17 @@ const FinalInvoiceView = () => {
                     .join(", ") || "N/A"}
                 </p>
                 <div className="mt-5">
-                {branchDetails?.gstin && (
+                  {branchDetails?.gstin && (
+                    <p>
+                      <b>GSTIN :</b> {branchDetails?.gstin}
+                    </p>
+                  )}
                   <p>
-                    <b>GSTIN :</b> {branchDetails?.gstin}
+                    <b>P :</b> {branchDetails?.phone || "N/A"}
                   </p>
-                )}
-                <p>
-                  <b>P :</b> {branchDetails?.phone || "N/A"}
-                </p>
-                <p>
-                  <b>W :</b> {branchDetails?.website || "N/A"}
-                </p>
+                  <p>
+                    <b>W :</b> {branchDetails?.website || "N/A"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -518,6 +525,20 @@ const FinalInvoiceView = () => {
                     width: "100%",
                   }}
                 >
+                  <p style={{ display: "flex", alignItems: "center" }}>
+                    <span
+                      className="font-bold"
+                      style={{ display: "inline-block", minWidth: "150px" }}
+                    >
+                      Account Name
+                    </span>
+                    <span style={{ marginLeft: "5px", fontWeight: "bold" }}>
+                      :
+                    </span>
+                    <span style={{ marginLeft: "5px" }}>
+                      {bankDetails?.account_holder_name || "N/A"}
+                    </span>
+                  </p>
                   <p style={{ display: "flex", alignItems: "center" }}>
                     <span
                       className="font-bold"

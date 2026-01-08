@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 
-/* ---------- Number to Words ---------- */
 const numberToWords = (num) => {
   const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
   const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
@@ -23,8 +22,6 @@ const numberToWords = (num) => {
 };
 
 
-
-/* ---------- Main Component ---------- */
 const PrintedProformaInvoice = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,7 +29,6 @@ const PrintedProformaInvoice = () => {
   const [proformaInvoice, setProformaInvoice] = useState(location.state?.invoice || null);
   const contentRef = useRef();
 
-  // Fetch invoice by ID if not in state
   useEffect(() => {
     if (!proformaInvoice && id) {
       const fetchInvoice = async () => {
@@ -53,9 +49,6 @@ const PrintedProformaInvoice = () => {
   const [taxes, setTaxes] = useState([]);
   const [logoUrl, setLogoUrl] = useState("");
 
-
-
-  /* ---------- Fetch Data ---------- */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -86,8 +79,8 @@ const PrintedProformaInvoice = () => {
 
   /* ---------- Page Title ---------- */
   useEffect(() => {
-    if (proformaInvoice?.invoice_number) {
-      document.title = proformaInvoice.invoice_number;
+    if (proformaInvoice?.invoice_number || proformaInvoice?.final_invoice_number) {
+      document.title = proformaInvoice.final_invoice_number || proformaInvoice.invoice_number;
     }
     return () => {
       document.title = "Proforma Invoice";
@@ -96,10 +89,13 @@ const PrintedProformaInvoice = () => {
 
   /* ---------- Print ---------- */
   const handlePrint = () => {
-    window.print();
+    const title = proformaInvoice?.final_invoice_number || proformaInvoice?.invoice_number || "Invoice";
+    const sanitizedTitle = title.replace(/[\/\\?%*:|"<>]/g, "_");
+    document.title = sanitizedTitle;
+    setTimeout(() => {
+      window.print();
+    }, 500);
   };
-
-
 
   /* ---------- Guard ---------- */
   if (!proformaInvoice) {
@@ -354,6 +350,11 @@ const PrintedProformaInvoice = () => {
 
               <h6 className="font-bold text-lg mt-10 mb-4">Payment Information</h6>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                <p style={{ display: "flex", alignItems: "center" }}>
+                  <span className="font-bold" style={{ width: "130px", minWidth: "150px" }}>Account Name</span>
+                  <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
+                  <span style={{ marginLeft: "5px" }}>{bankDetails?.account_holder_name || "N/A"}</span>
+                </p>
                 <p style={{ display: "flex", alignItems: "center" }}>
                   <span className="font-bold" style={{ width: "130px", minWidth: "150px" }}>Bank Name</span>
                   <span style={{ marginLeft: "5px", fontWeight: "bold" }}>:</span>
