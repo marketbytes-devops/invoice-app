@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import { Mail, ArrowRight } from "lucide-react";
-import loginImage from "../../assets/images/MB.jpg";
+import loginImage from "../../assets/images/logo.png";
 
 const ForgotPassword = () => {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();

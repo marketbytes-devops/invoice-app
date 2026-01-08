@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import ReactDOM from "react-dom";
 import { FileText, Eye, Trash2, Pencil, Check, Printer, X, ChevronLeft, ChevronRight, Search, Filter, Calendar } from "lucide-react";
 import apiClient from "../../api/apiClient";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import SearchableSelect from "../../components/SearchableSelect";
 
 const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, onPrint, getClientName, getBranchName, getBankAccountDetails }) => {
   if (!invoice) return null;
@@ -209,9 +210,13 @@ const ProformaInvoice = () => {
   const [filterYear, setFilterYear] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
 
+  /* New import at top if needed, but I will just modify this block first and ensure imports are there */
+  const location = useLocation();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true); // Ensure loading state is reset
         const [invoicesRes, clientsRes, branchesRes, banksRes] = await Promise.all([
           apiClient.get("invoices/invoices/"),
           apiClient.get("clients/clients/"),
@@ -232,7 +237,7 @@ const ProformaInvoice = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [location.key]);
 
   const getClientName = (id) => clients.find(c => c.id === id)?.client_name || "N/A";
   const getBranchName = (id) => {
@@ -331,7 +336,7 @@ const ProformaInvoice = () => {
   };
 
   const handlePrint = (invoice) => {
-    navigate("/invoice/printed-proforma-invoice", { state: { invoice } });
+    navigate(`/invoice/printed-proforma-invoice/${invoice.id}`, { state: { invoice } });
   };
 
   if (loading) return (
@@ -354,40 +359,33 @@ const ProformaInvoice = () => {
 
         <div className="flex items-center gap-3 bg-white p-1.5 border border-gray-200 rounded-2xl shadow-sm">
           {/* Year Filter */}
-          <div className="relative">
-            <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-            <select
+          <div className="w-48">
+            <SearchableSelect
+              options={[{ label: "All Years", value: "" }, ...availableYears.map(year => ({ label: year.toString(), value: year.toString() }))]}
               value={filterYear}
-              onChange={(e) => setFilterYear(e.target.value)}
-              className="pl-9 pr-8 py-2 bg-gray-50 hover:bg-gray-100 text-sm font-bold text-gray-700 rounded-xl border-none outline-none appearance-none cursor-pointer transition-colors"
-            >
-              <option value="">All Years</option>
-              {availableYears.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
+              onChange={(val) => setFilterYear(val)}
+              placeholder="All Years"
+              icon={Calendar}
+            />
           </div>
 
           <div className="w-px h-6 bg-gray-200"></div>
 
           {/* Month Filter */}
-          <div className="relative">
-            <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-            <select
+          <div className="w-48">
+            <SearchableSelect
+              options={[
+                { label: "All Months", value: "" },
+                ...Array.from({ length: 12 }, (_, i) => ({
+                  label: new Date(0, i).toLocaleString('default', { month: 'long' }),
+                  value: (i + 1).toString().padStart(2, '0')
+                }))
+              ]}
               value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
-              className="pl-9 pr-8 py-2 bg-gray-50 hover:bg-gray-100 text-sm font-bold text-gray-700 rounded-xl border-none outline-none appearance-none cursor-pointer transition-colors"
-            >
-              <option value="">All Months</option>
-              {Array.from({ length: 12 }, (_, i) => {
-                const month = (i + 1).toString().padStart(2, '0');
-                return (
-                  <option key={month} value={month}>
-                    {new Date(0, i).toLocaleString('default', { month: 'long' })}
-                  </option>
-                );
-              })}
-            </select>
+              onChange={(val) => setFilterMonth(val)}
+              placeholder="All Months"
+              icon={Filter}
+            />
           </div>
         </div>
       </div>

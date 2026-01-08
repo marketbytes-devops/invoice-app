@@ -118,7 +118,7 @@ function App() {
           <Route path="invoice/create" element={<PrivateRoute element={<CreateInvoice />} />} />
           <Route path="invoice/edit" element={<PrivateRoute element={<EditInvoice />} />} />
           <Route path="invoice/proforma" element={<PrivateRoute element={<ProformaInvoice />} />} />
-          <Route path="invoice/printed-proforma-invoice" element={<PrivateRoute element={<PrintedProformaInvoice />} />} />
+          <Route path="invoice/printed-proforma-invoice/:id" element={<PrivateRoute element={<PrintedProformaInvoice />} />} />
           <Route path="invoice/invoice-list" element={<PrivateRoute element={<InvoiceList />} />} />
           <Route path="invoice/final-invoice-view" element={<PrivateRoute element={<FinalInvoiceView />} />} />
           <Route path="tax/add" element={<PrivateRoute element={<AddTax />} />} />

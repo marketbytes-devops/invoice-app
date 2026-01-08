@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 
 /* ---------- Number to Words ---------- */
@@ -22,42 +22,30 @@ const numberToWords = (num) => {
   return convertMillions(num);
 };
 
-/* ---------- Confirmation Modal ---------- */
-const ConfirmModal = ({ open, onClose, onConfirm }) => {
-  if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-        <h3 className="text-lg font-semibold mb-4">Move to Final Invoice?</h3>
-        <p className="text-sm text-gray-600 mb-6">
-          This will save the invoice as final and move it to the final invoice list.
-        </p>
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-          >
-            No
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-          >
-            Yes
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /* ---------- Main Component ---------- */
 const PrintedProformaInvoice = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const proformaInvoice = location.state?.invoice;
+  const { id } = useParams();
+  const [proformaInvoice, setProformaInvoice] = useState(location.state?.invoice || null);
   const contentRef = useRef();
+
+  // Fetch invoice by ID if not in state
+  useEffect(() => {
+    if (!proformaInvoice && id) {
+      const fetchInvoice = async () => {
+        try {
+          const res = await apiClient.get(`invoices/invoices/${id}/`);
+          setProformaInvoice(res.data);
+        } catch (err) {
+          console.error("Failed to fetch invoice:", err);
+        }
+      };
+      fetchInvoice();
+    }
+  }, [id, proformaInvoice]);
 
   const [clients, setClients] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -65,7 +53,7 @@ const PrintedProformaInvoice = () => {
   const [taxes, setTaxes] = useState([]);
   const [logoUrl, setLogoUrl] = useState("");
 
-  const [showConfirm, setShowConfirm] = useState(false);
+
 
   /* ---------- Fetch Data ---------- */
   useEffect(() => {
@@ -111,45 +99,7 @@ const PrintedProformaInvoice = () => {
     window.print();
   };
 
-  /* ---------- Intercept Back Button ---------- */
-  useEffect(() => {
-    const handlePopState = (e) => {
-      e.preventDefault();
-      setShowConfirm(true);
-      // keep the current page in history so the user stays until they decide
-      window.history.pushState(null, "", window.location.href);
-    };
 
-    window.history.pushState(null, "", window.location.href);
-    window.addEventListener("popstate", handlePopState);
-
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  /* ---------- Move to Final Invoice ---------- */
-  const moveToFinal = async () => {
-    try {
-      await apiClient.patch(`/invoices/invoices/${proformaInvoice.id}/`, {
-        is_final: true,
-        is_saved_final: true,
-      });
-      navigate("/invoice/invoice-list");
-    } catch (err) {
-      console.error("Failed to finalize invoice:", err);
-      alert("Failed to move to final invoice. Please try again.");
-    }
-  };
-
-  const handleConfirmYes = () => {
-    setShowConfirm(false);
-    moveToFinal();
-  };
-
-  /* ---------- "No" → go to proforma list ---------- */
-  const handleConfirmNo = () => {
-    setShowConfirm(false);
-    navigate("/invoice/proforma");   // <-- NEW: direct navigation
-  };
 
   /* ---------- Guard ---------- */
   if (!proformaInvoice) {
@@ -219,36 +169,36 @@ const PrintedProformaInvoice = () => {
 
             <div className="w-full flex">
               <div className="w-1/2" style={{ marginTop: "0.5cm" }}>
-              <div className="w-[80%]">
-                <h4 className="font-weight: 100;">Invoice to :</h4>
-                <p className="font-bold text-xl">
-                  {clientDetails?.client_name || "Unknown Client"}
-                </p>
-                <h6 className="font-bold mt-5">Address</h6>
-                <p>
-                  {[
-                    clientDetails?.address,
-                    clientDetails?.city,
-                    clientDetails?.state,
-                    clientDetails?.pincode,
-                  ]
-                    .filter(Boolean)
-                    .join(", ") || "N/A"}
-                </p>
-              </div>
-                <div className="mt-5">
-                {clientDetails?.gstin && (
-                  <p>
-                    <b>GSTIN :</b> {clientDetails?.gstin}
+                <div className="w-[80%]">
+                  <h4 className="font-weight: 100;">Invoice to :</h4>
+                  <p className="font-bold text-xl">
+                    {clientDetails?.client_name || "Unknown Client"}
                   </p>
-                )}
-                <p>
-                  <b>P :</b> {clientDetails?.phone_code || ""}{" "}
-                  {clientDetails?.phone || "N/A"}
-                </p>
-                <p>
-                  <b>W :</b> {clientDetails?.website || "N/A"}
-                </p>
+                  <h6 className="font-bold mt-5">Address</h6>
+                  <p>
+                    {[
+                      clientDetails?.address,
+                      clientDetails?.city,
+                      clientDetails?.state,
+                      clientDetails?.pincode,
+                    ]
+                      .filter(Boolean)
+                      .join(", ") || "N/A"}
+                  </p>
+                </div>
+                <div className="mt-5">
+                  {clientDetails?.gstin && (
+                    <p>
+                      <b>GSTIN :</b> {clientDetails?.gstin}
+                    </p>
+                  )}
+                  <p>
+                    <b>P :</b> {clientDetails?.phone_code || ""}{" "}
+                    {clientDetails?.phone || "N/A"}
+                  </p>
+                  <p>
+                    <b>W :</b> {clientDetails?.website || "N/A"}
+                  </p>
                 </div>
               </div>
 
@@ -269,18 +219,18 @@ const PrintedProformaInvoice = () => {
                     .join(", ") || "N/A"}
                 </p>
                 <div className="mt-5">
-                {branchDetails?.gstin && (
+                  {branchDetails?.gstin && (
+                    <p>
+                      <b>GSTIN :</b> {branchDetails?.gstin}
+                    </p>
+                  )}
                   <p>
-                    <b>GSTIN :</b> {branchDetails?.gstin}
+                    <b>P :</b> {branchDetails?.phone_code || ""}{" "}
+                    {branchDetails?.phone || "N/A"}
                   </p>
-                )}
-                <p>
-                  <b>P :</b> {branchDetails?.phone_code || ""}{" "}
-                  {branchDetails?.phone || "N/A"}
-                </p>
-                <p>
-                  <b>W :</b> {branchDetails?.website || "N/A"}
-                </p>
+                  <p>
+                    <b>W :</b> {branchDetails?.website || "N/A"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -476,12 +426,7 @@ const PrintedProformaInvoice = () => {
         </button>
       </div>
 
-      {/* Modal – triggered by back button */}
-      <ConfirmModal
-        open={showConfirm}
-        onClose={handleConfirmNo}
-        onConfirm={handleConfirmYes}
-      />
+
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import { Mail, Shield, ArrowRight } from "lucide-react";
-import loginImage from "../../assets/images/MB.jpg";
+import loginImage from "../../assets/images/logo.png";
 
 const OTPVerification = () => {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();

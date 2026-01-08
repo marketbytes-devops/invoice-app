@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import { Mail, ArrowRight, CheckCircle } from "lucide-react";
-import loginImage from "../../assets/images/MB.jpg";
+import loginImage from "../../assets/images/logo.png";
 import PasswordInput from "../../components/PasswordInput";
 
 const ResetPassword = () => {
