@@ -80,7 +80,9 @@ const PrintedProformaInvoice = () => {
   /* ---------- Page Title ---------- */
   useEffect(() => {
     if (proformaInvoice?.invoice_number || proformaInvoice?.final_invoice_number) {
-      document.title = proformaInvoice.final_invoice_number || proformaInvoice.invoice_number;
+      const title = proformaInvoice.invoice_number || proformaInvoice.final_invoice_number || "Proforma Invoice";
+      const sanitizedTitle = title.replace(/[\/\\?%*:|"<>]/g, "_");
+      document.title = sanitizedTitle;
     }
     return () => {
       document.title = "Proforma Invoice";
@@ -89,7 +91,7 @@ const PrintedProformaInvoice = () => {
 
   /* ---------- Print ---------- */
   const handlePrint = () => {
-    const title = proformaInvoice?.final_invoice_number || proformaInvoice?.invoice_number || "Invoice";
+    const title = proformaInvoice?.invoice_number || proformaInvoice?.final_invoice_number || "Invoice";
     const sanitizedTitle = title.replace(/[\/\\?%*:|"<>]/g, "_");
     document.title = sanitizedTitle;
     setTimeout(() => {

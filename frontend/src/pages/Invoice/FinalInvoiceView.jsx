@@ -135,7 +135,7 @@ const FinalInvoiceView = () => {
   useEffect(() => {
     if (triggerPrint && proformaInvoice) {
       const rawInvoiceNumber = proformaInvoice.final_invoice_number || proformaInvoice.invoice_number || "Invoice";
-      const invoiceNumber = rawInvoiceNumber.replace(/[\/\\?%*:|"<>]/g, "_");
+      const invoiceNumber = rawInvoiceNumber.replace(/[\/\\?%*:|"<>]/g, "-");
       document.title = invoiceNumber;
 
       setTimeout(() => {
@@ -152,7 +152,7 @@ const FinalInvoiceView = () => {
         } else {
           navigate("/invoice/proforma");
         }
-      }, 1000); 
+      }, 1000);
     }
   }, [triggerPrint, proformaInvoice]);
 
@@ -166,7 +166,6 @@ const FinalInvoiceView = () => {
         }
       );
       const updatedInvoice = response.data;
-      // Navigate to the final invoice list
       navigate("/invoice/invoice-list", { state: { invoice: updatedInvoice } });
     } catch (error) {
       console.error("Error finalizing invoice:", error);
@@ -182,10 +181,11 @@ const FinalInvoiceView = () => {
         proformaInvoice.final_invoice_number ||
         proformaInvoice.invoice_number ||
         "Invoice";
-      document.title = `${invoiceNumber}`;
+      document.title = invoiceNumber.replace(/[\/\\?%*:|"<>]/g, "-");
+
     }
     return () => {
-      document.title = "Invoice"; // Reset title on unmount
+      document.title = "Invoice";
     };
   }, [proformaInvoice]);
 
@@ -228,7 +228,7 @@ const FinalInvoiceView = () => {
 
   const handlePrint = () => {
     const rawInvoiceNumber = proformaInvoice?.final_invoice_number || proformaInvoice?.invoice_number || "Invoice";
-    const invoiceNumber = rawInvoiceNumber.replace(/[\/\\?%*:|"<>]/g, "_");
+    const invoiceNumber = rawInvoiceNumber.replace(/[\/\\?%*:|"<>]/g, "-");
     document.title = invoiceNumber;
     setTimeout(() => {
       window.print();

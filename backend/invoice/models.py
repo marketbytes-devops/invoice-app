@@ -42,14 +42,11 @@ class Invoice(models.Model):
             self.total_due = -self.discount - self.amount_paid
 
     def save(self, *args, **kwargs):
-        # Check if this is an update (not a new object)
         if self.pk:
             old_instance = Invoice.objects.get(pk=self.pk)
-            # If branch_address has changed and is_final is True, regenerate final_invoice_number
             if old_instance.branch_address != self.branch_address and self.is_final:
                 self.final_invoice_number = self.branch_address.get_next_invoice_number()
         else:
-            # For new invoices, generate invoice_number if not final
             if not self.invoice_number and not self.is_final:
                 last_invoice = Invoice.objects.filter(invoice_number__startswith="MB-").order_by("-id").first()
                 if last_invoice and last_invoice.invoice_number.startswith("MB-"):
