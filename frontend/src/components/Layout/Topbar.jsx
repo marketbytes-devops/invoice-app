@@ -179,7 +179,7 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, userAvatar, username }) => {
 
                 <div className="py-2">
                   <button
-                    onClick={() => { navigate('/invoice/proforma'); setIsQuickActionsOpen(false); }}
+                    onClick={() => { navigate('/invoice/create'); setIsQuickActionsOpen(false); }}
                     className="w-full flex items-center px-4 py-3 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-all font-medium group"
                   >
                     <div className="w-9 h-9 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center mr-3 transition-colors">
