@@ -135,8 +135,9 @@ const PrintedProformaInvoice = () => {
   }, [proformaInvoice]);
 
   const handlePrint = () => {
-    const title = proformaInvoice?.invoice_number || proformaInvoice?.final_invoice_number || "Invoice";
-    const sanitizedTitle = title.replace(/[\/\\?%*:|"<>_]/g, "-");
+    const rawInvoiceNumber = proformaInvoice?.final_invoice_number || proformaInvoice?.invoice_number || "Invoice";
+    const formattedNumber = formatInvoiceNumber(rawInvoiceNumber);
+    const sanitizedTitle = formattedNumber.replace(/[\/\\?%*:|"<>_]/g, "-");
     document.title = sanitizedTitle;
     setTimeout(() => {
       window.print();
