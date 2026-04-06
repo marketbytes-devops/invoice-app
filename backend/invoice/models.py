@@ -19,6 +19,7 @@ class Invoice(models.Model):
     due_date = models.DateField()
     currency_type = models.CharField(max_length=10)
     payment_terms = models.CharField(max_length=50)
+    financial_year = models.CharField(max_length=20, blank=True, null=True)
     tax_option = models.CharField(max_length=3, choices=[("yes", "Yes"), ("no", "No")], default="no")
     tax_name = models.CharField(max_length=100, blank=True)
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)

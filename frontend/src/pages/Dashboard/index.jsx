@@ -70,7 +70,13 @@ const Dashboard = () => {
   });
 
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const currentMonth = new Date().getMonth();
+  // Financial year starts in April. If current month < 3 (Jan/Feb/Mar), we are in the later part of the previous FY.
+  const initialFY = currentMonth < 3 
+    ? `${currentYear - 1}-${currentYear}` 
+    : `${currentYear}-${currentYear + 1}`;
+    
+  const [selectedYear, setSelectedYear] = useState(initialFY);
   const [selectedMonth, setSelectedMonth] = useState("");
 
   useEffect(() => {
@@ -171,44 +177,53 @@ const Dashboard = () => {
 
   const chartData = useMemo(() => {
     const finalInvoices = data.invoices.filter(inv => inv.is_final);
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const finMonths = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+    const monthMap = { "Apr": 3, "May": 4, "Jun": 5, "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11, "Jan": 0, "Feb": 1, "Mar": 2 };
 
-    // Filter by selected year and month
-    const filteredInvoices = finalInvoices.filter(inv => {
-      const invDate = new Date(inv.invoice_date);
-      const invYear = invDate.getFullYear();
-      const invMonth = invDate.getMonth();
+    let filteredInvoices = finalInvoices;
 
-      const yearMatch = invYear === selectedYear;
-      const monthMatch = selectedMonth === "" || invMonth === parseInt(selectedMonth);
+    if (selectedYear !== "Lifetime") {
+      const parts = selectedYear.split('-');
+      if (parts.length === 2) {
+        const startYear = parseInt(parts[0]);
+        const endYear = parseInt(parts[1]);
+        filteredInvoices = finalInvoices.filter(inv => {
+          const d = new Date(inv.invoice_date);
+          const m = d.getMonth();
+          const y = d.getFullYear();
+          
+          if (m >= 3) return y === startYear;
+          return y === endYear;
+        });
+      }
+    }
 
-      return yearMatch && monthMatch;
-    });
+    if (selectedMonth !== "") {
+      filteredInvoices = filteredInvoices.filter(inv => new Date(inv.invoice_date).getMonth() === parseInt(selectedMonth));
+    }
 
-    // Group by month
-    const monthlyData = months.map((monthName, monthIndex) => {
+    return finMonths.map(monthName => {
+      const targetMonth = monthMap[monthName];
       const monthRevenue = filteredInvoices
-        .filter(inv => {
-          const invDate = new Date(inv.invoice_date);
-          return invDate.getMonth() === monthIndex;
-        })
+        .filter(inv => new Date(inv.invoice_date).getMonth() === targetMonth)
         .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
-
-      return {
-        name: monthName,
-        revenue: monthRevenue,
-      };
+      
+      return { name: monthName, revenue: monthRevenue };
     });
-
-    return monthlyData;
   }, [data.invoices, selectedYear, selectedMonth]);
 
   // Get available years from invoices
   const availableYears = useMemo(() => {
-    const years = data.invoices.map(inv => new Date(inv.invoice_date).getFullYear());
-    const uniqueYears = [...new Set(years)].sort((a, b) => b - a);
-    return uniqueYears.length > 0 ? uniqueYears : [currentYear];
-  }, [data.invoices, currentYear]);
+    const years = data.invoices.map(inv => {
+      const d = new Date(inv.invoice_date);
+      const m = d.getMonth();
+      const y = d.getFullYear();
+      // April is 3. If m >= 3, FY is Y-(Y+1). If m < 3, FY is (Y-1)-Y.
+      return m >= 3 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+    });
+    const uniqueFYs = [...new Set(years)].sort((a, b) => b.localeCompare(a));
+    return ["Lifetime", ...uniqueFYs];
+  }, [data.invoices]);
 
   if (data.loading) {
     return (
@@ -293,10 +308,13 @@ const Dashboard = () => {
               <SearchableSelect
                 options={[
                   { value: "", label: "All Months" },
-                  ...["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((month, idx) => ({
-                    value: idx.toString(),
-                    label: month
-                  }))
+                  ...["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"].map(month => {
+                    const monthMap = { "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5, "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11 };
+                    return {
+                      value: monthMap[month].toString(),
+                      label: month
+                    };
+                  })
                 ]}
                 value={selectedMonth}
                 onChange={(val) => setSelectedMonth(val)}

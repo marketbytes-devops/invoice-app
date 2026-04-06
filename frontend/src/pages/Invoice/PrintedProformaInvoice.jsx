@@ -208,14 +208,26 @@ const PrintedProformaInvoice = () => {
                 <h3 className="font-bold text-4xl whitespace-nowrap">PROFORMA INVOICE</h3>
               </div>
             </div>
-            <div className="w-full flex">
-              <div className="w-1/2" style={{ marginTop: "1.2cm" }}>
-                <div className="w-[80%]">
-                  <h4 className="font-weight: 100;">Invoice to :</h4>
-                  <p className="font-semibold text-xl">
-                    {clientDetails?.client_name || "Unknown Client"}
-                  </p>
-                  <h6 className="font-semibold mt-5">Address</h6>
+            <div className="w-full grid grid-cols-2 gap-4" style={{ marginTop: "1.2cm" }}>
+              {/* To Label */}
+              <div>
+                <h4 className="font-weight: 100;">Invoice to :</h4>
+                <p className="font-semibold text-xl min-h-[3rem]">
+                  {clientDetails?.client_name || "Unknown Client"}
+                </p>
+              </div>
+              {/* From Label */}
+              <div>
+                <h4 className="font-weight: 100;">Invoice from :</h4>
+                <p className="font-semibold text-xl min-h-[3rem]">
+                  {companyName || branchDetails?.branch_name || "Unknown Company"}
+                </p>
+              </div>
+
+              {/* Address Header */}
+              <div>
+                <h6 className="font-semibold mt-2">Address</h6>
+                <div className="min-h-[5rem]">
                   <p>
                     {[
                       clientDetails?.address,
@@ -227,51 +239,51 @@ const PrintedProformaInvoice = () => {
                       .join(", ") || "N/A"}
                   </p>
                 </div>
-                <div className="mt-5">
-                  {clientDetails?.gstin && (
-                    <p>
-                      <b>GSTIN :</b> {clientDetails?.gstin}
-                    </p>
-                  )}
+              </div>
+              <div>
+                <h6 className="font-semibold mt-2">Address</h6>
+                <div className="min-h-[5rem]">
                   <p>
-                    <b>P :</b> {clientDetails?.phone_code || ""}{" "}
-                    {clientDetails?.phone || "N/A"}
-                  </p>
-                  <p>
-                    <b>W :</b> {clientDetails?.website || "N/A"}
+                    {[
+                      branchDetails?.branch_address,
+                      branchDetails?.city,
+                      branchDetails?.state,
+                      branchDetails?.pincode,
+                    ]
+                      .filter(Boolean)
+                      .join(", ") || "N/A"}
                   </p>
                 </div>
               </div>
-              <div className="w-1/2" style={{ marginTop: "1.2cm" }}>
-                <h4 className="font-weight: 100;">Invoice from :</h4>
-                <p className="font-semibold text-xl">
-                  {companyName || branchDetails?.branch_name || "Unknown Company"}
-                </p>
-                <h6 className="font-semibold mt-5">Address</h6>
+
+              {/* GSTIN and Contact Header */}
+              <div className="mt-2">
+                {clientDetails?.gstin && (
+                  <p>
+                    <b>GSTIN :</b> {clientDetails?.gstin}
+                  </p>
+                )}
                 <p>
-                  {[
-                    branchDetails?.branch_address,
-                    branchDetails?.city,
-                    branchDetails?.state,
-                    branchDetails?.pincode,
-                  ]
-                    .filter(Boolean)
-                    .join(", ") || "N/A"}
+                  <b>P :</b> {clientDetails?.phone_code || ""}{" "}
+                  {clientDetails?.phone || "N/A"}
                 </p>
-                <div className="mt-5">
-                  {branchDetails?.gstin && (
-                    <p>
-                      <b>GSTIN :</b> {branchDetails?.gstin}
-                    </p>
-                  )}
+                <p>
+                  <b>W :</b> {clientDetails?.website || "N/A"}
+                </p>
+              </div>
+              <div className="mt-2">
+                {branchDetails?.gstin && (
                   <p>
-                    <b>P :</b> {branchDetails?.phone_code || ""}{" "}
-                    {branchDetails?.phone || "N/A"}
+                    <b>GSTIN :</b> {branchDetails?.gstin}
                   </p>
-                  <p>
-                    <b>W :</b> {branchDetails?.website || "N/A"}
-                  </p>
-                </div>
+                )}
+                <p>
+                  <b>P :</b> {branchDetails?.phone_code || ""}{" "}
+                  {branchDetails?.phone || "N/A"}
+                </p>
+                <p>
+                  <b>W :</b> {branchDetails?.website || "N/A"}
+                </p>
               </div>
             </div>
           </div>

@@ -5,6 +5,7 @@ import apiClient from "../../api/apiClient";
 import profilePic from "../../assets/images/profile-icon.jpg";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import PasswordInput from "../../components/PasswordInput";
+import ImageModal from "../../components/ImageModal";
 import { useUser } from "../../context/UserContext";
 
 const Profile = () => {
@@ -21,6 +22,7 @@ const Profile = () => {
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", message: "", type: "success" });
+  const [previewImage, setPreviewImage] = useState({ isOpen: false, url: "", title: "" });
 
   // Profile Form
   const {
@@ -227,8 +229,9 @@ const Profile = () => {
                   <img
                     src={getAvatarUrl()}
                     alt="Profile"
-                    className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg"
+                    className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg cursor-pointer hover:ring-4 hover:ring-black/10 transition-all"
                     onError={(e) => (e.target.src = profilePic)}
+                    onClick={() => setPreviewImage({ isOpen: true, url: getAvatarUrl(), title: "Profile Picture" })}
                   />
                   <button
                     onClick={() => avatarInputRef.current?.click()}
@@ -397,6 +400,13 @@ const Profile = () => {
         message={modalContent.message}
         type={modalContent.type}
         showButtons={false}
+      />
+
+      <ImageModal
+        isOpen={previewImage.isOpen}
+        onClose={() => setPreviewImage({ ...previewImage, isOpen: false })}
+        imageUrl={previewImage.url}
+        title={previewImage.title}
       />
     </div>
   );

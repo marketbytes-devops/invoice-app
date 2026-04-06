@@ -85,6 +85,9 @@ const ViewInvoiceModal = ({ invoice, onClose, onDelete, onPrint, getClientName, 
                   <p className="font-bold text-lg text-gray-900 mb-1">{getClientName(invoice.client)}</p>
                   <div className="space-y-1">
                     <p className="text-sm text-gray-500 font-medium flex items-center gap-2">
+                       FY: <span className="text-gray-900">{invoice.financial_year || "N/A"}</span>
+                    </p>
+                    <p className="text-sm text-gray-500 font-medium flex items-center gap-2">
                       INV Date: <span className="text-gray-900">{invoice.invoice_date}</span>
                     </p>
                     <p className="text-sm text-gray-500 font-medium flex items-center gap-2">
@@ -373,6 +376,7 @@ const InvoiceList = () => {
               <tr className="bg-black text-white">
                 <th className="p-5 text-xs font-bold uppercase tracking-wider text-center w-16">No.</th>
                 <th className="p-5 text-xs font-bold uppercase tracking-wider">Invoice Details</th>
+                <th className="p-5 text-xs font-bold uppercase tracking-wider">FY / Type</th>
                 <th className="p-5 text-xs font-bold uppercase tracking-wider">Client</th>
                 <th className="p-5 text-xs font-bold uppercase tracking-wider">Date</th>
                 <th className="p-5 text-xs font-bold uppercase tracking-wider text-right">Amount</th>
@@ -394,10 +398,17 @@ const InvoiceList = () => {
                         </div>
                         <div>
                           <p className="text-sm font-bold text-gray-900">{formatInvoiceNumber(inv.final_invoice_number || inv.invoice_number)}</p>
-                          <span className="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md mt-1 inline-block uppercase tracking-wide">
-                            {inv.invoice_type}
-                          </span>
                         </div>
+                      </div>
+                    </td>
+                    <td className="p-5">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs text-gray-600 font-bold bg-gray-100 px-2 py-1 rounded whitespace-nowrap w-fit">
+                          {inv.financial_year || (inv.invoice_date ? (new Date(inv.invoice_date).getMonth() + 1 >= 4 ? `${new Date(inv.invoice_date).getFullYear()}-${new Date(inv.invoice_date).getFullYear() + 1}` : `${new Date(inv.invoice_date).getFullYear() - 1}-${new Date(inv.invoice_date).getFullYear()}`) : 'N/A')}
+                        </span>
+                        <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md w-fit uppercase tracking-wide">
+                          {inv.invoice_type}
+                        </span>
                       </div>
                     </td>
                     <td className="p-5">
@@ -442,7 +453,7 @@ const InvoiceList = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="p-12 text-center">
+                  <td colSpan="8" className="p-12 text-center">
                     <div className="flex flex-col items-center justify-center text-gray-400">
                       <FileText className="w-12 h-12 mb-3 text-gray-300" />
                       <p className="text-lg font-bold text-gray-900">No Final Invoices</p>

@@ -18,7 +18,8 @@ import {
   Save,
   CheckCircle,
   Disc,
-  X
+  X,
+  CalendarDays
 } from "lucide-react";
 
 // Custom Input Component
@@ -73,6 +74,28 @@ const EditInvoice = () => {
   const location = useLocation();
   const invoice = location.state?.invoice;
 
+  // Calculate current financial year based on date
+  const getCurrentFinancialYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    if (month >= 4) {
+      return `${year}-${year + 1}`;
+    } else {
+      return `${year - 1}-${year}`;
+    }
+  };
+
+  // Generate financial year options
+  const getFinancialYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+      years.push({ value: `${i}-${i + 1}`, label: `${i}-${i + 1}` });
+    }
+    return years.reverse();
+  };
+
   const {
     register,
     handleSubmit,
@@ -85,6 +108,7 @@ const EditInvoice = () => {
       ? {
         invoiceNumber: invoice.invoice_number,
         invoiceType: invoice.invoice_type,
+        financialYear: invoice.financial_year || getCurrentFinancialYear(),
         clientName: invoice.client,
         branchAddress: invoice.branch_address,
         bankAccount: invoice.bank_account,
@@ -100,6 +124,7 @@ const EditInvoice = () => {
       : {
         invoiceNumber: `INV-${Date.now()}`,
         invoiceDate: new Date().toISOString().split("T")[0],
+        financialYear: getCurrentFinancialYear(),
         taxable: "no",
         currencyType: "USD",
         paymentTerms: "Net 30",
@@ -290,6 +315,7 @@ const EditInvoice = () => {
     try {
       const invoiceData = {
         invoice_type: data.invoiceType,
+        financial_year: data.financialYear,
         client: parseInt(data.clientName),
         branch_address: parseInt(data.branchAddress),
         bank_account: parseInt(data.bankAccount),
@@ -396,28 +422,48 @@ const EditInvoice = () => {
               <FileText className="w-5 h-5" /> General Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Controller
-                name="invoiceType"
-                control={control}
-                rules={{ required: "Invoice Type is required" }}
-                render={({ field: { value, onChange } }) => (
-                  <SearchableSelect
-                    label="Invoice Type"
-                    options={[
-                      { value: "product", label: "Product" },
-                      { value: "service", label: "Service" },
-                    ]}
-                    value={value}
-                    onChange={(val) => {
-                      onChange(val);
-                      setInvoiceType(val);
-                    }}
-                    placeholder="Select Type"
-                    error={errors.invoiceType}
-                    icon={FileText}
-                  />
-                )}
-              />
+              {/* Row 1: Invoice Type and Financial Year (Split column) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Controller
+                  name="invoiceType"
+                  control={control}
+                  rules={{ required: "Invoice Type is required" }}
+                  render={({ field: { value, onChange } }) => (
+                    <SearchableSelect
+                      label="Invoice Type"
+                      options={[
+                        { value: "product", label: "Product" },
+                        { value: "service", label: "Service" },
+                      ]}
+                      value={value}
+                      onChange={(val) => {
+                        onChange(val);
+                        setInvoiceType(val);
+                      }}
+                      placeholder="Select Type"
+                      error={errors.invoiceType}
+                      icon={FileText}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="financialYear"
+                  control={control}
+                  rules={{ required: "Financial Year is required" }}
+                  render={({ field: { value, onChange } }) => (
+                    <SearchableSelect
+                      label="Financial Year"
+                      options={getFinancialYearOptions()}
+                      value={value}
+                      onChange={onChange}
+                      placeholder="Select Financial Year"
+                      error={errors.financialYear}
+                      icon={CalendarDays}
+                    />
+                  )}
+                />
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-1">
                 <Controller

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import apiClient from "../../api/apiClient";
 import { useForm } from "react-hook-form";
 import { Building2, FileText, Upload, Save, Loader2, Hash, AlertCircle } from "lucide-react";
+import ImageModal from "../../components/ImageModal";
 
 const AdditionalSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -12,6 +13,7 @@ const AdditionalSettings = () => {
   const [isUpdatingCompany, setIsUpdatingCompany] = useState(false);
   const [editingSeriesId, setEditingSeriesId] = useState(null);
   const [savingSeries, setSavingSeries] = useState(false);
+  const [previewImage, setPreviewImage] = useState({ isOpen: false, url: "", title: "" });
 
   const logoInputRef = useRef(null);
 
@@ -191,23 +193,36 @@ const AdditionalSettings = () => {
               <div className="flex flex-col items-center justify-center space-y-4">
                 <div className="relative group w-full aspect-video bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 hover:border-gray-900/20 transition-all flex items-center justify-center overflow-hidden">
                   {logoUrl ? (
-                    <img src={logoUrl} alt="Company Logo" className="w-full h-full object-contain p-4" />
+                    <>
+                      {/* Clickable image area for preview */}
+                      <img
+                        src={logoUrl}
+                        alt="Company Logo"
+                        className="w-full h-full object-contain p-4 cursor-zoom-in"
+                        onClick={() => setPreviewImage({ isOpen: true, url: logoUrl, title: "Company Logo" })}
+                      />
+                      {/* Upload overlay — only bottom strip, won't block image click */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center py-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); logoInputRef.current?.click(); }}
+                          className="text-white text-xs font-bold flex items-center gap-1.5"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          Change Logo
+                        </button>
+                      </div>
+                    </>
                   ) : (
-                    <div className="text-center p-6">
-                      <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                      <p className="text-sm text-gray-400 font-medium">No Logo Uploaded</p>
-                    </div>
-                  )}
-
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button
                       onClick={() => logoInputRef.current?.click()}
-                      className="bg-white text-black px-4 py-2 rounded-full font-bold text-sm transform translate-y-2 group-hover:translate-y-0 transition-all flex items-center gap-2"
+                      className="flex flex-col items-center text-center p-6 group/inner"
                     >
-                      <Upload className="w-4 h-4" />
-                      {logoUrl ? "Change Logo" : "Upload Logo"}
+                      <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-2 group-hover/inner:text-gray-400 transition-colors" />
+                      <p className="text-sm text-gray-400 font-medium group-hover/inner:text-gray-600 transition-colors">
+                        Click to Upload Logo
+                      </p>
                     </button>
-                  </div>
+                  )}
                 </div>
 
                 <input
@@ -309,6 +324,13 @@ const AdditionalSettings = () => {
           </div>
         </div>
       </div>
+
+      <ImageModal
+        isOpen={previewImage.isOpen}
+        onClose={() => setPreviewImage({ ...previewImage, isOpen: false })}
+        imageUrl={previewImage.url}
+        title={previewImage.title}
+      />
     </div>
   );
 };
