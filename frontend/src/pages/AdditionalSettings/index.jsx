@@ -28,16 +28,28 @@ const AdditionalSettings = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [addressRes, logoRes] = await Promise.all([
-        apiClient.get("branch/branch_addresses/"),
-        apiClient.get("invoices/settings/logo/")
-      ]);
-      setAddresses(addressRes.data);
-      if (logoRes.data?.logo_image) {
-        setLogoUrl(logoRes.data.logo_image);
+      
+      // Fetch branches
+      try {
+        const addressRes = await apiClient.get("branch/branch_addresses/");
+        setAddresses(addressRes.data);
+      } catch (err) {
+        console.error("Error fetching branches:", err);
       }
+
+      // Fetch logo
+      try {
+        const logoRes = await apiClient.get("invoices/settings/logo/");
+        if (logoRes.data?.logo_image) {
+          setLogoUrl(logoRes.data.logo_image);
+        }
+      } catch (err) {
+        // Logo might not exist yet, which is fine
+        console.log("No logo found or error fetching logo:", err.message);
+      }
+
     } catch (error) {
-      console.error("Error fetching settings:", error);
+      console.error("General error fetching settings:", error);
     } finally {
       setLoading(false);
     }
@@ -202,7 +214,7 @@ const AdditionalSettings = () => {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-gray-900">{address.branch_name || "Unhamed Branch"}</h3>
+                          <h3 className="font-bold text-gray-900">{address.branch_name || "Unnamed Branch"}</h3>
                           {address.series_prefix && (
                             <span className="bg-black text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                               {address.series_prefix}
