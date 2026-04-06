@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import apiClient from '../api/apiClient';
 
-const MEDIA_URL = 'http://127.0.0.1:8000';
+const MEDIA_URL = apiClient.defaults.baseURL.replace('/api', '');
 
 const UserContext = createContext(null);
 

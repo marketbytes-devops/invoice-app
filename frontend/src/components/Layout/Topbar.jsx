@@ -5,7 +5,10 @@ import { useDebounce } from 'use-debounce';
 import apiClient from '../../api/apiClient';
 import ConfirmationModal from '../ConfirmationModal';
 
-const Topbar = ({ toggleSidebar, isSidebarOpen, userAvatar, username }) => {
+import { useUser } from '../../context/UserContext';
+
+const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
+  const { user } = useUser();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,17 +16,8 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, userAvatar, username }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
-  const [userData, setUserData] = useState({ username: username || '', avatar: userAvatar || 'https://placehold.co/80x80' });
   const location = useLocation();
   const navigate = useNavigate();
-
-  const BASE_URL = apiClient.defaults.baseURL.replace('/api', '');
-
-  useEffect(() => {
-    if (username && userAvatar) {
-      setUserData({ username, avatar: userAvatar });
-    }
-  }, [username, userAvatar]);
 
   const getPageName = () => {
     const segments = location.pathname.split('/').filter(Boolean);
@@ -262,11 +256,11 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, userAvatar, username }) => {
             className="flex items-center space-x-3 p-1 pl-3 hover:bg-gray-50 rounded-full transition-all group border border-transparent hover:border-gray-100"
           >
             <span className="hidden md:block text-sm font-semibold text-gray-700 group-hover:text-black">
-              {userData.username}
+              {user.username}
             </span>
             <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
               <img
-                src={userData.avatar}
+                src={user.avatar}
                 alt="Profile"
                 className="w-full h-full object-cover"
                 onError={(e) => (e.target.src = 'https://placehold.co/80x80')}
@@ -281,7 +275,7 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, userAvatar, username }) => {
               <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-100 shadow-2xl rounded-2xl overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                 <div className="px-4 py-3 border-b border-gray-50 mb-1 bg-gray-50">
                   <p className="text-xs text-gray-500">Logged in as</p>
-                  <p className="text-sm font-semibold truncate">{userData.username}</p>
+                  <p className="text-sm font-semibold truncate">{user.username}</p>
                 </div>
 
                 <button
