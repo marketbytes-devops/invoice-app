@@ -241,14 +241,14 @@ const FinalInvoiceView = () => {
               {/* To Label */}
               <div>
                 <h4 className="font-weight: 100;">Invoice to :</h4>
-                <p className="font-semibold text-xl min-h-[3rem]">
+                <p className="font-semibold text-xl min-h-[2.5rem]">
                   {clientDetails?.client_name || "Unknown Client"}
                 </p>
               </div>
               {/* From Label */}
               <div>
                 <h4 className="font-weight: 100;">Invoice from :</h4>
-                <p className="font-semibold text-xl min-h-[3rem]">
+                <p className="font-semibold text-xl min-h-[2.5rem]">
                   {companyName || branchDetails?.branch_name || "Unknown Company"}
                 </p>
               </div>
@@ -256,7 +256,7 @@ const FinalInvoiceView = () => {
               {/* Address Header */}
               <div>
                 <h6 className="font-semibold mt-2">Address</h6>
-                <div className="min-h-[5rem]">
+                <div className="min-h-[4.5rem]">
                   <p>
                     {[
                       clientDetails?.address,
@@ -271,7 +271,7 @@ const FinalInvoiceView = () => {
               </div>
               <div>
                 <h6 className="font-semibold mt-2">Address</h6>
-                <div className="min-h-[5rem]">
+                <div className="min-h-[4.5rem]">
                   <p>
                     {[
                       branchDetails?.branch_address,
@@ -287,30 +287,30 @@ const FinalInvoiceView = () => {
 
               {/* GSTIN and Contact Header */}
               <div className="mt-2">
-                {clientDetails?.gstin && (
-                  <p>
-                    <b>GSTIN :</b> {clientDetails?.gstin}
-                  </p>
-                )}
                 <p>
                   <b>P :</b> {clientDetails?.phone || "N/A"}
                 </p>
                 <p>
                   <b>W :</b> {clientDetails?.website || "N/A"}
                 </p>
-              </div>
-              <div className="mt-2">
-                {branchDetails?.gstin && (
+                {clientDetails?.gstin && (
                   <p>
-                    <b>GSTIN :</b> {branchDetails?.gstin}
+                    <b>GSTIN :</b> {clientDetails?.gstin}
                   </p>
                 )}
+              </div>
+              <div className="mt-2">
                 <p>
                   <b>P :</b> {branchDetails?.phone || "N/A"}
                 </p>
                 <p>
                   <b>W :</b> {branchDetails?.website || "N/A"}
                 </p>
+                {branchDetails?.gstin && (
+                  <p>
+                    <b>GSTIN :</b> {branchDetails?.gstin}
+                  </p>
+                )}
               </div>
             </div>
           </div>
