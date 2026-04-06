@@ -519,22 +519,13 @@ const FinalInvoiceView = () => {
             </div>
           </div>
         </div>
-        <div className="mb-4 mt-8">
+        <div className="mb-4 mt-8 text-justify">
           <h4 className="font-semibold mb-2">Note:</h4>
-          <p
-            className="text-justify"
-            style={{ maxWidth: "100%", wordWrap: "break-word" }}
-          >
-            <p>
-              Please make the payment of {total_due || 0}{" "}
-              {currency_type || "N/A"} to the bank account details provided
-              above. Upon receiving the payment, will proceed with the services/products as agreed and provide a receipt for the payment received. Thank you for choosing {branchDetails?.branch_name || "Unknown Branch"}.
-            </p>
-            <p className="mt-2">
-              If you have any
-              questions or require further assistance, please don’t hesitate to
-              contact us at {branchDetails?.phone || "N/A"}.
-            </p>
+          <p>
+            Please make the payment of {total_due || 0} {currency_type || "N/A"} to the bank account details provided above. Upon receiving the payment, we will proceed with the services/products as agreed and provide a receipt for the payment recieved.
+          </p>
+          <p className="mt-4">
+            Thank you for choosing MarketBytes WebWorks Pvt. Ltd. If you have any questions or require further assistance, please don't hesitate to contact us at +91 97781 27272 or accounts@marketbytes.in.
           </p>
         </div>
       </div>
