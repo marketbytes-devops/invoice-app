@@ -41,7 +41,7 @@ class Branch(models.Model):
 
         # Format: MBC/25-26/001
         fy_part = f"{str(start_year)[-2:]}-{str(end_year)[-2:]}"
-        seq_part = str(self.last_invoice_number).zfill(3)
+        seq_part = str(self.last_invoice_number).zfill(2)
         prefix = self.series_prefix if self.series_prefix else "MBC"
         
         return f"{prefix}/{fy_part}/{seq_part}"

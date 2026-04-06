@@ -22,6 +22,14 @@ const numberToWords = (num) => {
   return convertMillions(num);
 };
 
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
 const PrintedProformaInvoice = () => {
   const location = useLocation();
@@ -335,11 +343,11 @@ const PrintedProformaInvoice = () => {
                   </div>
                   <div className="flex flex-col">
                     <span className="font-semibold">Invoice Date :</span>
-                    <span>{invoice_date || "N/A"}</span>
+                    <span>{formatDate(invoice_date)}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="font-semibold">Due Date :</span>
-                    <span>{due_date || "N/A"}</span>
+                    <span>{formatDate(due_date)}</span>
                   </div>
                 </div>
               </div>
