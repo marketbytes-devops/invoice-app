@@ -7,7 +7,9 @@ const AdditionalSettings = () => {
   const [loading, setLoading] = useState(true);
   const [addresses, setAddresses] = useState([]);
   const [logoUrl, setLogoUrl] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUpdatingCompany, setIsUpdatingCompany] = useState(false);
   const [editingSeriesId, setEditingSeriesId] = useState(null);
   const [savingSeries, setSavingSeries] = useState(false);
 
@@ -43,6 +45,9 @@ const AdditionalSettings = () => {
         if (logoRes.data?.logo_image) {
           setLogoUrl(logoRes.data.logo_image);
         }
+        if (logoRes.data?.company_name) {
+          setCompanyName(logoRes.data.company_name);
+        }
       } catch (err) {
         // Logo might not exist yet, which is fine
         console.log("No logo found or error fetching logo:", err.message);
@@ -76,6 +81,21 @@ const AdditionalSettings = () => {
       alert("Failed to upload logo.");
     } finally {
       setIsUploadingLogo(false);
+    }
+  };
+
+  const handleUpdateCompanyName = async () => {
+    try {
+      setIsUpdatingCompany(true);
+      await apiClient.post("invoices/settings/logo/", {
+        company_name: companyName,
+      });
+      alert("Company name updated successfully!");
+    } catch (error) {
+      console.error("Error updating company name:", error);
+      alert("Failed to update company name.");
+    } finally {
+      setIsUpdatingCompany(false);
     }
   };
 
@@ -142,50 +162,73 @@ const AdditionalSettings = () => {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Brand Identity</h2>
-                <p className="text-xs text-gray-500">Invoice Logo</p>
+                <p className="text-xs text-gray-500">Logo & Company Name</p>
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <div className="relative group w-full aspect-video bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 hover:border-gray-900/20 transition-all flex items-center justify-center overflow-hidden">
-                {logoUrl ? (
-                  <img src={logoUrl} alt="Company Logo" className="w-full h-full object-contain p-4" />
-                ) : (
-                  <div className="text-center p-6">
-                    <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-400 font-medium">No Logo Uploaded</p>
-                  </div>
-                )}
-
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <div className="space-y-6">
+              {/* Company Name Field */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Company Name</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="Enter Company Name"
+                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-black/5 focus:bg-white transition-all outline-none"
+                  />
                   <button
-                    onClick={() => logoInputRef.current?.click()}
-                    className="bg-white text-black px-4 py-2 rounded-full font-bold text-sm transform translate-y-2 group-hover:translate-y-0 transition-all flex items-center gap-2"
+                    onClick={handleUpdateCompanyName}
+                    disabled={isUpdatingCompany}
+                    className="p-2.5 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50"
                   >
-                    <Upload className="w-4 h-4" />
-                    {logoUrl ? "Change Logo" : "Upload Logo"}
+                    {isUpdatingCompany ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              <input
-                type="file"
-                ref={logoInputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={handleLogoChange}
-              />
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="relative group w-full aspect-video bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 hover:border-gray-900/20 transition-all flex items-center justify-center overflow-hidden">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Company Logo" className="w-full h-full object-contain p-4" />
+                  ) : (
+                    <div className="text-center p-6">
+                      <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-400 font-medium">No Logo Uploaded</p>
+                    </div>
+                  )}
 
-              <p className="text-xs text-center text-gray-400">
-                This logo will appear on all your invoices.<br />Supported formats: PNG, JPG.
-              </p>
-            </div>
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button
+                      onClick={() => logoInputRef.current?.click()}
+                      className="bg-white text-black px-4 py-2 rounded-full font-bold text-sm transform translate-y-2 group-hover:translate-y-0 transition-all flex items-center gap-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      {logoUrl ? "Change Logo" : "Upload Logo"}
+                    </button>
+                  </div>
+                </div>
 
-            {isUploadingLogo && (
-              <div className="mt-4 flex items-center justify-center text-sm text-gray-500 gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" /> Uploading...
+                <input
+                  type="file"
+                  ref={logoInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                />
+
+                <p className="text-xs text-center text-gray-400">
+                  This logo will appear on all your invoices.<br />Supported formats: PNG, JPG.
+                </p>
               </div>
-            )}
+
+              {isUploadingLogo && (
+                <div className="mt-4 flex items-center justify-center text-sm text-gray-500 gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Uploading...
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

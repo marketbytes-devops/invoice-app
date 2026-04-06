@@ -119,6 +119,7 @@ class Product(models.Model):
         return self.name
     
 class Logo(models.Model):
+    company_name = models.CharField(max_length=255, null=True, blank=True)
     logo_image = models.ImageField(upload_to='logos/', null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 

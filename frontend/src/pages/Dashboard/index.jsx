@@ -108,15 +108,63 @@ const Dashboard = () => {
   }, []);
 
   const stats = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
     const finalInvoices = data.invoices.filter(inv => inv.is_final);
+    
+    // Revenue logic
     const totalRevenue = finalInvoices.reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+    const currentMonthRev = finalInvoices
+      .filter(inv => {
+        const d = new Date(inv.invoice_date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      })
+      .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+    
+    const lastMonthRev = finalInvoices
+      .filter(inv => {
+        const d = new Date(inv.invoice_date);
+        return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
+      })
+      .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+
+    const revenueTrend = lastMonthRev === 0 ? (currentMonthRev > 0 ? 100 : 0) : Math.round(((currentMonthRev - lastMonthRev) / lastMonthRev) * 100);
+
+    // Pending logic
     const pendingAmount = finalInvoices.reduce((sum, inv) => sum + (parseFloat(inv.total_due || 0) - parseFloat(inv.amount_paid || 0)), 0);
+    const currentMonthPending = finalInvoices
+      .filter(inv => {
+        const d = new Date(inv.invoice_date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      })
+      .reduce((sum, inv) => sum + (parseFloat(inv.total_due || 0) - parseFloat(inv.amount_paid || 0)), 0);
+    
+    const lastMonthPending = finalInvoices
+      .filter(inv => {
+        const d = new Date(inv.invoice_date);
+        return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
+      })
+      .reduce((sum, inv) => sum + (parseFloat(inv.total_due || 0) - parseFloat(inv.amount_paid || 0)), 0);
+    
+    const pendingTrend = lastMonthPending === 0 ? (currentMonthPending > 0 ? 100 : 0) : Math.round(((currentMonthPending - lastMonthPending) / lastMonthPending) * 100);
+
+    // Clients logic
+    const clientsTrend = 0; // Simple placeholder for now as we don't have client creation dates in this list
+
+    // Drafts
     const draftCount = data.invoices.filter(inv => !inv.is_final).length;
 
     return {
       totalRevenue,
+      revenueTrend,
       pendingAmount,
+      pendingTrend,
       draftCount,
+      clientsTrend,
       totalCount: data.invoices.length
     };
   }, [data.invoices]);
@@ -164,7 +212,7 @@ const Dashboard = () => {
 
   if (data.loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black" />
       </div>
     );
@@ -194,7 +242,7 @@ const Dashboard = () => {
           value={`₹${stats.totalRevenue.toLocaleString()}`}
           subtitle="All finalized invoices"
           icon={DollarSign}
-          trend={12}
+          trend={stats.revenueTrend}
           color="bg-black"
         />
         <MetricCard
@@ -202,7 +250,7 @@ const Dashboard = () => {
           value={`₹${stats.pendingAmount.toLocaleString()}`}
           subtitle="Waiting for settlement"
           icon={Clock}
-          trend={-5}
+          trend={stats.pendingTrend}
           color="bg-amber-500"
         />
         <MetricCard
@@ -210,7 +258,7 @@ const Dashboard = () => {
           value={data.clients}
           subtitle="Active registered clients"
           icon={Users}
-          trend={8}
+          trend={stats.clientsTrend}
           color="bg-blue-600"
         />
         <MetricCard

@@ -3,43 +3,28 @@ import { Outlet } from 'react-router';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import { motion } from 'framer-motion';
-import apiClient from '../../api/apiClient';
-
-const MEDIA_URL = 'http://127.0.0.1:8000';
+import { useUser } from '../../context/UserContext';
 
 const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [userAvatar, setUserAvatar] = useState(null);
-  const [username, setUsername] = useState('');
+  const { user, refreshUser } = useUser();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await apiClient.get('/auth/profile/');
-        setUserAvatar(response.data.avatar ? `${MEDIA_URL}${response.data.avatar}` : 'https://via.placeholder.com/80');
-        setUsername(response.data.username || 'User');
-      } catch (error) {
-        console.error('Failed to fetch profile:', error);
-        setUserAvatar('https://via.placeholder.com/80');
-        setUsername('User');
-      }
-    };
-
-    fetchProfile();
-  }, []);
+    refreshUser();
+  }, [refreshUser]);
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-r from-gray-200 via-gray-100 to-gray-50">
       <Topbar
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-        userAvatar={userAvatar}
-        username={username}
+        userAvatar={user.avatar}
+        username={user.username}
       />
       <div className="flex flex-1 p-4 pt-20 gap-4 h-screen overflow-hidden">
         <Sidebar isOpen={isSidebarOpen} />
         <motion.main
-          className="flex-1 overflow-auto rounded-3xl bg-white border border-gray-100 shadow-sm"
+          className="flex-1 overflow-auto rounded-3xl bg-white border border-gray-100 shadow-sm relative"
           initial={false}
           animate={{
             marginLeft: isSidebarOpen ? 296 : 0,
@@ -47,7 +32,7 @@ const Layout = () => {
           }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
-          <div className="p-8 max-w-full mx-auto">
+          <div className="p-8 max-w-full mx-auto min-h-full">
             <Outlet />
           </div>
         </motion.main>

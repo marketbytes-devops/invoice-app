@@ -360,11 +360,8 @@ const ProformaInvoice = () => {
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center h-screen bg-gray-50">
-      <div className="animate-pulse flex flex-col items-center">
-        <div className="h-4 w-4 bg-gray-200 rounded-full mb-2"></div>
-        <div className="text-sm text-gray-400 font-medium">Loading Invoices...</div>
-      </div>
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black" />
     </div>
   );
 

@@ -57,32 +57,29 @@ class LogoUploadView(generics.CreateAPIView, generics.RetrieveAPIView, generics.
     serializer_class = LogoSerializer
 
     def get(self, request, *args, **kwargs):
-        logo = self.get_queryset().last()  # Retrieve the latest uploaded logo
+        logo = self.get_queryset().last()
         if logo:
             serializer = self.get_serializer(logo)
             return Response(serializer.data)
-        return Response({'error': 'Logo not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'company_name': '', 'logo_image': None})
 
     def post(self, request, *args, **kwargs):
+        logo_instance = Logo.objects.last() or Logo()
+        
         file = request.FILES.get('logo_image')
+        company_name = request.data.get('company_name')
+
         if file:
-            logo_instance = Logo(logo_image=file)
-            logo_instance.save()
-            serializer = self.get_serializer(logo_instance)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+            logo_instance.logo_image = file
+        if company_name:
+            logo_instance.company_name = company_name
+            
+        logo_instance.save()
+        serializer = self.get_serializer(logo_instance)
+        return Response(serializer.data)
 
     def put(self, request, *args, **kwargs):
-        logo = self.get_queryset().last()  # Retrieve the latest uploaded logo
-        if logo:
-            file = request.FILES.get('logo_image')
-            if file:
-                logo.logo_image = file
-                logo.save()
-                serializer = self.get_serializer(logo)
-                return Response(serializer.data)
-            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'error': 'Logo not found'}, status=status.HTTP_404_NOT_FOUND)
+        return self.post(request, *args, **kwargs)
 
     def patch(self, request, *args, **kwargs):
-        return self.put(request, *args, **kwargs)
+        return self.post(request, *args, **kwargs)

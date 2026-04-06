@@ -94,6 +94,7 @@ const PrintedProformaInvoice = () => {
   const [bankAccounts, setBankAccounts] = useState([]);
   const [taxes, setTaxes] = useState([]);
   const [logoUrl, setLogoUrl] = useState("");
+  const [companyName, setCompanyName] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,6 +117,7 @@ const PrintedProformaInvoice = () => {
         setBankAccounts(bankAccountsRes.data || []);
         setTaxes(taxesRes.data || []);
         setLogoUrl(logoRes.data.logo_image);
+        setCompanyName(logoRes.data.company_name);
       } catch (e) {
         console.error("Error fetching data:", e);
       }
@@ -243,7 +245,7 @@ const PrintedProformaInvoice = () => {
               <div className="w-1/2" style={{ marginTop: "1.2cm" }}>
                 <h4 className="font-weight: 100;">Invoice from :</h4>
                 <p className="font-semibold text-xl">
-                  {branchDetails?.branch_name || "Unknown Branch"}
+                  {companyName || branchDetails?.branch_name || "Unknown Company"}
                 </p>
                 <h6 className="font-semibold mt-5">Address</h6>
                 <p>

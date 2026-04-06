@@ -28,6 +28,7 @@ import apiClient from './api/apiClient';
 import ForgotPassword from "./pages/ForgotPassword";
 import OTPVerification from "./pages/OTPVerification/OTPVerification";
 import ResetPassword from "./pages/ResetPassword/ResetPassword";
+import { UserProvider } from "./context/UserContext";
 
 const PrivateRoute = ({ element }) => {
   const location = useLocation();
@@ -151,7 +152,11 @@ function App() {
     )
   );
 
-  return <RouterProvider router={router} />;
+  return (
+    <UserProvider>
+      <RouterProvider router={router} />
+    </UserProvider>
+  );
 }
 
 export default App;

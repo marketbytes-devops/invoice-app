@@ -5,8 +5,10 @@ import apiClient from "../../api/apiClient";
 import profilePic from "../../assets/images/profile-icon.jpg";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import PasswordInput from "../../components/PasswordInput";
+import { useUser } from "../../context/UserContext";
 
 const Profile = () => {
+  const { updateUserAvatar, updateUserInfo } = useUser();
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
   const [logoUrl, setLogoUrl] = useState("");
@@ -87,6 +89,7 @@ const Profile = () => {
 
       if (response.data.avatar) {
         setUserProfile(prev => ({ ...prev, avatar: response.data.avatar }));
+        updateUserAvatar(response.data.avatar);
       }
       alert("Profile picture updated!");
     } catch (error) {

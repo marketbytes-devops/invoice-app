@@ -26,9 +26,25 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, userAvatar, username }) => {
   }, [username, userAvatar]);
 
   const getPageName = () => {
-    const path = location.pathname.split('/')[1];
-    if (!path) return 'Dashboard';
-    return path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
+    const fullPath = location.pathname.split('/').filter(Boolean).join('/');
+    
+    // Specific overrides for certain paths
+    const overrides = {
+      'invoice/invoice-list': 'Final Invoice',
+      'invoice/create': 'Create Invoice',
+      'invoice/proforma': 'Proforma Invoice',
+    };
+
+    if (overrides[fullPath]) return overrides[fullPath];
+
+    const segments = location.pathname.split('/').filter(Boolean);
+    if (segments.length === 0) return 'Dashboard';
+    
+    // Create a descriptive name from path segments (e.g., /tax/add -> Add Tax)
+    return segments
+      .map(s => s.charAt(0).toUpperCase() + s.slice(1).replace(/-/g, ' '))
+      .reverse()
+      .join(' ');
   };
 
   useEffect(() => {
@@ -110,8 +126,6 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, userAvatar, username }) => {
         <div className="h-6 w-px bg-gray-100 mx-2 hidden sm:block" />
 
         <div className="hidden sm:flex items-center text-sm font-medium">
-          <span className="text-gray-400">Pages</span>
-          <span className="mx-2 text-gray-300">/</span>
           <span className="text-black">{getPageName()}</span>
         </div>
       </div>

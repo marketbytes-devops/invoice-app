@@ -60,4 +60,4 @@ class InvoiceSerializer(serializers.ModelSerializer):
 class LogoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Logo
-        fields = ['id', 'logo_image', 'uploaded_at']
+        fields = ['id', 'company_name', 'logo_image', 'uploaded_at']
