@@ -221,8 +221,8 @@ const EditClientModal = ({ isOpen, onClose, client, onUpdate }) => {
                   onChange={(val) => handleChange("invoice_series", val)}
                   options={[
                     { label: "Select Series", value: "" },
-                    { label: "Sez (Domestic)", value: "domestic" },
-                    { label: "Non Sez (International)", value: "international" },
+                    { label: "Non-SEZ (Domestic)", value: "domestic" },
+                    { label: "SEZ (International)", value: "international" },
                   ]}
                   placeholder="Select Series"
                 />

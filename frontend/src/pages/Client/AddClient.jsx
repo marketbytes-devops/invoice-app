@@ -267,8 +267,8 @@ const AddClient = () => {
                       onChange={onChange}
                       options={[
                         { label: "Select Invoice Series", value: "" },
-                        { label: "Sez (Domestic)", value: "domestic" },
-                        { label: "Non Sez (International)", value: "international" },
+                        { label: "Non-SEZ (Domestic)", value: "domestic" },
+                        { label: "SEZ (International)", value: "international" },
                       ]}
                       placeholder="Select Invoice Series"
                     />
