@@ -217,7 +217,7 @@ const PrintedProformaInvoice = () => {
                 </p>
               </div>
               {/* From Label */}
-              <div>
+              <div className="w-5/6">
                 <h4 className="font-weight: 100;">Invoice from :</h4>
                 <p className="font-semibold text-xl min-h-[2.5rem]">
                   {companyName || branchDetails?.branch_name || "Unknown Company"}
@@ -307,12 +307,12 @@ const PrintedProformaInvoice = () => {
                     key={i}
                     className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
                   >
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">{i + 1}</td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">{item.name || "N/A"}</td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">{item.quantity || 0}</td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">{item.total_gst || 0}</td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">{item.unit_cost || 0}</td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">{item.total || 0}</td>
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{i + 1}</td>
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.name || "N/A"}</td>
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.quantity || 0}</td>
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.total_gst || 0}</td>
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.unit_cost || 0}</td>
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.total || 0}</td>
                   </tr>
                 ))}
                 {Array.from({ length: Math.max(0, 7 - items.length) }).map((_, i) => (
@@ -320,12 +320,12 @@ const PrintedProformaInvoice = () => {
                     key={`ph-${i}`}
                     className={`border-b border-gray-100 ${(items.length + i) % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
                   >
-                    <td className="w-full h-[56.5px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[56.5px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[56.5px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[56.5px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[56.5px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[56.5px] px-4 border-r-4 border-white"></td>
+                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
                   </tr>
                 ))}
                 <tr className="bg-gray-100">
@@ -389,16 +389,16 @@ const PrintedProformaInvoice = () => {
                     gap: "0.5rem",
                   }}
                 >
-                  <div className="flex flex-col">
-                    <span className="font-semibold">Invoice No :</span>
-                    <span>{displayInvoiceNumber}</span>
+                  <div className="flex items-center justify-start">
+                    <span className="font-semibold mr-1">Invoice No :</span>
+                    <span> {displayInvoiceNumber}</span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-semibold">Invoice Date :</span>
-                    <span>{formatDate(invoice_date)}</span>
+                  <div className="flex items-center justify-start">
+                    <span className="font-semibold mr-1">Invoice Date :</span>
+                    <span> {formatDate(invoice_date)}</span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-semibold">Due Date :</span>
+                  <div className="flex items-center justify-start">
+                    <span className="font-semibold mr-1">Due Date :</span>
                     <span>{formatDate(due_date)}</span>
                   </div>
                 </div>
@@ -408,7 +408,7 @@ const PrintedProformaInvoice = () => {
                   Payment Information
                 </h6>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Name:</span> {bankDetails?.account_holder_name || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Name:</span><br/> {bankDetails?.account_holder_name || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Bank Name:</span> {bankDetails?.bank_name || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Number:</span> {bankDetails?.account_number || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">IFSC Code:</span> {bankDetails?.ifsc_code || "N/A"}</p>

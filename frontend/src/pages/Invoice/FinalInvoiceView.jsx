@@ -246,7 +246,7 @@ const FinalInvoiceView = () => {
                 </p>
               </div>
               {/* From Label */}
-              <div>
+              <div className="w-5/6">
                 <h4 className="font-weight: 100;">Invoice from :</h4>
                 <p className="font-semibold text-xl min-h-[2.5rem]">
                   {companyName || branchDetails?.branch_name || "Unknown Company"}
@@ -474,16 +474,16 @@ const FinalInvoiceView = () => {
                     gap: "0.5rem",
                   }}
                 >
-                  <div className="flex flex-col">
-                    <span className="font-semibold">Invoice No :</span>
+                   <div className="flex items-center justify-start">
+                    <span className="font-semibold mr-1">Invoice No :</span>
                     <span>{displayInvoiceNumber}</span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-semibold">Invoice Date :</span>
+                   <div className="flex items-center justify-start">
+                    <span className="font-semibold mr-1">Invoice Date :</span>
                     <span>{formatDate(invoice_date)}</span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-semibold">Due Date :</span>
+                   <div className="flex items-center justify-start">
+                    <span className="font-semibold mr-1">Due Date :</span>
                     <span>{formatDate(due_date)}</span>
                   </div>
                 </div>
@@ -493,7 +493,7 @@ const FinalInvoiceView = () => {
                   Payment Information
                 </h6>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Name:</span> {bankDetails?.account_holder_name || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Name:</span><br/> {bankDetails?.account_holder_name || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Bank Name:</span> {bankDetails?.bank_name || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Number:</span> {bankDetails?.account_number || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">IFSC Code:</span> {bankDetails?.ifsc_code || "N/A"}</p>
