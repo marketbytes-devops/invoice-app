@@ -2,24 +2,41 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 
-const numberToWords = (num) => {
+const numberToWords = (num, currency) => {
   const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
   const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
   const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
-  if (num === 0) return "Zero";
-  if (num < 0) return "Minus " + numberToWords(Math.abs(num));
+  if (num === 0) return "Zero " + currency + " Only";
 
   const convertBelowHundred = (n) =>
     n < 10 ? ones[n] : n < 20 ? teens[n - 10] : `${tens[Math.floor(n / 10)]} ${ones[n % 10]}`.trim();
-  const convertBelowThousand = (n) =>
-    n < 100 ? convertBelowHundred(n) : `${ones[Math.floor(n / 100)]} Hundred ${convertBelowHundred(n % 100)}`.trim();
-  const convertBelowMillion = (n) =>
-    n < 1000 ? convertBelowThousand(n) : `${convertBelowThousand(Math.floor(n / 1000))} Thousand ${convertBelowThousand(n % 1000)}`.trim();
-  const convertMillions = (n) =>
-    n < 1000000 ? convertBelowMillion(n) : `${convertBelowHundred(Math.floor(n / 1000000))} Million ${convertMillions(n % 1000000)}`.trim();
 
-  return convertMillions(num);
+  const convertBelowThousand = (n) => {
+    if (n < 100) return convertBelowHundred(n);
+    const hundreds = ones[Math.floor(n / 100)];
+    const remainder = n % 100;
+    if (remainder === 0) return `${hundreds} Hundred`;
+    return `${hundreds} Hundred and ${convertBelowHundred(remainder)}`;
+  };
+
+  const convertBelowMillion = (n) => {
+    if (n < 1000) return convertBelowThousand(n);
+    const thousands = convertBelowThousand(Math.floor(n / 1000));
+    const remainder = n % 1000;
+    if (remainder === 0) return `${thousands} Thousand`;
+    return `${thousands} Thousand ${remainder < 100 ? "and " : ""}${convertBelowThousand(remainder)}`;
+  };
+
+  const convertMillions = (n) => {
+    if (n < 1000000) return convertBelowMillion(n);
+    const millions = convertBelowThousand(Math.floor(n / 1000000));
+    const remainder = n % 1000000;
+    if (remainder === 0) return `${millions} Million`;
+    return `${millions} Million ${remainder < 100 ? "and " : ""}${convertBelowMillion(remainder)}`;
+  };
+
+  return `${convertMillions(Math.floor(num))} ${currency} Only`;
 };
 
 const formatDate = (dateString) => {
@@ -163,7 +180,7 @@ const PrintedProformaInvoice = () => {
     "Tax";
 
   const displayInvoiceNumber = formatInvoiceNumber(final_invoice_number || invoice_number);
-  const totalInWords = numberToWords(Math.round(total_due)) || "N/A";
+  const totalInWords = numberToWords(Math.round(total_due), currency_type) || "N/A";
 
   return (
     <div className="flex flex-col items-center bg-white min-h-screen print:min-h-0 print:h-auto">

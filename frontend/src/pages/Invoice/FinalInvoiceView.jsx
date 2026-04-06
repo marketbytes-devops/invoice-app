@@ -2,93 +2,41 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 
-const numberToWords = (num) => {
-  const ones = [
-    "",
-    "One",
-    "Two",
-    "Three",
-    "Four",
-    "Five",
-    "Six",
-    "Seven",
-    "Eight",
-    "Nine",
-  ];
-  const teens = [
-    "Ten",
-    "Eleven",
-    "Twelve",
-    "Thirteen",
-    "Fourteen",
-    "Fifteen",
-    "Sixteen",
-    "Seventeen",
-    "Eighteen",
-    "Nineteen",
-  ];
-  const tens = [
-    "",
-    "",
-    "Twenty",
-    "Thirty",
-    "Forty",
-    "Fifty",
-    "Sixty",
-    "Seventy",
-    "Eighty",
-    "Ninety",
-  ];
+const numberToWords = (num, currency) => {
+  const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+  const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
-  if (num === 0) return "Zero";
-  if (num < 0) return "Minus " + numberToWords(Math.abs(num));
+  if (num === 0) return "Zero " + currency + " Only";
 
-  const convertMillions = (num) => {
-    if (num < 100) return convertBelowHundred(num);
-    else if (num < 1000) return convertBelowThousand(num);
-    else if (num < 1000000) return convertBelowMillion(num);
-    else {
-      const millions = Math.floor(num / 1000000);
-      const remainder = num % 1000000;
-      return `${convertBelowHundred(millions)} Million ${convertMillions(
-        remainder
-      )}`.trim();
-    }
+  const convertBelowHundred = (n) =>
+    n < 10 ? ones[n] : n < 20 ? teens[n - 10] : `${tens[Math.floor(n / 10)]} ${ones[n % 10]}`.trim();
+
+  const convertBelowThousand = (n) => {
+    if (n < 100) return convertBelowHundred(n);
+    const hundreds = ones[Math.floor(n / 100)];
+    const remainder = n % 100;
+    if (remainder === 0) return `${hundreds} Hundred`;
+    return `${hundreds} Hundred and ${convertBelowHundred(remainder)}`;
   };
 
-  const convertBelowMillion = (num) => {
-    if (num < 1000) return convertBelowThousand(num);
-    else {
-      const thousands = Math.floor(num / 1000);
-      const remainder = num % 1000;
-      return `${convertBelowThousand(
-        thousands
-      )} Thousand ${convertBelowThousand(remainder)}`.trim();
-    }
+  const convertBelowMillion = (n) => {
+    if (n < 1000) return convertBelowThousand(n);
+    const thousands = convertBelowThousand(Math.floor(n / 1000));
+    const remainder = n % 1000;
+    if (remainder === 0) return `${thousands} Thousand`;
+    return `${thousands} Thousand ${remainder < 100 ? "and " : ""}${convertBelowThousand(remainder)}`;
   };
 
-  const convertBelowThousand = (num) => {
-    if (num < 100) return convertBelowHundred(num);
-    else {
-      const hundreds = Math.floor(num / 100);
-      const remainder = num % 100;
-      return `${ones[hundreds]} Hundred ${convertBelowHundred(
-        remainder
-      )}`.trim();
-    }
+  const convertMillions = (n) => {
+    if (n < 1000000) return convertBelowMillion(n);
+    const millions = convertBelowThousand(Math.floor(n / 1000000));
+    const remainder = n % 1000000;
+    if (remainder === 0) return `${millions} Million`;
+    return `${millions} Million ${remainder < 100 ? "and " : ""}${convertBelowMillion(remainder)}`;
   };
 
-  const convertBelowHundred = (num) => {
-    if (num < 10) return ones[num];
-    else if (num < 20) return teens[num - 10];
-    else {
-      const tensPlace = Math.floor(num / 10);
-      const onesPlace = num % 10;
-      return `${tens[tensPlace]} ${ones[onesPlace]}`.trim();
-    }
-  };
-
-  return convertMillions(num);
+  return `${convertMillions(Math.floor(num))} ${currency} Only`;
 };
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
@@ -252,7 +200,7 @@ const FinalInvoiceView = () => {
     "Tax";
 
   const displayInvoiceNumber = formatInvoiceNumber(final_invoice_number || invoice_number);
-  const totalInWords = numberToWords(Math.round(total_due)) || "N/A";
+  const totalInWords = numberToWords(Math.round(total_due), currency_type) || "N/A";
 
   const handlePrint = () => {
     const rawInvoiceNumber = proformaInvoice?.final_invoice_number || proformaInvoice?.invoice_number || "Invoice";
