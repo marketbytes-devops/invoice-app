@@ -345,22 +345,22 @@ const FinalInvoiceView = () => {
                     className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"
                       }`}
                   >
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
                       {index + 1}
                     </td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
                       {item.name || "N/A"}
                     </td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
                       {item.quantity || 0}
                     </td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
                       {item.total_gst || 0}
                     </td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
                       {item.unit_cost || 0}
                     </td>
-                    <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
                       {item.total || 0}
                     </td>
                   </tr>
@@ -374,12 +374,12 @@ const FinalInvoiceView = () => {
                         : "bg-gray-100"
                         }`}
                     >
-                      <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[56.5px] px-4 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
                     </tr>
                   )
                 )}
