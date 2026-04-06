@@ -31,6 +31,26 @@ const formatDate = (dateString) => {
   return `${day}-${month}-${year}`;
 };
 
+const formatInvoiceNumber = (num) => {
+  if (!num) return "N/A";
+  if (num.startsWith("MB-")) {
+    const parts = num.split("-");
+    const seq = parts[1];
+    if (seq && /^\d+$/.test(seq)) {
+      return `MB-${parseInt(seq).toString().padStart(2, '0')}`;
+    }
+  }
+  if (num.includes("/")) {
+    const parts = num.split("/");
+    const lastPart = parts[parts.length - 1];
+    if (lastPart && /^\d+$/.test(lastPart)) {
+      parts[parts.length - 1] = parseInt(lastPart).toString().padStart(2, '0');
+      return parts.join("/");
+    }
+  }
+  return num;
+};
+
 const PrintedProformaInvoice = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -142,7 +162,7 @@ const PrintedProformaInvoice = () => {
     (tax_rate && taxes.find((t) => t.percentage === tax_rate)?.name) ||
     "Tax";
 
-  const displayInvoiceNumber = final_invoice_number || invoice_number || "N/A";
+  const displayInvoiceNumber = formatInvoiceNumber(final_invoice_number || invoice_number);
   const totalInWords = numberToWords(Math.round(total_due)) || "N/A";
 
   return (

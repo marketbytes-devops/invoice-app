@@ -6,6 +6,26 @@ import { useNavigate, useLocation } from "react-router-dom";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import SearchableSelect from "../../components/SearchableSelect";
 
+const formatInvoiceNumber = (num) => {
+  if (!num) return "N/A";
+  if (num.startsWith("MB-")) {
+    const parts = num.split("-");
+    const seq = parts[1];
+    if (seq && /^\d+$/.test(seq)) {
+      return `MB-${parseInt(seq).toString().padStart(2, '0')}`;
+    }
+  }
+  if (num.includes("/")) {
+    const parts = num.split("/");
+    const lastPart = parts[parts.length - 1];
+    if (lastPart && /^\d+$/.test(lastPart)) {
+      parts[parts.length - 1] = parseInt(lastPart).toString().padStart(2, '0');
+      return parts.join("/");
+    }
+  }
+  return num;
+};
+
 const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, onPrint, getClientName, getBranchName, getBankAccountDetails }) => {
   if (!invoice) return null;
 
@@ -24,7 +44,7 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900 tracking-tight">
-                  {invoice.invoice_number}
+                  {formatInvoiceNumber(invoice.final_invoice_number || invoice.invoice_number)}
                 </h2>
                 <p className="text-sm text-gray-500 font-medium">Proforma Invoice Details</p>
               </div>
@@ -418,7 +438,7 @@ const ProformaInvoice = () => {
                           <FileText className="w-5 h-5 text-gray-700" />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">{inv.invoice_number}</p>
+                          <p className="text-sm font-bold text-gray-900">{formatInvoiceNumber(inv.final_invoice_number || inv.invoice_number)}</p>
                           <span className="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md mt-1 inline-block uppercase tracking-wide">
                             {inv.invoice_type}
                           </span>
