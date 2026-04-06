@@ -56,7 +56,7 @@ class Invoice(models.Model):
                         new_number = 1
                 else:
                     new_number = 1
-                self.invoice_number = f"MB-{str(new_number).zfill(5)}"
+                self.invoice_number = f"MB-{str(new_number).zfill(2)}"
 
         if self.tax_option == 'yes' and self.tax_rate and not self.tax_name:
             tax = Tax.objects.filter(percentage=self.tax_rate).first()
