@@ -147,9 +147,9 @@ const PrintedProformaInvoice = () => {
         <div className="flex justify-between mb-16 items-start">
           <div className="w-1/4">
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="w-full h-full" />
+              <img src={logoUrl} alt="Logo" className="w-40 h-40" />
             ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+              <div className="w-40 h-40 bg-gray-200 flex items-center justify-center">
                 No Logo
               </div>
             )}
