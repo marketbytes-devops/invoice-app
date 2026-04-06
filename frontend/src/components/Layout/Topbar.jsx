@@ -26,18 +26,24 @@ const Topbar = ({ toggleSidebar, isSidebarOpen, userAvatar, username }) => {
   }, [username, userAvatar]);
 
   const getPageName = () => {
-    const fullPath = location.pathname.split('/').filter(Boolean).join('/');
+    const segments = location.pathname.split('/').filter(Boolean);
+    const fullPath = segments.join('/');
     
     // Specific overrides for certain paths
     const overrides = {
       'invoice/invoice-list': 'Final Invoice',
       'invoice/create': 'Create Invoice',
       'invoice/proforma': 'Proforma Invoice',
+      'invoice/final-invoice-view': 'Printed Final Invoice',
     };
 
     if (overrides[fullPath]) return overrides[fullPath];
 
-    const segments = location.pathname.split('/').filter(Boolean);
+    // Handle paths with IDs or dynamic segments
+    if (segments[0] === 'invoice' && segments[1] === 'printed-proforma-invoice') {
+      return 'Printed Proforma Invoice';
+    }
+
     if (segments.length === 0) return 'Dashboard';
     
     // Create a descriptive name from path segments (e.g., /tax/add -> Add Tax)
