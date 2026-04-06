@@ -94,7 +94,6 @@ const PrintedProformaInvoice = () => {
   const [bankAccounts, setBankAccounts] = useState([]);
   const [taxes, setTaxes] = useState([]);
   const [logoUrl, setLogoUrl] = useState("");
-  const [companyName, setCompanyName] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -117,7 +116,6 @@ const PrintedProformaInvoice = () => {
         setBankAccounts(bankAccountsRes.data || []);
         setTaxes(taxesRes.data || []);
         setLogoUrl(logoRes.data.logo_image);
-        setCompanyName(logoRes.data.company_name);
       } catch (e) {
         console.error("Error fetching data:", e);
       }
@@ -208,17 +206,14 @@ const PrintedProformaInvoice = () => {
                 <h3 className="font-bold text-4xl whitespace-nowrap">PROFORMA INVOICE</h3>
               </div>
             </div>
-            <div className="w-full flex" style={{ marginTop: "1.2cm" }}>
-              {/* Left Column: Invoice To */}
-              <div className="w-1/2 pr-4">
-                <h4 className="font-weight: 100;">Invoice to :</h4>
-                <div className="min-h-[4rem]">
+            <div className="w-full flex">
+              <div className="w-1/2" style={{ marginTop: "1.2cm" }}>
+                <div className="w-[80%]">
+                  <h4 className="font-weight: 100;">Invoice to :</h4>
                   <p className="font-semibold text-xl">
                     {clientDetails?.client_name || "Unknown Client"}
                   </p>
-                </div>
-                <h6 className="font-semibold mt-5">Address</h6>
-                <div className="min-h-[6rem]">
+                  <h6 className="font-semibold mt-5">Address</h6>
                   <p>
                     {[
                       clientDetails?.address,
@@ -245,28 +240,22 @@ const PrintedProformaInvoice = () => {
                   </p>
                 </div>
               </div>
-
-              {/* Right Column: Invoice From */}
-              <div className="w-1/2">
+              <div className="w-1/2" style={{ marginTop: "1.2cm" }}>
                 <h4 className="font-weight: 100;">Invoice from :</h4>
-                <div className="min-h-[4rem]">
-                  <p className="font-semibold text-xl">
-                    {companyName || branchDetails?.branch_name || "Unknown Company"}
-                  </p>
-                </div>
+                <p className="font-semibold text-xl">
+                  {branchDetails?.branch_name || "Unknown Branch"}
+                </p>
                 <h6 className="font-semibold mt-5">Address</h6>
-                <div className="min-h-[6rem]">
-                  <p>
-                    {[
-                      branchDetails?.branch_address,
-                      branchDetails?.city,
-                      branchDetails?.state,
-                      branchDetails?.pincode,
-                    ]
-                      .filter(Boolean)
-                      .join(", ") || "N/A"}
-                  </p>
-                </div>
+                <p>
+                  {[
+                    branchDetails?.branch_address,
+                    branchDetails?.city,
+                    branchDetails?.state,
+                    branchDetails?.pincode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ") || "N/A"}
+                </p>
                 <div className="mt-5">
                   {branchDetails?.gstin && (
                     <p>
