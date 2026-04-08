@@ -290,7 +290,7 @@ const PrintedProformaInvoice = () => {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-[7fr_5fr] gap-4 mb-5 items-start">
+        <div className="grid grid-cols-[6.5fr_5.5fr] gap-4 mb-5 items-start">
           <div className="w-full">
             <table className="w-full border-collapse text-sm">
               <thead>
