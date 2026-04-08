@@ -94,27 +94,27 @@ WSGI_APPLICATION = 'invoice_backend.wsgi.application'
 #     }
 # }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.getenv('DB_NAME'),
-#         'USER': os.getenv('DB_USER'),
-#         'PASSWORD': os.getenv('DB_PASSWORD'), 
-#         'HOST': os.getenv('DB_HOST', 'localhost'), 
-#         'PORT': os.getenv('DB_PORT', '3306'), 
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'invoicedb',
-        'USER': 'root',
-        'PASSWORD': 'Gatsbymarketbytes@9633', 
-        'HOST': '127.0.0.1', 
-        'PORT': '3306', 
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'), 
+        'HOST': os.getenv('DB_HOST', 'localhost'), 
+        'PORT': os.getenv('DB_PORT', '3306'), 
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'invoicedb',
+#         'USER': 'root',
+#         'PASSWORD': 'Gatsbymarketbytes@9633', 
+#         'HOST': '127.0.0.1', 
+#         'PORT': '3306', 
+#     }
+# }
 
 
 # Password validation
@@ -187,8 +187,8 @@ SIMPLE_JWT = {
 }
 
 # CORS settings (for frontend-backend communication)
-# CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
-CORS_ALLOWED_ORIGINS = ["http://localhost:5176"]
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+# CORS_ALLOWED_ORIGINS = ["http://localhost:5176"]
 
 CORS_ALLOW_CREDENTIALS = True
 
