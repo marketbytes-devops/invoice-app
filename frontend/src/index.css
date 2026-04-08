@@ -46,29 +46,83 @@ body {
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
   }
 
-  html, body {
-    height: auto !important;
-    min-height: 0 !important;
+  body {
+    background: #fff !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: visible !important;
+    min-height: 0 !important;
+    height: auto !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
+  /* Hide EVERYTHING by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Specifically hide UI components that might interfere */
+  .no-print, 
+  nav, 
+  aside, 
+  header, 
+  button,
+  .sidebar,
+  .topbar {
+    display: none !important;
+  }
+
+  /* Show the print container and its contents */
   .print-container,
   .print-container * {
-    visibility: visible;
+    visibility: visible !important;
   }
 
+  /* Reset layout constraints for printing */
   .print-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 0;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Target the main wrapping elements from the Layout component */
+  main, .motion-main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    transform: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure text is black for clarity */
+  .print-container * {
+    color: #000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Keep table header backgrounds if they are black */
+  .print-container thead tr,
+  .print-container .bg-black {
+    background-color: #000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-container thead tr *,
+  .print-container .text-white {
+    color: #fff !important;
   }
 }

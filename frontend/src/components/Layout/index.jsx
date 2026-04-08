@@ -24,7 +24,7 @@ const Layout = () => {
       <div className="flex flex-1 p-4 pt-20 gap-4 h-screen overflow-hidden">
         <Sidebar isOpen={isSidebarOpen} />
         <motion.main
-          className="flex-1 overflow-auto rounded-3xl bg-white border border-gray-100 shadow-sm relative"
+          className="flex-1 overflow-auto rounded-3xl bg-white border border-gray-100 shadow-sm relative motion-main"
           initial={false}
           animate={{
             marginLeft: isSidebarOpen ? 296 : 0,

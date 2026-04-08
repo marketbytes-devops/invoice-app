@@ -186,7 +186,7 @@ const PrintedProformaInvoice = () => {
   const totalInWords = numberToWords(Math.round(total_due), currency_type) || "N/A";
 
   return (
-    <div className="flex flex-col items-center bg-white min-h-screen print:min-h-0 print:h-auto">
+    <div className="flex flex-col items-center bg-white min-h-screen print:min-h-0 print:h-auto print:bg-white">
       <div
         className="max-w-[27cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-['Poppins'] print-container"
         ref={contentRef}
@@ -408,7 +408,7 @@ const PrintedProformaInvoice = () => {
                   Payment Information
                 </h6>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Name:</span><br/> {bankDetails?.account_holder_name || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Name:</span><br /> {bankDetails?.account_holder_name || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Bank Name:</span> {bankDetails?.bank_name || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Number:</span> {bankDetails?.account_number || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">IFSC Code:</span> {bankDetails?.ifsc_code || "N/A"}</p>
