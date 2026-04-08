@@ -122,7 +122,8 @@ body {
   }
 
   .print-container thead tr *,
-  .print-container .text-white {
+  .print-container .text-white,
+  .print-container .text-white * {
     color: #fff !important;
   }
 }

@@ -7,7 +7,8 @@ const numberToWords = (num, currency) => {
   const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
   const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
-  if (num === 0) return "Zero " + currency + " Only";
+  const absNum = Math.abs(Math.round(num));
+  if (absNum === 0) return "Zero " + currency + " Only";
 
   const convertBelowHundred = (n) =>
     n < 10 ? ones[n] : n < 20 ? teens[n - 10] : `${tens[Math.floor(n / 10)]} ${ones[n % 10]}`.trim();
@@ -36,7 +37,8 @@ const numberToWords = (num, currency) => {
     return `${millions} Million ${remainder < 100 ? "and " : ""}${convertBelowMillion(remainder)}`;
   };
 
-  return `${convertMillions(Math.floor(num))} ${currency} Only`;
+  const result = `${convertMillions(absNum)} ${currency} Only`;
+  return num < 0 ? `Negative ${result}` : result;
 };
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
@@ -202,7 +204,7 @@ const FinalInvoiceView = () => {
     "Tax";
 
   const displayInvoiceNumber = formatInvoiceNumber(final_invoice_number || invoice_number);
-  const totalInWords = numberToWords(Math.round(total_due), currency_type) || "N/A";
+  const totalInWords = numberToWords(total_due, currency_type) || "N/A";
 
   const handlePrint = () => {
     const rawInvoiceNumber = proformaInvoice?.final_invoice_number || proformaInvoice?.invoice_number || "Invoice";
@@ -217,7 +219,7 @@ const FinalInvoiceView = () => {
   return (
     <div className="flex flex-col items-center bg-white min-h-screen print:min-h-0 print:h-auto">
       <div
-        className="max-w-[27cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-['Poppins'] print-container"
+        className="max-w-[30cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-['Poppins'] print-container"
         ref={contentRef}
         style={{ overflow: "visible" }}
       >
@@ -544,7 +546,7 @@ const FinalInvoiceView = () => {
           </p>
         </div>
       </div>
-      <div className="text-center mt-8 w-full max-w-[27cm] mr-[0.5cm] no-print">
+      <div className="text-center mt-8 w-full max-w-[30cm] mr-[0.5cm] no-print">
         <button
           className="bg-black text-white hover:bg-white hover:text-black border text-sm font-semibold px-3 py-3 rounded w-full transition-colors duration-300"
           onClick={handlePrint}
