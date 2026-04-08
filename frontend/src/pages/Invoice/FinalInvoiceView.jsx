@@ -219,7 +219,7 @@ const FinalInvoiceView = () => {
   return (
     <div className="flex flex-col items-center bg-white min-h-screen print:min-h-0 print:h-auto">
       <div
-        className="max-w-[30cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-['Poppins'] print-container"
+        className="max-w-[35cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-['Poppins'] print-container"
         ref={contentRef}
         style={{ overflow: "visible" }}
       >
@@ -322,22 +322,22 @@ const FinalInvoiceView = () => {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-black text-white">
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white w-12 text-center">
                     NO.
                   </th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white w-full text-center">
                     ITEM DESCRIPTION
                   </th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">
                     QUANTITY
                   </th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">
                     Tax
                   </th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">
                     PRICE
                   </th>
-                  <th className="p-4">AMOUNT</th>
+                  <th className="p-4 text-center">AMOUNT</th>
                 </tr>
               </thead>
               <tbody>
@@ -347,22 +347,22 @@ const FinalInvoiceView = () => {
                     className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"
                       }`}
                   >
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">
                       {index + 1}
                     </td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">
                       {item.name || "N/A"}
                     </td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">
                       {item.quantity || 0}
                     </td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">
                       {item.total_gst || 0}
                     </td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">
                       {item.unit_cost || 0}
                     </td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">
                       {item.total || 0}
                     </td>
                   </tr>
@@ -376,12 +376,12 @@ const FinalInvoiceView = () => {
                         : "bg-gray-100"
                         }`}
                     >
-                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
-                      <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white"></td>
+                      <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                      <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                      <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                      <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                      <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                      <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
                     </tr>
                   )
                 )}
@@ -476,15 +476,15 @@ const FinalInvoiceView = () => {
                     gap: "0.5rem",
                   }}
                 >
-                   <div className="flex items-center justify-start">
+                  <div className="flex items-center justify-start">
                     <span className="font-semibold mr-1">Invoice No :</span>
                     <span>{displayInvoiceNumber}</span>
                   </div>
-                   <div className="flex items-center justify-start">
+                  <div className="flex items-center justify-start">
                     <span className="font-semibold mr-1">Invoice Date :</span>
                     <span>{formatDate(invoice_date)}</span>
                   </div>
-                   <div className="flex items-center justify-start">
+                  <div className="flex items-center justify-start">
                     <span className="font-semibold mr-1">Due Date :</span>
                     <span>{formatDate(due_date)}</span>
                   </div>
@@ -495,7 +495,7 @@ const FinalInvoiceView = () => {
                   Payment Information
                 </h6>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Name:</span><br/> {bankDetails?.account_holder_name || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Name:</span><br /> {bankDetails?.account_holder_name || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Bank Name:</span> {bankDetails?.bank_name || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Number:</span> {bankDetails?.account_number || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">IFSC Code:</span> {bankDetails?.ifsc_code || "N/A"}</p>
@@ -546,7 +546,7 @@ const FinalInvoiceView = () => {
           </p>
         </div>
       </div>
-      <div className="text-center mt-8 w-full max-w-[30cm] mr-[0.5cm] no-print">
+      <div className="text-center mt-8 w-full no-print">
         <button
           className="bg-black text-white hover:bg-white hover:text-black border text-sm font-semibold px-3 py-3 rounded w-full transition-colors duration-300"
           onClick={handlePrint}

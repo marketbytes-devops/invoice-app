@@ -190,7 +190,7 @@ const PrintedProformaInvoice = () => {
   return (
     <div className="flex flex-col items-center bg-white min-h-screen print:min-h-0 print:h-auto print:bg-white">
       <div
-        className="max-w-[30cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-['Poppins'] print-container"
+        className="max-w-[35cm] w-full ml-0 mr-[0.5cm] p-5 box-border font-['Poppins'] print-container"
         ref={contentRef}
         style={{ overflow: "visible" }}
       >
@@ -295,12 +295,12 @@ const PrintedProformaInvoice = () => {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-black text-white">
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">NO.</th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">ITEM DESCRIPTION</th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">QUANTITY</th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">Tax</th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white">PRICE</th>
-                  <th className="p-4">AMOUNT</th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white w-12 text-center">NO.</th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white w-full text-center">ITEM DESCRIPTION</th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">QUANTITY</th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">Tax</th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">PRICE</th>
+                  <th className="p-4 text-center">AMOUNT</th>
                 </tr>
               </thead>
               <tbody>
@@ -309,12 +309,12 @@ const PrintedProformaInvoice = () => {
                     key={i}
                     className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
                   >
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{i + 1}</td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.name || "N/A"}</td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.quantity || 0}</td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.total_gst || 0}</td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.unit_cost || 0}</td>
-                    <td className="w-full h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white">{item.total || 0}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{i + 1}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.name || "N/A"}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.quantity || 0}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.total_gst || 0}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.unit_cost || 0}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.total || 0}</td>
                   </tr>
                 ))}
                 {Array.from({ length: Math.max(0, 7 - items.length) }).map((_, i) => (
@@ -322,12 +322,12 @@ const PrintedProformaInvoice = () => {
                     key={`ph-${i}`}
                     className={`border-b border-gray-100 ${(items.length + i) % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
                   >
-                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
-                    <td className="w-full h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
+                    <td className="h-[54.9px] px-4 border-r-4 border-white"></td>
                   </tr>
                 ))}
                 <tr className="bg-gray-100">
@@ -461,7 +461,7 @@ const PrintedProformaInvoice = () => {
           </p>
         </div>
       </div>
-      <div className="text-center mt-8 w-full max-w-[30cm] mr-[0.5cm] no-print">
+      <div className="text-center mt-8 w-full no-print">
         <button
           onClick={handlePrint}
           className="bg-black text-white hover:bg-white hover:text-black border text-sm font-semibold px-3 py-3 rounded w-full transition-colors duration-300"
