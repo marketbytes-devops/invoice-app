@@ -137,7 +137,7 @@ const PrintedProformaInvoice = () => {
   }, [proformaInvoice]);
 
   const handlePrint = () => {
-    const rawInvoiceNumber = proformaInvoice?.final_invoice_number || proformaInvoice?.invoice_number || "Invoice";
+    const rawInvoiceNumber = proformaInvoice?.invoice_number || proformaInvoice?.final_invoice_number || "Invoice";
     const formattedNumber = formatInvoiceNumber(rawInvoiceNumber);
     const sanitizedTitle = formattedNumber.replace(/[\/\\?%*:|"<>_]/g, "-");
     document.title = sanitizedTitle;
@@ -182,7 +182,7 @@ const PrintedProformaInvoice = () => {
     (tax_rate && taxes.find((t) => t.percentage === tax_rate)?.name) ||
     "Tax";
 
-  const displayInvoiceNumber = formatInvoiceNumber(final_invoice_number || invoice_number);
+  const displayInvoiceNumber = formatInvoiceNumber(invoice_number || final_invoice_number);
   const totalInWords = numberToWords(Math.round(total_due), currency_type) || "N/A";
 
   return (
@@ -195,7 +195,7 @@ const PrintedProformaInvoice = () => {
         <div className="flex justify-between mb-16 items-start">
           <div className="w-1/4">
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="w-40 h-40" />
+              <img src={logoUrl} alt="Logo" className="w-40 h-40 object-contain" />
             ) : (
               <div className="w-40 h-40 bg-gray-200 flex items-center justify-center">
                 No Logo

@@ -224,7 +224,7 @@ const FinalInvoiceView = () => {
         <div className="flex justify-between mb-16 items-start">
           <div className="w-1/4">
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="w-40 h-40" />
+              <img src={logoUrl} alt="Logo" className="w-40 h-40 object-contain" />
             ) : (
               <div className="w-40 h-40 bg-gray-200 flex items-center justify-center">
                 No Logo

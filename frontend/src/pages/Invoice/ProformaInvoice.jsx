@@ -44,7 +44,7 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900 tracking-tight">
-                  {formatInvoiceNumber(invoice.final_invoice_number || invoice.invoice_number)}
+                  {formatInvoiceNumber(invoice.invoice_number || invoice.final_invoice_number)}
                 </h2>
                 <p className="text-sm text-gray-500 font-medium">Proforma Invoice Details</p>
               </div>
@@ -439,7 +439,7 @@ const ProformaInvoice = () => {
                           <FileText className="w-5 h-5 text-gray-700" />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">{formatInvoiceNumber(inv.final_invoice_number || inv.invoice_number)}</p>
+                          <p className="text-sm font-bold text-gray-900">{formatInvoiceNumber(inv.invoice_number || inv.final_invoice_number)}</p>
                         </div>
                       </div>
                     </td>
