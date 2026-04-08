@@ -290,13 +290,13 @@ const PrintedProformaInvoice = () => {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-[6.5fr_5.5fr] gap-4 mb-5 items-start">
+        <div className="grid grid-cols-[7fr_5fr] gap-4 mb-5 items-start">
           <div className="w-full">
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-black text-white">
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white w-12 text-center">NO.</th>
-                  <th className="p-4 whitespace-nowrap border-r-4 border-white w-full text-center">ITEM DESCRIPTION</th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">NO.</th>
+                  <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">ITEM DESCRIPTION</th>
                   <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">QUANTITY</th>
                   <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">Tax</th>
                   <th className="p-4 whitespace-nowrap border-r-4 border-white text-center">PRICE</th>
@@ -410,12 +410,12 @@ const PrintedProformaInvoice = () => {
                   Payment Information
                 </h6>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  <p><span className="font-semibold">Account Name:</span><br /> {bankDetails?.account_holder_name || "N/A"}</p>
-                  <p><span className="font-semibold">Bank Name:</span> {bankDetails?.bank_name || "N/A"}</p>
-                  <p><span className="font-semibold">Account Number:</span> {bankDetails?.account_number || "N/A"}</p>
-                  <p><span className="font-semibold">IFSC Code:</span> {bankDetails?.ifsc_code || "N/A"}</p>
-                  <p><span className="font-semibold">SWIFT Code:</span> {bankDetails?.swift_code || "N/A"}</p>
-                  <p><span className="font-semibold">MICR Code:</span> {bankDetails?.micr_code || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Name:</span><br /> {bankDetails?.account_holder_name || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Bank Name:</span> {bankDetails?.bank_name || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">Account Number:</span> {bankDetails?.account_number || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">IFSC Code:</span> {bankDetails?.ifsc_code || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">SWIFT Code:</span> {bankDetails?.swift_code || "N/A"}</p>
+                  <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">MICR Code:</span> {bankDetails?.micr_code || "N/A"}</p>
                 </div>
                 <h6 className="font-semibold text-lg mt-5 mb-2">Payment Terms</h6>
                 <p style={{ display: "flex", alignItems: "center" }}>
