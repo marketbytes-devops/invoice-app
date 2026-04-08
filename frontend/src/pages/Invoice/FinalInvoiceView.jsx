@@ -239,7 +239,7 @@ const FinalInvoiceView = () => {
             </div>
             <div className="w-full grid grid-cols-2 gap-4" style={{ marginTop: "1.2cm" }}>
               {/* To Label */}
-              <div>
+              <div className="w-5/6">
                 <h4 className="font-weight: 100;">Invoice to :</h4>
                 <p className="font-semibold text-xl min-h-[2.5rem]">
                   {clientDetails?.client_name || "Unknown Client"}
