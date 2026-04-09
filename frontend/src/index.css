@@ -48,7 +48,7 @@ body {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 15mm;
+    margin: 10mm;
   }
 
   body {
@@ -91,7 +91,7 @@ body {
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    zoom: 0.90;
+    zoom: 0.85;
   }
 
   /* Target the main wrapping elements from the Layout component */
