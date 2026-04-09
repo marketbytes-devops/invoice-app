@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle, ShieldCheck, Info, ReceiptIndianRupee } from "lucide-react";
+import { PlusCircle, Info } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCoins, faPercentage } from "@fortawesome/free-solid-svg-icons";
 import apiClient from "../../api/apiClient";
 
 const AddTax = () => {
@@ -46,7 +48,7 @@ const AddTax = () => {
             <div className="space-y-6">
               <div>
                 <label className="flex items-center text-xs font-semibold text-gray-800 uppercase tracking-widest mb-3 px-1">
-                  <ReceiptIndianRupee className="w-3.5 h-3.5 mr-2 text-gray-800" />
+                  <FontAwesomeIcon icon={faCoins} className="w-3.5 h-3.5 mr-2 text-gray-800" />
                   Tax Label
                 </label>
                 <input
@@ -60,7 +62,7 @@ const AddTax = () => {
 
               <div>
                 <label className="flex items-center text-xs font-semibold text-gray-800 uppercase tracking-widest mb-3 px-1">
-                  <ShieldCheck className="w-3.5 h-3.5 mr-2 text-gray-800" />
+                  <FontAwesomeIcon icon={faPercentage} className="w-3.5 h-3.5 mr-2 text-gray-800" />
                   Tax Percentage (%)
                 </label>
                 <div className="relative">

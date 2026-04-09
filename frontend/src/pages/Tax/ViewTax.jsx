@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { Pencil, Trash2, X, Save, ReceiptIndianRupee, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Pencil, Trash2, X, Save, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCoins } from "@fortawesome/free-solid-svg-icons";
 import apiClient from "../../api/apiClient";
+import Pagination from "../../components/Pagination";
 
 const EditTaxModal = ({ isOpen, onClose, tax, onUpdate }) => {
   const [formData, setFormData] = useState({ name: "", percentage: "" });
@@ -116,7 +119,7 @@ const ViewTax = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchTaxes();
@@ -125,7 +128,7 @@ const ViewTax = () => {
   const fetchTaxes = async () => {
     try {
       const response = await apiClient.get("invoices/taxes/");
-      setTaxes(response.data);
+      setTaxes(response.data.sort((a,b) => b.id - a.id));
       setLoading(false);
     } catch (err) {
       setError("Unable to retrieve tax configurations.");
@@ -218,7 +221,7 @@ const ViewTax = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
         <div className="flex items-center space-x-4">
           <div className="p-3 bg-black rounded-2xl shadow-lg shadow-black/10">
-            <ReceiptIndianRupee className="w-6 h-6 text-white" />
+            <FontAwesomeIcon icon={faCoins} className="w-6 h-6 text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Tax Configurations</h1>
@@ -247,7 +250,7 @@ const ViewTax = () => {
             <thead>
               <tr className="bg-gray-50/50 text-[10px] uppercase tracking-[0.2em] text-gray-800 font-semibold">
                 <th
-                  className="px-8 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors"
+                  className="px-8 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap"
                   onClick={() => handleSort('name')}
                 >
                   <div className="flex items-center">
@@ -256,7 +259,7 @@ const ViewTax = () => {
                   </div>
                 </th>
                 <th
-                  className="px-8 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors"
+                  className="px-8 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap"
                   onClick={() => handleSort('percentage')}
                 >
                   <div className="flex items-center">
@@ -264,21 +267,21 @@ const ViewTax = () => {
                     {getSortIcon('percentage')}
                   </div>
                 </th>
-                <th className="px-8 py-5 border-b border-gray-300 text-right">Actions</th>
+                <th className="px-8 py-5 border-b border-gray-300 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {currentTaxes.map((tax) => (
                 <tr key={tax.id} className="group hover:bg-gray-100 transition-colors">
-                  <td className="px-8 py-6">
+                  <td className="px-8 py-6 whitespace-nowrap">
                     <span className="text-sm font-semibold text-gray-900">{tax.name}</span>
                   </td>
-                  <td className="px-8 py-6">
-                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-50 border border-gray-300 text-gray-800">
-                      {parseFloat(tax.percentage).toFixed(2)}%
+                  <td className="px-8 py-6 whitespace-nowrap">
+                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-50 border border-gray-300 text-gray-800 whitespace-nowrap">
+                      {tax.percentage}%
                     </div>
                   </td>
-                  <td className="px-8 py-6 text-right">
+                  <td className="px-8 py-6 text-right whitespace-nowrap">
                     <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => openEditModal(tax)}
@@ -302,30 +305,13 @@ const ViewTax = () => {
           </table>
         </div>
 
-        {/* Pagination Controls */}
-        {filteredTaxes.length > 0 && (
-          <div className="flex items-center justify-between px-8 py-6 border-t border-gray-100 bg-gray-50/50">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronLeft size={18} />
-            </button>
-
-            <span className="text-sm font-semibold text-gray-800">
-              Page {currentPage} of {Math.max(1, totalPages)}
-            </span>
-
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages || totalPages === 0}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
+        <Pagination 
+          totalItems={filteredTaxes.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
 
         {taxes.length === 0 && (
           <div className="p-16 text-center">

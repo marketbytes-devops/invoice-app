@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle, Package, Info, ReceiptIndianRupee } from "lucide-react";
+import { PlusCircle, Package, Info } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCoins } from "@fortawesome/free-solid-svg-icons";
 import apiClient from "../../api/apiClient";
 
 const AddProduct = () => {
@@ -60,7 +62,7 @@ const AddProduct = () => {
 
               <div>
                 <label className="flex items-center text-xs font-semibold text-gray-800 uppercase tracking-widest mb-3 px-1">
-                  <ReceiptIndianRupee className="w-3.5 h-3.5 mr-2 text-gray-800" />
+                  <FontAwesomeIcon icon={faCoins} className="w-3.5 h-3.5 mr-2 text-gray-800" />
                   Unit Cost
                 </label>
                 <div className="relative">

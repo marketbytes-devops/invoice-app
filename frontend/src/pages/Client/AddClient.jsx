@@ -3,7 +3,9 @@ import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import { Country } from "country-state-city";
-import { User, MapPin, Phone, Globe, CreditCard, FileText, Activity, Save, Building2 } from "lucide-react";
+import { User, MapPin, Phone, Globe, FileText, Activity, Save, Building2 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCreditCard, faTag } from "@fortawesome/free-solid-svg-icons";
 import SearchableSelect from "../../components/SearchableSelect";
 
 const AddClient = () => {
@@ -47,9 +49,12 @@ const AddClient = () => {
         website: website,
         invoice_series: data.invoiceSeries,
         status: data.status === "true",
-        gstin: data.gstin,
       };
-      if (data.taxType === "gst") payload.gst = data.gst;
+      
+      if (data.taxType === "gst") {
+        payload.gst = data.gst;
+        payload.gstin = data.gst; // Sync both if needed, or just use one
+      }
       if (data.taxType === "vat") payload.vat = data.vat;
 
       await apiClient.post("clients/clients/", payload);
@@ -182,7 +187,7 @@ const AddClient = () => {
           {/* Tax & Invoice Details */}
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <CreditCard className="w-5 h-5" /> Tax & Invoice Config
+              <FontAwesomeIcon icon={faCreditCard} className="w-5 h-5" /> Tax & Invoice Config
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -204,7 +209,7 @@ const AddClient = () => {
                         { label: "None", value: "nil" },
                       ]}
                       placeholder="Select Tax Type"
-                      icon={Activity}
+                      icon={faTag}
                     />
                   )}
                 />
@@ -214,13 +219,18 @@ const AddClient = () => {
               {/* Conditional Tax Number */}
               {selectedTaxType === "gst" && (
                 <div className="space-y-2">
-                  <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">GST Number</label>
-                  <input
-                    {...register("gst", { required: "GST Number is required" })}
-                    type="text"
-                    className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 transition-all outline-none text-black font-semibold placeholder-gray-400"
-                    placeholder="Enter GST Number"
-                  />
+                  <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">GSTIN</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FileText className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      {...register("gst", { required: "GSTIN is required" })}
+                      type="text"
+                      className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 transition-all outline-none text-black font-semibold placeholder-gray-400"
+                      placeholder="Enter GSTIN Number"
+                    />
+                  </div>
                   {errors.gst && <p className="text-red-500 text-xs px-1">{errors.gst.message}</p>}
                 </div>
               )}
@@ -228,31 +238,20 @@ const AddClient = () => {
               {selectedTaxType === "vat" && (
                 <div className="space-y-2">
                   <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">VAT Number</label>
-                  <input
-                    {...register("vat", { required: "VAT Number is required" })}
-                    type="text"
-                    className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 transition-all outline-none text-black font-semibold placeholder-gray-400"
-                    placeholder="Enter VAT Number"
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FileText className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      {...register("vat", { required: "VAT Number is required" })}
+                      type="text"
+                      className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 transition-all outline-none text-black font-semibold placeholder-gray-400"
+                      placeholder="Enter VAT Number"
+                    />
+                  </div>
                   {errors.vat && <p className="text-red-500 text-xs px-1">{errors.vat.message}</p>}
                 </div>
               )}
-
-              {/* GSTIN */}
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">GSTIN</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <FileText className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    {...register("gstin")}
-                    type="text"
-                    className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 transition-all outline-none text-black font-semibold placeholder-gray-400"
-                    placeholder="Enter GSTIN (Optional)"
-                  />
-                </div>
-              </div>
 
               {/* Invoice Series */}
               <div className="space-y-2">

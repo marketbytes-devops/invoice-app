@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import apiClient from "../../api/apiClient";
+import { formatDate } from "../../utils/dateUtils";
 
 const numberToWords = (num, currency) => {
   const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
@@ -18,37 +19,40 @@ const numberToWords = (num, currency) => {
     const hundreds = ones[Math.floor(n / 100)];
     const remainder = n % 100;
     if (remainder === 0) return `${hundreds} Hundred`;
-    return `${hundreds} Hundred and ${convertBelowHundred(remainder)}`;
+    return `${hundreds} Hundred ${convertBelowHundred(remainder)}`;
   };
 
-  const convertBelowMillion = (n) => {
+  const convertToIndianWords = (n) => {
     if (n < 1000) return convertBelowThousand(n);
-    const thousands = convertBelowThousand(Math.floor(n / 1000));
-    const remainder = n % 1000;
-    if (remainder === 0) return `${thousands} Thousand`;
-    return `${thousands} Thousand ${remainder < 100 ? "and " : ""}${convertBelowThousand(remainder)}`;
+    
+    let result = "";
+    
+    if (n >= 10000000) {
+      result += convertBelowThousand(Math.floor(n / 10000000)) + " Crore ";
+      n %= 10000000;
+    }
+    
+    if (n >= 100000) {
+      result += convertBelowThousand(Math.floor(n / 100000)) + " Lakh ";
+      n %= 100000;
+    }
+    
+    if (n >= 1000) {
+      result += convertBelowThousand(Math.floor(n / 1000)) + " Thousand ";
+      n %= 1000;
+    }
+    
+    if (n > 0) {
+      result += convertBelowThousand(n);
+    }
+    
+    return result.trim();
   };
 
-  const convertMillions = (n) => {
-    if (n < 1000000) return convertBelowMillion(n);
-    const millions = convertBelowThousand(Math.floor(n / 1000000));
-    const remainder = n % 1000000;
-    if (remainder === 0) return `${millions} Million`;
-    return `${millions} Million ${remainder < 100 ? "and " : ""}${convertBelowMillion(remainder)}`;
-  };
-
-  const result = `${convertMillions(absNum)} ${currency} Only`;
+  const result = `${convertToIndianWords(absNum)} ${currency} Only`;
   return num < 0 ? `Negative ${result}` : result;
 };
 
-const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-};
 
 const formatInvoiceNumber = (num) => {
   if (!num) return "N/A";
@@ -212,14 +216,14 @@ const PrintedProformaInvoice = () => {
             </div>
             <div className="w-full grid grid-cols-2 gap-4" style={{ marginTop: "1.2cm" }}>
               {/* To Label */}
-              <div className="w-5/6">
+              <div className="w-3/4">
                 <h4 className="font-weight: 100;">Invoice to :</h4>
                 <p className="font-semibold text-xl min-h-[2.5rem]">
                   {clientDetails?.client_name || "Unknown Client"}
                 </p>
               </div>
               {/* From Label */}
-              <div className="w-5/6">
+              <div className="w-3/4">
                 <h4 className="font-weight: 100;">Invoice from :</h4>
                 <p className="font-semibold text-xl min-h-[2.5rem]">
                   {companyName || branchDetails?.branch_name || "Unknown Company"}
@@ -309,12 +313,12 @@ const PrintedProformaInvoice = () => {
                     key={i}
                     className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
                   >
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{i + 1}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-center">{i + 1}</td>
                     <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.name || "N/A"}</td>
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.quantity || 0}</td>
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.total_gst || 0}</td>
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.unit_cost || 0}</td>
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">{item.total || 0}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{Number(item.quantity || 0).toLocaleString()}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{Number(item.total_gst || 0).toLocaleString()}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{Number(item.unit_cost || 0).toLocaleString()}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{Number(item.total || 0).toLocaleString()}</td>
                   </tr>
                 ))}
                 {Array.from({ length: Math.max(0, 7 - items.length) }).map((_, i) => (
@@ -333,42 +337,42 @@ const PrintedProformaInvoice = () => {
                 <tr className="bg-gray-100">
                   <td colSpan="3"></td>
                   <td className="text-right font-semibold p-2 whitespace-nowrap">Subtotal :</td>
-                  <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
-                    {subtotal || 0} {currency_type}
-                  </td>
-                </tr>
-                {tax_option === "yes" && (
-                  <tr className="bg-gray-100">
-                    <td colSpan="3"></td>
-                    <td className="text-right font-semibold p-2 whitespace-nowrap">{displayTaxName} :</td>
                     <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
-                      {gst || 0} {currency_type}
+                      {Number(subtotal || 0).toLocaleString()} {currency_type}
                     </td>
                   </tr>
-                )}
-                {discount && parseFloat(discount) > 0 && (
-                  <tr className="bg-gray-100">
-                    <td colSpan="3"></td>
-                    <td className="text-right font-semibold p-2 whitespace-nowrap">Discount :</td>
-                    <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
-                      -{discount} {currency_type}
+                  {tax_option === "yes" && (
+                    <tr className="bg-gray-100">
+                      <td colSpan="3"></td>
+                      <td className="text-right font-semibold p-2 whitespace-nowrap">{displayTaxName} :</td>
+                      <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
+                        {Number(gst || 0).toLocaleString()} {currency_type}
+                      </td>
+                    </tr>
+                  )}
+                  {discount && parseFloat(discount) > 0 && (
+                    <tr className="bg-gray-100">
+                      <td colSpan="3"></td>
+                      <td className="text-right font-semibold p-2 whitespace-nowrap">Discount :</td>
+                      <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
+                        -{Number(discount).toLocaleString()} {currency_type}
+                      </td>
+                    </tr>
+                  )}
+                  {amount_paid && parseFloat(amount_paid) > 0 && (
+                    <tr className="bg-gray-100">
+                      <td colSpan="3"></td>
+                      <td className="text-right font-semibold p-2 whitespace-nowrap">Amount Paid :</td>
+                      <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
+                        -{Number(amount_paid).toLocaleString()} {currency_type}
+                      </td>
+                    </tr>
+                  )}
+                  <tr className="bg-black text-white font-bold">
+                    <td colSpan="1" className="text-right px-2 py-4 whitespace-nowrap">Grand Total in Figures :</td>
+                    <td colSpan="5" className="text-right px-2 py-4 whitespace-nowrap">
+                      {Number(total_due || 0).toLocaleString()} {currency_type}
                     </td>
-                  </tr>
-                )}
-                {amount_paid && parseFloat(amount_paid) > 0 && (
-                  <tr className="bg-gray-100">
-                    <td colSpan="3"></td>
-                    <td className="text-right font-semibold p-2 whitespace-nowrap">Amount Paid :</td>
-                    <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
-                      -{amount_paid} {currency_type}
-                    </td>
-                  </tr>
-                )}
-                <tr className="bg-black text-white font-bold">
-                  <td colSpan="1" className="text-right px-2 py-4 whitespace-nowrap">Grand Total :</td>
-                  <td colSpan="5" className="text-right px-2 py-4 whitespace-nowrap">
-                    {total_due || 0} {currency_type}
-                  </td>
                 </tr>
                 <tr className="bg-black text-white font-bold">
                   <td colSpan="2" className="text-left px-2 py-4 whitespace-nowrap">Total in Words :</td>
@@ -417,7 +421,7 @@ const PrintedProformaInvoice = () => {
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">SWIFT Code:</span> {bankDetails?.swift_code || "N/A"}</p>
                   <p style={{ whiteSpace: "nowrap" }}><span className="font-semibold">MICR Code:</span> {bankDetails?.micr_code || "N/A"}</p>
                 </div>
-                <h6 className="font-semibold text-lg mt-5 mb-2">Payment Terms</h6>
+                <h6 className="font-semibold text-lg mt-5 mb-2">Mode of Payment</h6>
                 <p style={{ display: "flex", alignItems: "center" }}>
                   <span
                     className="font"
@@ -440,7 +444,7 @@ const PrintedProformaInvoice = () => {
             <div className="flex justify-start mb-5">
               <div className="mt-5 mb-5 flex flex-col items-start">
                 <p className="font-bold text-left text-black text-2xl">
-                  {total_due || 0} {currency_type || "N/A"}
+                  {Number(total_due || 0).toLocaleString()} {currency_type || "N/A"}
                 </p>
                 <div className="mt-2">
                   <p className="bg-black text-white text-lg font-bold text-center px-10 py-2.5 inline-block">
@@ -454,7 +458,7 @@ const PrintedProformaInvoice = () => {
         <div className="mb-4 mt-10">
           <h4 className="font-semibold mb-2">Note:</h4>
           <p className="text-justify">
-            Please make the payment of {total_due || 0} {currency_type || "N/A"} to the bank account details provided above. Upon receiving the payment, we will proceed with the services/products as agreed and provide a receipt for the payment recieved.
+            Please make the payment of {Number(total_due || 0).toLocaleString()} {currency_type || "N/A"} to the bank account details provided above. Upon receiving the payment, we will proceed with the services/products as agreed and provide a receipt for the payment recieved.
           </p>
           <p className="mt-4 text-justify">
             Thank you for choosing MarketBytes WebWorks Pvt. Ltd. If you have any questions or require further assistance, please don't hesitate to contact us at +91 97781 27272 or accounts@marketbytes.in.

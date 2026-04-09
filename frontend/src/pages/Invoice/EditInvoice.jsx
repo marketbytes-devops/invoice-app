@@ -4,6 +4,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import SearchableSelect from "../../components/SearchableSelect";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { 
+  faCoins, 
+  faTag, 
+  faWallet, 
+  faPercentage,
+  faCreditCard
+} from "@fortawesome/free-solid-svg-icons";
 import {
   FileText,
   Calendar,
@@ -48,7 +56,11 @@ const CustomInput = ({
       <div className="relative">
         {Icon && (
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-gray-400" />
+            {Icon?.iconName ? (
+              <FontAwesomeIcon icon={Icon} className="h-5 w-5 text-gray-400" />
+            ) : (
+              <Icon className="h-5 w-5 text-gray-400" />
+            )}
           </div>
         )}
         <input
@@ -86,15 +98,21 @@ const EditInvoice = () => {
     }
   };
 
-  // Generate financial year options
+  // Generate financial year options (current year and -5 years)
   const getFinancialYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
-    for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+    for (let i = currentYear - 5; i <= currentYear; i++) {
       years.push({ value: `${i}-${i + 1}`, label: `${i}-${i + 1}` });
     }
     return years.reverse();
   };
+
+  const today = new Date();
+  const invoiceDateInit = today.toISOString().split("T")[0];
+  const dueDateInit = new Date(today);
+  dueDateInit.setDate(today.getDate() + 3);
+  const dueDateString = dueDateInit.toISOString().split("T")[0];
 
   const {
     register,
@@ -123,7 +141,8 @@ const EditInvoice = () => {
       }
       : {
         invoiceNumber: `INV-${Date.now()}`,
-        invoiceDate: new Date().toISOString().split("T")[0],
+        invoiceDate: invoiceDateInit,
+        dueDate: dueDateString,
         financialYear: getCurrentFinancialYear(),
         taxable: "no",
         currencyType: "USD",
@@ -506,7 +525,7 @@ const EditInvoice = () => {
                           setSelectedTaxRate(val);
                         }}
                         placeholder="Select Rate"
-                        icon={Percent}
+                        icon={faPercentage}
                       />
                     )}
                   />
@@ -588,7 +607,7 @@ const EditInvoice = () => {
                     onChange={onChange}
                     placeholder="Select Bank Account"
                     error={errors.bankAccount}
-                    icon={CreditCard}
+                    icon={faCreditCard}
                   />
                 )}
               />
@@ -608,7 +627,7 @@ const EditInvoice = () => {
                     onChange={onChange}
                     placeholder="Select Currency"
                     error={errors.currencyType}
-                    icon={DollarSign}
+                    icon={faCoins}
                     displaySelectedValue={true}
                   />
                 )}
@@ -620,11 +639,11 @@ const EditInvoice = () => {
                   control={control}
                   render={({ field: { value, onChange } }) => (
                     <SearchableSelect
-                      label="Payment Terms"
+                      label="Mode of Payment"
                       options={["Credit", "Debit", "UPI", "Net Banking"].map((t) => ({ value: t, label: t }))}
                       value={value}
                       onChange={onChange}
-                      placeholder="Select Terms"
+                      placeholder="Select Mode of Payment"
                       icon={Clock}
                     />
                   )}
@@ -734,15 +753,25 @@ const EditInvoice = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <span className="text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">Subtotal</span>
-                  <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
-                    {watch("subtotal") || "0.00"} {selectedCurrency}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FontAwesomeIcon icon={faCoins} className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
+                      {watch("subtotal") || "0.00"} {selectedCurrency}
+                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <span className="text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">Total Tax</span>
-                  <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
-                    {watch("totalTax") || "0.00"} {selectedCurrency}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FontAwesomeIcon icon={faCoins} className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
+                      {watch("totalTax") || "0.00"} {selectedCurrency}
+                    </div>
                   </div>
                 </div>
 
@@ -757,7 +786,7 @@ const EditInvoice = () => {
                     setValue("discount", e.target.value);
                     calculateTotals();
                   }}
-                  icon={Percent}
+                  icon={faCoins}
                 />
 
                 <CustomInput
@@ -771,14 +800,17 @@ const EditInvoice = () => {
                     setValue("amountPaid", e.target.value);
                     calculateTotals();
                   }}
-                  icon={DollarSign}
+                  icon={faCoins}
                 />
               </div>
 
               {/* Grid 2: Total Due (Full Width) */}
               <div className="grid grid-cols-1">
                 <div className="w-full bg-black rounded-2xl p-4 text-white flex justify-between items-center shadow-lg shadow-black/10">
-                  <span className="text-sm font-bold uppercase tracking-widest">Total Due</span>
+                  <div className="flex items-center gap-3">
+                    <FontAwesomeIcon icon={faCoins} className="h-5 w-5 text-white/50" />
+                    <span className="text-sm font-bold uppercase tracking-widest">Total Due</span>
+                  </div>
                   <div className="text-right">
                     <div className="text-xl font-bold">
                       {watch("totalDue") || "0.00"} {selectedCurrency}

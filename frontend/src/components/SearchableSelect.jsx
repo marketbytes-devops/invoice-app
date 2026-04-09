@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Search, Check } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const SearchableSelect = ({
     options = [],
@@ -55,7 +56,11 @@ const SearchableSelect = ({
             <div className="relative">
                 {Icon && (
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                        <Icon className="h-5 w-5 text-gray-400" />
+                        {Icon?.iconName ? (
+                            <FontAwesomeIcon icon={Icon} className="h-5 w-5 text-gray-400" />
+                        ) : (
+                            <Icon className="h-5 w-5 text-gray-400" />
+                        )}
                     </div>
                 )}
 

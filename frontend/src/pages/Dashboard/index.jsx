@@ -16,6 +16,8 @@ import {
   Calendar,
   Filter
 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCoins, faUsers, faFileInvoice, faClock, faBriefcase, faCreditCard, faTruck, faBox } from "@fortawesome/free-solid-svg-icons";
 import {
   AreaChart,
   Area,
@@ -27,6 +29,7 @@ import {
 } from 'recharts';
 import { motion } from "framer-motion";
 import apiClient from "../../api/apiClient";
+import { formatDate } from "../../utils/dateUtils";
 
 const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color }) => (
   <motion.div
@@ -34,19 +37,6 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color }) => (
     className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between relative overflow-hidden group"
   >
     <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-5 group-hover:opacity-10 transition-opacity ${color}`} />
-
-    <div className="flex items-center justify-between mb-4">
-      <div className={`p-3 rounded-2xl ${color.replace('bg-', 'bg-opacity-10 ')}`}>
-        <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
-      </div>
-      {trend && (
-        <div className={`flex items-center text-xs font-bold px-2 py-1 rounded-full ${trend > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-          {trend > 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-          {Math.abs(trend)}%
-        </div>
-      )}
-    </div>
-
     <div>
       <h3 className="text-gray-500 text-sm font-semibold mb-1">{title}</h3>
       <div className="flex items-baseline space-x-2">
@@ -72,10 +62,10 @@ const Dashboard = () => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   // Financial year starts in April. If current month < 3 (Jan/Feb/Mar), we are in the later part of the previous FY.
-  const initialFY = currentMonth < 3 
-    ? `${currentYear - 1}-${currentYear}` 
+  const initialFY = currentMonth < 3
+    ? `${currentYear - 1}-${currentYear}`
     : `${currentYear}-${currentYear + 1}`;
-    
+
   const [selectedYear, setSelectedYear] = useState(initialFY);
   const [selectedMonth, setSelectedMonth] = useState("");
 
@@ -97,7 +87,7 @@ const Dashboard = () => {
         ]);
 
         setData({
-          invoices: invoicesRes.data,
+          invoices: invoicesRes.data.sort((a, b) => b.id - a.id),
           products: productsRes.data.length,
           services: servicesRes.data.length,
           clients: clientsRes.data.length,
@@ -121,7 +111,8 @@ const Dashboard = () => {
     const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
     const finalInvoices = data.invoices.filter(inv => inv.is_final);
-    
+    const proformaInvoices = data.invoices.filter(inv => !inv.is_final);
+
     // Revenue logic
     const totalRevenue = finalInvoices.reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
     const currentMonthRev = finalInvoices
@@ -130,7 +121,7 @@ const Dashboard = () => {
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
       .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
-    
+
     const lastMonthRev = finalInvoices
       .filter(inv => {
         const d = new Date(inv.invoice_date);
@@ -140,37 +131,37 @@ const Dashboard = () => {
 
     const revenueTrend = lastMonthRev === 0 ? (currentMonthRev > 0 ? 100 : 0) : Math.round(((currentMonthRev - lastMonthRev) / lastMonthRev) * 100);
 
-    // Pending logic
-    const pendingAmount = finalInvoices.reduce((sum, inv) => sum + (parseFloat(inv.total_due || 0) - parseFloat(inv.amount_paid || 0)), 0);
-    const currentMonthPending = finalInvoices
+    // Pending logic (Total Sum of Proforma Invoices)
+    const pendingAmount = proformaInvoices.reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+    const currentMonthPending = proformaInvoices
       .filter(inv => {
         const d = new Date(inv.invoice_date);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
-      .reduce((sum, inv) => sum + (parseFloat(inv.total_due || 0) - parseFloat(inv.amount_paid || 0)), 0);
-    
-    const lastMonthPending = finalInvoices
+      .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+
+    const lastMonthPending = proformaInvoices
       .filter(inv => {
         const d = new Date(inv.invoice_date);
         return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
       })
-      .reduce((sum, inv) => sum + (parseFloat(inv.total_due || 0) - parseFloat(inv.amount_paid || 0)), 0);
-    
+      .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+
     const pendingTrend = lastMonthPending === 0 ? (currentMonthPending > 0 ? 100 : 0) : Math.round(((currentMonthPending - lastMonthPending) / lastMonthPending) * 100);
 
     // Clients logic
-    const clientsTrend = 0; // Simple placeholder for now as we don't have client creation dates in this list
+    const totalClients = data.clients;
 
     // Drafts
-    const draftCount = data.invoices.filter(inv => !inv.is_final).length;
+    const draftCount = proformaInvoices.length;
 
     return {
       totalRevenue,
       revenueTrend,
       pendingAmount,
       pendingTrend,
+      totalClients,
       draftCount,
-      clientsTrend,
       totalCount: data.invoices.length
     };
   }, [data.invoices]);
@@ -191,7 +182,7 @@ const Dashboard = () => {
           const d = new Date(inv.invoice_date);
           const m = d.getMonth();
           const y = d.getFullYear();
-          
+
           if (m >= 3) return y === startYear;
           return y === endYear;
         });
@@ -207,7 +198,7 @@ const Dashboard = () => {
       const monthRevenue = filteredInvoices
         .filter(inv => new Date(inv.invoice_date).getMonth() === targetMonth)
         .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
-      
+
       return { name: monthName, revenue: monthRevenue };
     });
   }, [data.invoices, selectedYear, selectedMonth]);
@@ -254,33 +245,26 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total Revenue"
-          value={`₹${stats.totalRevenue.toLocaleString()}`}
+          value={stats.totalRevenue.toLocaleString()}
           subtitle="All finalized invoices"
-          icon={DollarSign}
-          trend={stats.revenueTrend}
           color="bg-black"
         />
         <MetricCard
           title="Pending Payments"
-          value={`₹${stats.pendingAmount.toLocaleString()}`}
-          subtitle="Waiting for settlement"
-          icon={Clock}
-          trend={stats.pendingTrend}
+          value={stats.pendingAmount.toLocaleString()}
+          subtitle="Total Proforma sum"
           color="bg-amber-500"
         />
         <MetricCard
           title="Total Clients"
-          value={data.clients}
+          value={data.clients.toString()}
           subtitle="Active registered clients"
-          icon={Users}
-          trend={stats.clientsTrend}
-          color="bg-blue-600"
+          color="bg-blue-500"
         />
         <MetricCard
           title="Draft Invoices"
-          value={stats.draftCount}
+          value={stats.draftCount.toString()}
           subtitle="In-progress documents"
-          icon={FileText}
           color="bg-gray-400"
         />
       </div>
@@ -422,29 +406,29 @@ const Dashboard = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">
-                <th className="px-8 py-4">Invoice #</th>
-                <th className="px-8 py-4">Client</th>
-                <th className="px-8 py-4">Date</th>
-                <th className="px-8 py-4 text-right">Amount</th>
-                <th className="px-8 py-4 text-center">Status</th>
+                <th className="px-8 py-4 whitespace-nowrap">Invoice #</th>
+                <th className="px-8 py-4 whitespace-nowrap">Client</th>
+                <th className="px-8 py-4 whitespace-nowrap">Date</th>
+                <th className="px-8 py-4 text-right whitespace-nowrap">Amount</th>
+                <th className="px-8 py-4 text-center whitespace-nowrap">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {data.invoices.slice(0, 5).map((inv, idx) => (
                 <tr key={idx} className="group hover:bg-gray-50/50 transition-colors">
-                  <td className="px-8 py-5">
-                    <span className="text-sm font-bold text-gray-900">#{inv.final_invoice_number || inv.invoice_number}</span>
+                  <td className="px-8 py-5 whitespace-nowrap">
+                    <span className="text-sm font-bold text-gray-900 whitespace-nowrap">{inv.is_final ? (inv.final_invoice_number || inv.invoice_number) : inv.invoice_number}</span>
                   </td>
-                  <td className="px-8 py-5">
-                    <span className="text-sm font-medium text-gray-600">{inv.client_name || 'N/A'}</span>
+                  <td className="px-8 py-5 whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-600 whitespace-nowrap">{inv.client_name || 'N/A'}</span>
                   </td>
-                  <td className="px-8 py-5">
-                    <span className="text-sm font-medium text-gray-400">{inv.invoice_date}</span>
+                  <td className="px-8 py-5 whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-400 whitespace-nowrap">{formatDate(inv.invoice_date)}</span>
                   </td>
-                  <td className="px-8 py-5 text-right">
-                    <span className="text-sm font-black text-gray-900">₹{parseFloat(inv.total_due).toLocaleString()}</span>
+                  <td className="px-8 py-5 text-right whitespace-nowrap">
+                    <span className="text-sm font-black text-gray-900 whitespace-nowrap">{parseFloat(inv.total_due).toLocaleString()} {inv.currency_type}</span>
                   </td>
-                  <td className="px-8 py-5 text-center">
+                  <td className="px-8 py-5 text-center whitespace-nowrap">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${inv.is_final ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'
                       }`}>
                       {inv.is_final ? 'Final' : 'Proforma'}

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Country } from "country-state-city";
 import SearchableSelect from "../../components/SearchableSelect";
+import Pagination from "../../components/Pagination";
 
 const EditClientModal = ({ isOpen, onClose, client, onUpdate }) => {
   const [formData, setFormData] = useState({});
@@ -176,43 +177,37 @@ const EditClientModal = ({ isOpen, onClose, client, onUpdate }) => {
 
               {formData.tax_type === "gst" && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest mb-2 px-1">GST Number</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.gst || ""}
-                    onChange={(e) => handleChange("gst", e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 outline-none font-semibold text-black"
-                  />
+                  <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest mb-2 px-1">GSTIN</label>
+                  <div className="relative">
+                    <FileText className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      required
+                      value={formData.gst || ""}
+                      onChange={(e) => handleChange("gst", e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 outline-none font-semibold text-black"
+                      placeholder="Enter GSTIN Number"
+                    />
+                  </div>
                 </div>
               )}
 
               {formData.tax_type === "vat" && (
                 <div>
                   <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest mb-2 px-1">VAT Number</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.vat || ""}
-                    onChange={(e) => handleChange("vat", e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 outline-none font-semibold text-black"
-                  />
+                  <div className="relative">
+                    <FileText className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      required
+                      value={formData.vat || ""}
+                      onChange={(e) => handleChange("vat", e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 outline-none font-semibold text-black"
+                      placeholder="Enter VAT Number"
+                    />
+                  </div>
                 </div>
               )}
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-800 uppercase tracking-widest mb-2 px-1">GSTIN</label>
-                <div className="relative">
-                  <FileText className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={formData.gstin || ""}
-                    onChange={(e) => handleChange("gstin", e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:ring-2 focus:ring-black/5 outline-none font-semibold text-black"
-                    placeholder="GSTIN (Optional)"
-                  />
-                </div>
-              </div>
 
               <div>
                 <SearchableSelect
@@ -287,7 +282,7 @@ const ViewClient = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchClients();
@@ -296,7 +291,7 @@ const ViewClient = () => {
   const fetchClients = async () => {
     try {
       const response = await apiClient.get("clients/clients/");
-      setClients(response.data);
+      setClients(response.data.sort((a, b) => b.id - a.id));
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch clients. Please try again later.");
@@ -418,40 +413,40 @@ const ViewClient = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 text-[10px] uppercase tracking-[0.2em] text-gray-800 font-semibold">
-                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('client_name')}>
+                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap" onClick={() => handleSort('client_name')}>
                   <div className="flex items-center">Client Name {getSortIcon('client_name')}</div>
                 </th>
-                <th className="px-6 py-5 border-b border-gray-300">Address</th>
-                <th className="px-6 py-5 border-b border-gray-300">Phone</th>
-                <th className="px-6 py-5 border-b border-gray-300">Tax Info</th>
-                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('status')}>
+                <th className="px-6 py-5 border-b border-gray-300 whitespace-nowrap">Address</th>
+                <th className="px-6 py-5 border-b border-gray-300 whitespace-nowrap">Phone</th>
+                <th className="px-6 py-5 border-b border-gray-300 whitespace-nowrap">Tax Info</th>
+                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap" onClick={() => handleSort('status')}>
                   <div className="flex items-center">Status {getSortIcon('status')}</div>
                 </th>
-                <th className="px-6 py-5 border-b border-gray-300 text-right">Actions</th>
+                <th className="px-6 py-5 border-b border-gray-300 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {currentClients.map((client) => (
                 <tr key={client.id} className="group hover:bg-gray-100 transition-colors">
-                  <td className="px-6 py-6 font-semibold text-gray-900 text-sm">{client.client_name}</td>
-                  <td className="px-6 py-6 text-sm text-gray-800 max-w-xs truncate" title={client.address}>{client.address}</td>
-                  <td className="px-6 py-6 text-sm text-gray-800">{client.phone_code} {client.phone}</td>
-                  <td className="px-6 py-6 text-sm text-gray-800">
+                  <td className="px-6 py-6 font-semibold text-gray-900 text-sm whitespace-nowrap">{client.client_name}</td>
+                  <td className="px-6 py-6 text-sm text-gray-800 whitespace-nowrap overflow-hidden text-ellipsis max-w-xs" title={client.address}>{client.address}</td>
+                  <td className="px-6 py-6 text-sm text-gray-800 whitespace-nowrap">{client.phone_code} {client.phone}</td>
+                  <td className="px-6 py-6 text-sm text-gray-800 whitespace-nowrap">
                     <div className="flex flex-col">
                       <span className="capitalize font-medium">{client.tax_type}</span>
                       {client.tax_type === 'gst' && <span className="text-xs text-gray-500">{client.gst}</span>}
                       {client.tax_type === 'vat' && <span className="text-xs text-gray-500">{client.vat}</span>}
                     </div>
                   </td>
-                  <td className="px-6 py-6">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${client.status
+                  <td className="px-6 py-6 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${client.status
                       ? 'bg-green-50 text-green-700 border border-green-200'
                       : 'bg-red-50 text-red-700 border border-red-200'
                       }`}>
                       {client.status ? 'Active' : 'Inactive'}
                     </span>
                   </td>
-                  <td className="px-6 py-6 text-right">
+                  <td className="px-6 py-6 text-right whitespace-nowrap">
                     <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => openEditModal(client)}
@@ -475,30 +470,13 @@ const ViewClient = () => {
           </table>
         </div>
 
-        {/* Pagination */}
-        {filteredClients.length > 0 && (
-          <div className="flex items-center justify-between px-8 py-6 border-t border-gray-100 bg-gray-50/50">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronLeft size={18} />
-            </button>
-
-            <span className="text-sm font-semibold text-gray-800">
-              Page {currentPage} of {Math.max(1, totalPages)}
-            </span>
-
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages || totalPages === 0}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
+        <Pagination 
+          totalItems={filteredClients.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
 
         {filteredClients.length === 0 && (
           <div className="p-16 text-center">

@@ -2,7 +2,9 @@ import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
-import { CreditCard, User, Building2, Hash, Disc, Globe, FileText, Save, ArrowLeft } from "lucide-react";
+import { User, Building2, Hash, Disc, Globe, FileText, Save, ArrowLeft } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCreditCard } from "@fortawesome/free-solid-svg-icons";
 import SearchableSelect from "../../components/SearchableSelect";
 
 const AddBankAccount = () => {
@@ -49,7 +51,7 @@ const AddBankAccount = () => {
           <ArrowLeft className="w-6 h-6 text-gray-800" />
         </button>
         <div className="p-3 bg-black rounded-2xl shadow-lg shadow-black/10">
-          <CreditCard className="w-6 h-6 text-white" />
+          <FontAwesomeIcon icon={faCreditCard} className="w-6 h-6 text-white" />
         </div>
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Add Bank Account</h1>

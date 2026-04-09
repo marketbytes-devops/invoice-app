@@ -4,6 +4,17 @@ import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import SearchableSelect from "../../components/SearchableSelect";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { 
+  faCoins, 
+  faTag, 
+  faWallet, 
+  faPercentage, 
+  faReceipt, 
+  faMoneyBillWave,
+  faCreditCard,
+  faFileInvoice
+} from "@fortawesome/free-solid-svg-icons";
 import {
   FileText,
   Calendar,
@@ -21,7 +32,11 @@ import {
   CheckCircle,
   Disc,
   X,
-  CalendarDays
+  CalendarDays,
+  Banknote,
+  Coins,
+  Receipt,
+  Wallet
 } from "lucide-react";
 
 // Custom Input Component to match AddBankAccount styles
@@ -50,7 +65,11 @@ const CustomInput = ({
       <div className="relative">
         {Icon && (
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-gray-400" />
+            {Icon?.iconName ? (
+              <FontAwesomeIcon icon={Icon} className="h-5 w-5 text-gray-400" />
+            ) : (
+              <Icon className="h-5 w-5 text-gray-400" />
+            )}
           </div>
         )}
         <input
@@ -87,15 +106,21 @@ const CreateInvoice = () => {
     }
   };
 
-  // Generate financial year options (current year +/- 5 years)
+  // Generate financial year options (current year and -5 years)
   const getFinancialYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
-    for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+    for (let i = currentYear - 5; i <= currentYear; i++) {
       years.push({ value: `${i}-${i + 1}`, label: `${i}-${i + 1}` });
     }
     return years.reverse();
   };
+
+  const today = new Date();
+  const invoiceDateInit = today.toISOString().split("T")[0];
+  const dueDateInit = new Date(today);
+  dueDateInit.setDate(today.getDate() + 3);
+  const dueDateString = dueDateInit.toISOString().split("T")[0];
 
   const {
     register,
@@ -107,7 +132,8 @@ const CreateInvoice = () => {
   } = useForm({
     defaultValues: {
       invoiceNumber: `INV-${Date.now()}`,
-      invoiceDate: new Date().toISOString().split("T")[0],
+      invoiceDate: invoiceDateInit,
+      dueDate: dueDateString,
       financialYear: getCurrentFinancialYear(),
       taxable: "no",
       currencyType: "USD",
@@ -247,6 +273,16 @@ const CreateInvoice = () => {
 
     return { subtotal, totalTax, discount, amountPaid, totalDue };
   };
+
+  // Automatically update Due Date when Invoice Date changes (Initial time or manual change)
+  const watchInvoiceDate = watch("invoiceDate");
+  useEffect(() => {
+    if (watchInvoiceDate) {
+      const date = new Date(watchInvoiceDate);
+      date.setDate(date.getDate() + 3);
+      setValue("dueDate", date.toISOString().split("T")[0]);
+    }
+  }, [watchInvoiceDate, setValue]);
 
   useEffect(() => {
     calculateTotals();
@@ -429,7 +465,7 @@ const CreateInvoice = () => {
                       }}
                       placeholder="Taxable?"
                       error={errors.taxable}
-                      icon={CheckCircle}
+                      icon={faFileInvoice}
                     />
                   )}
                 />
@@ -451,7 +487,7 @@ const CreateInvoice = () => {
                           setSelectedTaxRate(val);
                         }}
                         placeholder="Select Rate"
-                        icon={Percent}
+                        icon={faPercentage}
                       />
                     )}
                   />
@@ -534,7 +570,7 @@ const CreateInvoice = () => {
                     onChange={onChange}
                     placeholder="Select Bank Account"
                     error={errors.bankAccount}
-                    icon={CreditCard}
+                    icon={faCreditCard}
                   />
                 )}
               />
@@ -554,7 +590,7 @@ const CreateInvoice = () => {
                     onChange={onChange}
                     placeholder="Select Currency"
                     error={errors.currencyType}
-                    icon={DollarSign}
+                    icon={faCoins}
                     displaySelectedValue={true}
                   />
                 )}
@@ -566,12 +602,12 @@ const CreateInvoice = () => {
                   control={control}
                   render={({ field: { value, onChange } }) => (
                     <SearchableSelect
-                      label="Payment Terms"
+                      label="Mode of Payment"
                       options={["Credit", "Debit", "UPI", "Net Banking"].map((t) => ({ value: t, label: t }))}
                       value={value}
                       onChange={onChange}
-                      placeholder="Select Terms"
-                      icon={Clock}
+                      placeholder="Select Mode of Payment"
+                      icon={faWallet}
                     />
                   )}
                 />
@@ -639,6 +675,7 @@ const CreateInvoice = () => {
                         }
                         readOnly={invoiceType === "product" && item.itemName !== ""}
                         placeholder="Cost"
+                        icon={faCoins}
                         className={invoiceType === "product" ? "opacity-75" : ""}
                       />
                     </div>
@@ -683,15 +720,25 @@ const CreateInvoice = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <span className="text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">Subtotal</span>
-                  <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
-                    {watch("subtotal") || "0.00"} {selectedCurrency}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FontAwesomeIcon icon={faCoins} className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
+                      {watch("subtotal") || "0.00"} {selectedCurrency}
+                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <span className="text-xs font-semibold text-gray-800 uppercase tracking-widest px-1">Total Tax</span>
-                  <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
-                    {watch("totalTax") || "0.00"} {selectedCurrency}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <FontAwesomeIcon icon={faCoins} className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
+                      {watch("totalTax") || "0.00"} {selectedCurrency}
+                    </div>
                   </div>
                 </div>
 
@@ -706,7 +753,7 @@ const CreateInvoice = () => {
                     setValue("discount", e.target.value);
                     calculateTotals();
                   }}
-                  icon={Percent}
+                  icon={faCoins}
                 />
 
                 <CustomInput
@@ -720,14 +767,17 @@ const CreateInvoice = () => {
                     setValue("amountPaid", e.target.value);
                     calculateTotals();
                   }}
-                  icon={DollarSign}
+                  icon={faCoins}
                 />
               </div>
 
               {/* Grid 2: Total Due (Full Width) */}
               <div className="grid grid-cols-1">
                 <div className="w-full bg-black rounded-2xl p-4 text-white flex justify-between items-center shadow-lg shadow-black/10">
-                  <span className="text-sm font-bold uppercase tracking-widest">Total Due</span>
+                  <div className="flex items-center gap-3">
+                    <FontAwesomeIcon icon={faCoins} className="h-5 w-5 text-white/50" />
+                    <span className="text-sm font-bold uppercase tracking-widest">Total Due</span>
+                  </div>
                   <div className="text-right">
                     <div className="text-xl font-bold">
                       {watch("totalDue") || "0.00"} {selectedCurrency}

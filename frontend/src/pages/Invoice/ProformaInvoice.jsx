@@ -5,6 +5,8 @@ import apiClient from "../../api/apiClient";
 import { useNavigate, useLocation } from "react-router-dom";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import SearchableSelect from "../../components/SearchableSelect";
+import { formatDate } from "../../utils/dateUtils";
+import Pagination from "../../components/Pagination";
 
 const formatInvoiceNumber = (num) => {
   if (!num) return "N/A";
@@ -68,7 +70,7 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
                 {invoice.is_final ? "Finalized" : "Draft Proforma"}
               </span>
               <span className="text-sm text-gray-500 font-medium">
-                Created on {new Date(invoice.invoice_date).toLocaleDateString()}
+                Created on {formatDate(invoice.invoice_date)}
               </span>
             </div>
             <div className="text-right">
@@ -86,13 +88,13 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
                   <p className="font-bold text-lg text-gray-900 mb-1">{getClientName(invoice.client)}</p>
                   <div className="space-y-1">
                     <p className="text-sm text-gray-500 font-medium flex items-center gap-2">
-                       FY: <span className="text-gray-900">{invoice.financial_year || "N/A"}</span>
+                      FY: <span className="text-gray-900">{invoice.financial_year || "N/A"}</span>
                     </p>
                     <p className="text-sm text-gray-500 font-medium flex items-center gap-2">
-                       INV Date: <span className="text-gray-900">{invoice.invoice_date}</span>
+                      INV Date: <span className="text-gray-900">{formatDate(invoice.invoice_date)}</span>
                     </p>
                     <p className="text-sm text-gray-500 font-medium flex items-center gap-2">
-                       Due Date: <span className="text-gray-900">{invoice.due_date}</span>
+                      Due Date: <span className="text-gray-900">{formatDate(invoice.due_date)}</span>
                     </p>
                   </div>
                 </div>
@@ -118,7 +120,7 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
                   </div>
                   <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
                     <div>
-                      <p className="text-xs text-gray-400 font-bold uppercase">Payment Terms</p>
+                      <p className="text-xs text-gray-400 font-bold uppercase">Mode of Payment</p>
                       <p className="text-sm text-gray-900 font-medium mt-1">{invoice.payment_terms}</p>
                     </div>
                     <div>
@@ -154,7 +156,7 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
                   )}
                   <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between items-center">
                     <span className="text-gray-900 font-bold">Total Due</span>
-                    <span className="text-xl font-black text-gray-900">{invoice.total_due}</span>
+                    <span className="text-xl font-black text-gray-900">{invoice.total_due} {invoice.currency_type}</span>
                   </div>
                 </div>
               </div>
@@ -232,6 +234,8 @@ const ProformaInvoice = () => {
   const [loading, setLoading] = useState(true);
   const [filterYear, setFilterYear] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   /* New import at top if needed, but I will just modify this block first and ensure imports are there */
   const location = useLocation();
@@ -247,8 +251,10 @@ const ProformaInvoice = () => {
           apiClient.get("bank/bank-accounts/"),
         ]);
 
-        // Filter only proforma invoices (not final)
-        const proformaInvoices = invoicesRes.data.filter(inv => !inv.is_final);
+        // Filter and sort only proforma invoices (LIFO - Newest first)
+        const proformaInvoices = invoicesRes.data
+          .filter(inv => !inv.is_final)
+          .sort((a, b) => b.id - a.id);
         setInvoices(proformaInvoices);
         setClients(clientsRes.data);
         setBranches(branchesRes.data);
@@ -274,6 +280,7 @@ const ProformaInvoice = () => {
 
   // Filter Logic
   const filteredInvoices = useMemo(() => {
+    setCurrentPage(1); // Reset to first page when filtering
     return invoices.filter(inv => {
       const date = new Date(inv.invoice_date);
       const yearMatch = filterYear ? date.getFullYear().toString() === filterYear : true;
@@ -281,6 +288,11 @@ const ProformaInvoice = () => {
       return yearMatch && monthMatch;
     });
   }, [invoices, filterYear, filterMonth]);
+
+  const paginatedInvoices = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredInvoices.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredInvoices, currentPage, itemsPerPage]);
 
   // Available Years for Filter
   const availableYears = useMemo(() => {
@@ -416,64 +428,63 @@ const ProformaInvoice = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-black text-white">
-                <th className="p-5 text-xs font-bold uppercase tracking-wider text-center w-16">No.</th>
-                <th className="p-5 text-xs font-bold uppercase tracking-wider">Invoice Details</th>
-                <th className="p-5 text-xs font-bold uppercase tracking-wider">FY / Type</th>
-                <th className="p-5 text-xs font-bold uppercase tracking-wider">Client</th>
-                <th className="p-5 text-xs font-bold uppercase tracking-wider">Date</th>
-                <th className="p-5 text-xs font-bold uppercase tracking-wider text-right">Amount</th>
-                <th className="p-5 text-xs font-bold uppercase tracking-wider text-center">Status</th>
-                <th className="p-5 text-xs font-bold uppercase tracking-wider text-center w-32">Actions</th>
+                <th className="p-5 text-xs font-bold uppercase tracking-wider text-center w-16 whitespace-nowrap">No.</th>
+                <th className="p-5 text-xs font-bold uppercase tracking-wider whitespace-nowrap">Invoice Details</th>
+                <th className="p-5 text-xs font-bold uppercase tracking-wider whitespace-nowrap">FY / Type</th>
+                <th className="p-5 text-xs font-bold uppercase tracking-wider whitespace-nowrap">Client</th>
+                <th className="p-5 text-xs font-bold uppercase tracking-wider whitespace-nowrap">Date</th>
+                <th className="p-5 text-xs font-bold uppercase tracking-wider text-right whitespace-nowrap">Amount</th>
+                <th className="p-5 text-xs font-bold uppercase tracking-wider text-center whitespace-nowrap">Status</th>
+                <th className="p-5 text-xs font-bold uppercase tracking-wider text-center w-32 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredInvoices.length > 0 ? (
-                filteredInvoices.map((inv, index) => (
-                  <tr key={inv.id} className="hover:bg-gray-50 transition-all group">
-                    <td className="p-5 text-sm font-bold text-gray-500 text-center">
-                      {(index + 1).toString().padStart(2, '0')}
+              {paginatedInvoices.length > 0 ? (
+                paginatedInvoices.map((inv, index) => (
+                  <tr key={inv.id} className="group border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                    <td className="p-5 text-gray-400 font-bold text-xs text-center whitespace-nowrap">
+                      {((currentPage - 1) * itemsPerPage + index + 1).toString().padStart(2, '0')}
                     </td>
-                    <td className="p-5">
+                    <td className="p-5 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-white group-hover:shadow-sm transition-all">
                           <FileText className="w-5 h-5 text-gray-700" />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-900">{formatInvoiceNumber(inv.invoice_number || inv.final_invoice_number)}</p>
+                          <p className="text-sm font-bold text-gray-900">{formatInvoiceNumber(inv.invoice_number)}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="p-5">
+                    <td className="p-5 whitespace-nowrap">
                       <div className="flex flex-col gap-1">
                         <span className="text-xs text-gray-600 font-bold bg-gray-100 px-2 py-1 rounded whitespace-nowrap w-fit">
                           {inv.financial_year || (inv.invoice_date ? (new Date(inv.invoice_date).getMonth() + 1 >= 4 ? `${new Date(inv.invoice_date).getFullYear()}-${new Date(inv.invoice_date).getFullYear() + 1}` : `${new Date(inv.invoice_date).getFullYear() - 1}-${new Date(inv.invoice_date).getFullYear()}`) : 'N/A')}
                         </span>
-                        <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md w-fit uppercase tracking-wide">
+                        <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md w-fit uppercase tracking-wide whitespace-nowrap">
                           {inv.invoice_type}
                         </span>
                       </div>
                     </td>
-                    <td className="p-5">
+                    <td className="p-5 whitespace-nowrap">
                       <p className="text-sm font-bold text-gray-900">{getClientName(inv.client)}</p>
                       <p className="text-xs text-gray-400 font-medium mt-0.5 max-w-[200px] truncate">
                         {getBranchName(inv.branch_address)}
                       </p>
                     </td>
-                    <td className="p-5">
-                      <p className="text-sm font-medium text-gray-700">{new Date(inv.invoice_date).toLocaleDateString()}</p>
-                      <p className="text-xs text-gray-400">Due: {new Date(inv.due_date).toLocaleDateString()}</p>
+                    <td className="p-5 whitespace-nowrap">
+                      <p className="text-sm font-medium text-gray-700">{formatDate(inv.invoice_date)}</p>
+                      <p className="text-xs text-gray-400">Due: {formatDate(inv.due_date)}</p>
                     </td>
-                    <td className="p-5 text-right">
-                      <p className="text-sm font-black text-gray-900">{inv.total_due}</p>
-                      <p className="text-xs text-gray-500 font-bold">{inv.currency_type}</p>
+                    <td className="p-5 text-right whitespace-nowrap">
+                      <p className="text-sm font-black text-gray-900">{Number(inv.total_due).toLocaleString()} {inv.currency_type}</p>
                     </td>
-                    <td className="p-5 text-center">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                    <td className="p-5 text-center whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap">
                         <div className="w-1.5 h-1.5 rounded-full bg-gray-400"></div>
                         Proforma
                       </span>
                     </td>
-                    <td className="p-5">
+                    <td className="p-5 whitespace-nowrap">
                       <div className="flex justify-center items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => setSelectedInvoice(inv)}
@@ -508,13 +519,14 @@ const ProformaInvoice = () => {
           </table>
         </div>
 
-        {/* Footer / Stats for Table */}
-        {filteredInvoices.length > 0 && (
-          <div className="bg-gray-50 border-t border-gray-200 p-4 text-xs font-semibold text-gray-500 flex justify-between items-center">
-            <span>Showing {filteredInvoices.length} invoices</span>
-            <span>Total Items: {invoices.length}</span>
-          </div>
-        )}
+        {/* Pagination Component */}
+        <Pagination 
+          totalItems={filteredInvoices.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
 
       {/* View Modal Portal */}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import apiClient from "../../api/apiClient";
 import { Pencil, Trash2, X, Save, Briefcase, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import Pagination from "../../components/Pagination";
 
 const EditServiceModal = ({ isOpen, onClose, service, onUpdate }) => {
   const [formData, setFormData] = useState({ name: "" });
@@ -104,7 +105,7 @@ const ViewService = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchServices();
@@ -113,7 +114,7 @@ const ViewService = () => {
   const fetchServices = async () => {
     try {
       const response = await apiClient.get("services/services/");
-      setServices(response.data);
+      setServices(response.data.sort((a,b) => b.id - a.id));
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch services. Please try again later.");
@@ -229,7 +230,7 @@ const ViewService = () => {
             <thead>
               <tr className="bg-gray-50/50 text-[10px] uppercase tracking-[0.2em] text-gray-800 font-semibold">
                 <th
-                  className="px-8 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors"
+                  className="px-8 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap"
                   onClick={() => handleSort('name')}
                 >
                   <div className="flex items-center">
@@ -237,16 +238,16 @@ const ViewService = () => {
                     {getSortIcon('name')}
                   </div>
                 </th>
-                <th className="px-8 py-5 border-b border-gray-300 text-right">Actions</th>
+                <th className="px-8 py-5 border-b border-gray-300 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {currentServices.map((service) => (
                 <tr key={service.id} className="group hover:bg-gray-100 transition-colors">
-                  <td className="px-8 py-6">
-                    <span className="text-sm font-semibold text-gray-900">{service.name}</span>
+                  <td className="px-8 py-6 whitespace-nowrap">
+                    <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">{service.name}</span>
                   </td>
-                  <td className="px-8 py-6 text-right">
+                  <td className="px-8 py-6 text-right whitespace-nowrap">
                     <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => openEditModal(service)}
@@ -270,30 +271,13 @@ const ViewService = () => {
           </table>
         </div>
 
-        {/* Pagination Controls */}
-        {filteredServices.length > 0 && (
-          <div className="flex items-center justify-between px-8 py-6 border-t border-gray-100 bg-gray-50/50">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronLeft size={18} />
-            </button>
-
-            <span className="text-sm font-semibold text-gray-800">
-              Page {currentPage} of {Math.max(1, totalPages)}
-            </span>
-
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages || totalPages === 0}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
+        <Pagination 
+          totalItems={filteredServices.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
 
         {filteredServices.length === 0 && (
           <div className="p-16 text-center">

@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight, Search, CreditCard, User, Hash, Disc, Globe
 } from "lucide-react";
 import SearchableSelect from "../../components/SearchableSelect";
+import Pagination from "../../components/Pagination";
 
 const EditBankModal = ({ isOpen, onClose, account, onUpdate }) => {
   const [formData, setFormData] = useState({});
@@ -194,7 +195,7 @@ const ViewBankAccount = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchBankAccounts();
@@ -203,7 +204,7 @@ const ViewBankAccount = () => {
   const fetchBankAccounts = async () => {
     try {
       const response = await apiClient.get("bank/bank-accounts/");
-      setBankAccounts(response.data);
+      setBankAccounts(response.data.sort((a,b) => b.id - a.id));
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch bank accounts. Please try again later.");
@@ -323,36 +324,41 @@ const ViewBankAccount = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 text-[10px] uppercase tracking-[0.2em] text-gray-800 font-semibold">
-                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('bank_name')}>
+                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap" onClick={() => handleSort('bank_name')}>
                   <div className="flex items-center">Bank Name {getSortIcon('bank_name')}</div>
                 </th>
-                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('account_holder_name')}>
+                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap" onClick={() => handleSort('account_holder_name')}>
                   <div className="flex items-center">Account Holder {getSortIcon('account_holder_name')}</div>
                 </th>
-                <th className="px-6 py-5 border-b border-gray-300">Account No.</th>
-                <th className="px-6 py-5 border-b border-gray-300">Type</th>
-                <th className="px-6 py-5 border-b border-gray-300">Codes</th>
-                <th className="px-6 py-5 border-b border-gray-300 text-right">Actions</th>
+                <th className="px-6 py-5 border-b border-gray-300 whitespace-nowrap">Account No.</th>
+                <th className="px-6 py-5 border-b border-gray-300 whitespace-nowrap">Type</th>
+                <th className="px-6 py-5 border-b border-gray-300 whitespace-nowrap">Codes</th>
+                <th className="px-6 py-5 border-b border-gray-300 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {currentAccounts.map((account) => (
                 <tr key={account.id} className="group hover:bg-gray-100 transition-colors">
-                  <td className="px-6 py-6 font-semibold text-gray-900 text-sm">{account.bank_name}</td>
-                  <td className="px-6 py-6 text-sm text-gray-800">{account.account_holder_name}</td>
-                  <td className="px-6 py-6 text-sm text-gray-800 font-mono tracking-wide">{account.account_number}</td>
-                  <td className="px-6 py-6 text-sm text-gray-800">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                  <td className="px-6 py-6 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-gray-900">{account.bank_name}</span>
+                      <span className="text-xs text-gray-500">{account.branch_name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-6 text-sm text-gray-800 whitespace-nowrap font-medium">{account.account_holder_name}</td>
+                  <td className="px-6 py-6 text-sm font-mono text-gray-900 whitespace-nowrap">{account.account_number}</td>
+                  <td className="px-6 py-6 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-600 uppercase tracking-tighter whitespace-nowrap">
                       {account.account_type}
                     </span>
                   </td>
-                  <td className="px-6 py-6 text-sm text-gray-800">
-                    <div className="text-xs space-y-1 font-mono text-gray-500">
-                      <div>IFSC: {account.ifsc_code}</div>
-                      {account.swift_code && <div>SWIFT: {account.swift_code}</div>}
+                  <td className="px-6 py-6 whitespace-nowrap">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase whitespace-nowrap">IFSC: <span className="text-gray-900">{account.ifsc_code}</span></span>
+                      {account.swift_code && <span className="text-[10px] text-gray-400 font-bold uppercase whitespace-nowrap">SWIFT: <span className="text-gray-900">{account.swift_code}</span></span>}
                     </div>
                   </td>
-                  <td className="px-6 py-6 text-right">
+                  <td className="px-6 py-6 text-right whitespace-nowrap">
                     <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => openEditModal(account)}
@@ -376,30 +382,13 @@ const ViewBankAccount = () => {
           </table>
         </div>
 
-        {/* Pagination */}
-        {filteredAccounts.length > 0 && (
-          <div className="flex items-center justify-between px-8 py-6 border-t border-gray-100 bg-gray-50/50">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronLeft size={18} />
-            </button>
-
-            <span className="text-sm font-semibold text-gray-800">
-              Page {currentPage} of {Math.max(1, totalPages)}
-            </span>
-
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages || totalPages === 0}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
+        <Pagination 
+          totalItems={filteredAccounts.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
 
         {filteredAccounts.length === 0 && (
           <div className="p-16 text-center">

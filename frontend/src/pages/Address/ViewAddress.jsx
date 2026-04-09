@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Country } from "country-state-city";
 import SearchableSelect from "../../components/SearchableSelect";
+import Pagination from "../../components/Pagination";
 
 const EditAddressModal = ({ isOpen, onClose, address, onUpdate }) => {
   const [formData, setFormData] = useState({});
@@ -216,7 +217,7 @@ const ViewAddress = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchAddresses();
@@ -225,7 +226,7 @@ const ViewAddress = () => {
   const fetchAddresses = async () => {
     try {
       const response = await apiClient.get("branch/branch_addresses/");
-      setAddresses(response.data);
+      setAddresses(response.data.sort((a,b) => b.id - a.id));
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch addresses. Please try again later.");
@@ -345,33 +346,37 @@ const ViewAddress = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 text-[10px] uppercase tracking-[0.2em] text-gray-800 font-semibold">
-                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('branch_name')}>
+                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap" onClick={() => handleSort('branch_name')}>
                   <div className="flex items-center">Branch Name {getSortIcon('branch_name')}</div>
                 </th>
-                <th className="px-6 py-5 border-b border-gray-300">Address</th>
-                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('city')}>
+                <th className="px-6 py-5 border-b border-gray-300 whitespace-nowrap">Address</th>
+                <th className="px-6 py-5 border-b border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors whitespace-nowrap" onClick={() => handleSort('city')}>
                   <div className="flex items-center">Location {getSortIcon('city')}</div>
                 </th>
-                <th className="px-6 py-5 border-b border-gray-300">GSTIN</th>
-                <th className="px-6 py-5 border-b border-gray-300">Contact</th>
-                <th className="px-6 py-5 border-b border-gray-300 text-right">Actions</th>
+                <th className="px-6 py-5 border-b border-gray-300 whitespace-nowrap">GSTIN</th>
+                <th className="px-6 py-5 border-b border-gray-300 whitespace-nowrap">Contact</th>
+                <th className="px-6 py-5 border-b border-gray-300 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {currentAddresses.map((address) => (
                 <tr key={address.id} className="group hover:bg-gray-100 transition-colors">
-                  <td className="px-6 py-6 font-semibold text-gray-900 text-sm">{address.branch_name}</td>
-                  <td className="px-6 py-6 text-sm text-gray-800 max-w-xs truncate" title={address.branch_address}>{address.branch_address}</td>
-                  <td className="px-6 py-6 text-sm text-gray-800">
-                    <div className="font-medium">{address.city}</div>
-                    <div className="text-xs text-gray-500">{address.state}</div>
+                  <td className="px-6 py-6 whitespace-nowrap">
+                    <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">{address.branch_name}</span>
                   </td>
-                  <td className="px-6 py-6 text-sm text-gray-800 font-mono">{address.gstin}</td>
-                  <td className="px-6 py-6 text-sm text-gray-800">
+                  <td className="px-6 py-6 text-sm text-gray-800 max-w-xs truncate whitespace-nowrap" title={address.branch_address}>{address.branch_address}</td>
+                  <td className="px-6 py-6 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span className="text-sm text-gray-900 font-medium whitespace-nowrap">{address.city}</span>
+                      <span className="text-xs text-gray-500 whitespace-nowrap">{address.state}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-6 text-sm text-gray-800 font-mono whitespace-nowrap">{address.gstin}</td>
+                  <td className="px-6 py-6 text-sm text-gray-800 whitespace-nowrap">
                     <div>{address.phone_code} {address.phone}</div>
                     {address.website && <div className="text-xs text-blue-600 underline truncate max-w-[150px]">{address.website}</div>}
                   </td>
-                  <td className="px-6 py-6 text-right">
+                  <td className="px-6 py-6 text-right whitespace-nowrap">
                     <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => openEditModal(address)}
@@ -395,30 +400,13 @@ const ViewAddress = () => {
           </table>
         </div>
 
-        {/* Pagination */}
-        {filteredAddresses.length > 0 && (
-          <div className="flex items-center justify-between px-8 py-6 border-t border-gray-100 bg-gray-50/50">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronLeft size={18} />
-            </button>
-
-            <span className="text-sm font-semibold text-gray-800">
-              Page {currentPage} of {Math.max(1, totalPages)}
-            </span>
-
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages || totalPages === 0}
-              className="p-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-all text-gray-800"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
+        <Pagination 
+          totalItems={filteredAddresses.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
 
         {filteredAddresses.length === 0 && (
           <div className="p-16 text-center">
