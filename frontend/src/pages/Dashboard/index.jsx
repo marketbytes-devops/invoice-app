@@ -30,6 +30,7 @@ import {
 import { motion } from "framer-motion";
 import apiClient from "../../api/apiClient";
 import { formatDate } from "../../utils/dateUtils";
+import { fetchExchangeRates, convertToINR } from "../../utils/currencyUtils";
 
 const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color }) => (
   <motion.div
@@ -39,8 +40,8 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color }) => (
     <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-5 group-hover:opacity-10 transition-opacity ${color}`} />
     <div>
       <h3 className="text-gray-500 text-sm font-semibold mb-1">{title}</h3>
-      <div className="flex items-baseline space-x-2">
-        <span className="text-2xl font-bold text-gray-900">{value}</span>
+      <div className="space-y-2">
+        <span className="text-2xl font-bold text-gray-900 block">{value}</span>
         {subtitle && <span className="text-xs text-gray-400 font-medium">{subtitle}</span>}
       </div>
     </div>
@@ -58,6 +59,7 @@ const Dashboard = () => {
     loading: true,
     error: null
   });
+  const [exchangeRates, setExchangeRates] = useState(null);
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
@@ -72,6 +74,10 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
+        // Fetch exchange rates first
+        const rates = await fetchExchangeRates();
+        setExchangeRates(rates);
+
         const [
           invoicesRes,
           productsRes,
@@ -114,38 +120,38 @@ const Dashboard = () => {
     const proformaInvoices = data.invoices.filter(inv => !inv.is_final);
 
     // Revenue logic
-    const totalRevenue = finalInvoices.reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+    const totalRevenue = finalInvoices.reduce((sum, inv) => sum + convertToINR(inv.total_due, inv.currency_type, exchangeRates), 0);
     const currentMonthRev = finalInvoices
       .filter(inv => {
         const d = new Date(inv.invoice_date);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
-      .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+      .reduce((sum, inv) => sum + convertToINR(inv.total_due, inv.currency_type, exchangeRates), 0);
 
     const lastMonthRev = finalInvoices
       .filter(inv => {
         const d = new Date(inv.invoice_date);
         return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
       })
-      .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+      .reduce((sum, inv) => sum + convertToINR(inv.total_due, inv.currency_type, exchangeRates), 0);
 
     const revenueTrend = lastMonthRev === 0 ? (currentMonthRev > 0 ? 100 : 0) : Math.round(((currentMonthRev - lastMonthRev) / lastMonthRev) * 100);
 
-    // Pending logic (Total Sum of Proforma Invoices)
-    const pendingAmount = proformaInvoices.reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+    // Pending logic (Total Sum of Proforma Invoices) - converted to INR
+    const pendingAmount = proformaInvoices.reduce((sum, inv) => sum + convertToINR(inv.total_due, inv.currency_type, exchangeRates), 0);
     const currentMonthPending = proformaInvoices
       .filter(inv => {
         const d = new Date(inv.invoice_date);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
-      .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+      .reduce((sum, inv) => sum + convertToINR(inv.total_due, inv.currency_type, exchangeRates), 0);
 
     const lastMonthPending = proformaInvoices
       .filter(inv => {
         const d = new Date(inv.invoice_date);
         return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
       })
-      .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+      .reduce((sum, inv) => sum + convertToINR(inv.total_due, inv.currency_type, exchangeRates), 0);
 
     const pendingTrend = lastMonthPending === 0 ? (currentMonthPending > 0 ? 100 : 0) : Math.round(((currentMonthPending - lastMonthPending) / lastMonthPending) * 100);
 
@@ -164,7 +170,7 @@ const Dashboard = () => {
       draftCount,
       totalCount: data.invoices.length
     };
-  }, [data.invoices]);
+  }, [data.invoices, exchangeRates]);
 
   const chartData = useMemo(() => {
     const finalInvoices = data.invoices.filter(inv => inv.is_final);
@@ -197,11 +203,11 @@ const Dashboard = () => {
       const targetMonth = monthMap[monthName];
       const monthRevenue = filteredInvoices
         .filter(inv => new Date(inv.invoice_date).getMonth() === targetMonth)
-        .reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0);
+        .reduce((sum, inv) => sum + convertToINR(inv.total_due, inv.currency_type, exchangeRates), 0);
 
       return { name: monthName, revenue: monthRevenue };
     });
-  }, [data.invoices, selectedYear, selectedMonth]);
+  }, [data.invoices, selectedYear, selectedMonth, exchangeRates]);
 
   // Get available years from invoices
   const availableYears = useMemo(() => {
@@ -245,14 +251,14 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total Revenue"
-          value={stats.totalRevenue.toLocaleString()}
-          subtitle="All finalized invoices"
+          value={`₹${stats.totalRevenue.toLocaleString('en-IN')}`}
+          subtitle="All finalized invoices (INR)"
           color="bg-black"
         />
         <MetricCard
           title="Pending Payments"
-          value={stats.pendingAmount.toLocaleString()}
-          subtitle="Total Proforma sum"
+          value={`₹${stats.pendingAmount.toLocaleString('en-IN')}`}
+          subtitle="Total Proforma sum (INR)"
           color="bg-amber-500"
         />
         <MetricCard
