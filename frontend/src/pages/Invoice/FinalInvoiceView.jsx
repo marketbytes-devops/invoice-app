@@ -294,7 +294,8 @@ const FinalInvoiceView = () => {
               {/* GSTIN and Contact Header */}
               <div className="mt-2">
                 <p>
-                  <b>P :</b> {clientDetails?.phone || "N/A"}
+                  <b>P :</b> {clientDetails?.phone_code || ""}{" "}
+                  {clientDetails?.phone || "N/A"}
                 </p>
                 <p>
                   <b>W :</b> {clientDetails?.website || "N/A"}
@@ -307,7 +308,8 @@ const FinalInvoiceView = () => {
               </div>
               <div className="mt-2">
                 <p>
-                  <b>P :</b> {branchDetails?.phone || "N/A"}
+                  <b>P :</b> {branchDetails?.phone_code || ""}{" "}
+                  {branchDetails?.phone || "N/A"}
                 </p>
                 <p>
                   <b>W :</b> {branchDetails?.website || "N/A"}
@@ -444,10 +446,10 @@ const FinalInvoiceView = () => {
                   </tr>
                 )}
                 <tr className="bg-black text-white font-bold">
-                  <td colSpan="2" className="text-right px-2 py-4">
+                  <td colSpan="2" className="text-right px-2 py-4 whitespace-nowrap">
                     <p className="text-left">Grand Total in Figures :</p>
                   </td>
-                  <td colSpan="4" className="text-right px-2 py-4">
+                  <td colSpan="4" className="text-right px-2 py-4 whitespace-nowrap">
                     <p>
                       <span>
                         {Number(total_due || 0).toLocaleString()} {currency_type}
@@ -457,9 +459,9 @@ const FinalInvoiceView = () => {
                 </tr>
                 <tr className="bg-black text-white font-bold">
                   <td colSpan="2" className="text-left px-2 py-4">
-                    <p className="text-left">Total in Words:</p>
+                    <p className="text-left whitespace-nowrap">Total in Words:</p>
                   </td>
-                  <td colSpan="4" className="text-right px-2 py-4">
+                  <td colSpan="4" className="text-right px-2 py-4 whitespace-nowrap">
                     {totalInWords}
                   </td>
                 </tr>
