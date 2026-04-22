@@ -179,7 +179,19 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
                 <tbody className="divide-y divide-gray-100">
                   {invoice.items.map((item, index) => (
                     <tr key={index} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="p-4 text-sm font-bold text-gray-900">{item.name}</td>
+                      <td className="p-4 align-top">
+                        <div className="text-sm font-bold text-gray-900">{item.name}</div>
+                        {Array.isArray(item.description) && item.description.length > 0 && (
+                          <div className="mt-1 space-y-0.5">
+                            {item.description.map((desc, dIdx) => (
+                              <div key={dIdx} className="text-[10px] text-gray-400 font-medium flex items-center gap-1 break-all">
+                                <span className="w-1 h-1 rounded-full bg-gray-300" />
+                                {desc}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </td>
                       <td className="p-4 text-sm font-medium text-gray-700 text-center">{item.quantity}</td>
                       <td className="p-4 text-sm font-medium text-gray-700 text-right">{item.unit_cost}</td>
                       <td className="p-4 text-sm font-bold text-gray-900 text-right">{item.total}</td>

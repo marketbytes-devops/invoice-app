@@ -4,11 +4,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
 import apiClient from '../../api/apiClient';
 import ConfirmationModal from '../ConfirmationModal';
-
 import { useUser } from '../../context/UserContext';
+import { useAuth } from '../../context/AuthContext';
 
 const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
   const { user } = useUser();
+  const { logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -96,16 +97,9 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
     setShowLogoutModal(true);
   };
 
-  const confirmLogout = () => {
-    const refresh = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
-    apiClient.post('/auth/logout/', { refresh })
-      .finally(() => {
-        ['access_token', 'refresh_token'].forEach(k => {
-          localStorage.removeItem(k);
-          sessionStorage.removeItem(k);
-        });
-        navigate('/login');
-      });
+  const confirmLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   return (

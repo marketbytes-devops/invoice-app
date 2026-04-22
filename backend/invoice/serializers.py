@@ -9,10 +9,11 @@ class TaxSerializer(serializers.ModelSerializer):
 class InvoiceItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvoiceItem
-        fields = ['id', 'invoice', 'item_type', 'product', 'name', 'quantity', 'unit_cost', 'total', 'total_gst']
+        fields = ['id', 'invoice', 'item_type', 'product', 'name', 'quantity', 'unit_cost', 'total', 'total_gst', 'description']
         extra_kwargs = {
             'name': {'required': False, 'allow_null': True},
             'product': {'required': False, 'allow_null': True},
+            'description': {'required': False},
         }
 
     def validate(self, data):

@@ -85,6 +85,7 @@ class InvoiceItem(models.Model):
     unit_cost = models.DecimalField(max_digits=10, decimal_places=2)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    description = models.JSONField(default=list, blank=True)
 
     def save(self, *args, **kwargs):
         if self.item_type == "product" and self.product:

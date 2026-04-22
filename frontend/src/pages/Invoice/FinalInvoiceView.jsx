@@ -356,8 +356,18 @@ const FinalInvoiceView = () => {
                     <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-center">
                       {index + 1}
                     </td>
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-left">
-                      {item.name || "N/A"}
+                    <td className="px-4 py-3 border-r-4 border-white text-left align-top">
+                      <div className="font-semibold">{item.name || "N/A"}</div>
+                      {Array.isArray(item.description) && item.description.length > 0 && (
+                        <ul className="mt-1 space-y-0.5">
+                          {item.description.map((desc, dIdx) => (
+                            <li key={dIdx} className="text-[13px] text-gray-600 flex items-start gap-1">
+                              <span className="relative top-1 mt-1 w-1 h-1 rounded-full bg-gray-400 shrink-0" />
+                              <span className="break-all whitespace-normal">{desc}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </td>
                     <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">
                       {Number(item.quantity || 0).toLocaleString()}

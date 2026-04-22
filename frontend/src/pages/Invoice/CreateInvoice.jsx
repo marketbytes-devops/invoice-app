@@ -150,7 +150,7 @@ const CreateInvoice = () => {
   const [products, setProducts] = useState([]);
   const [services, setServices] = useState([]);
   const [invoiceItems, setInvoiceItems] = useState([
-    { itemName: "", quantity: 1, unitCost: 0, itemGst: "0%", total: 0, item_type: "" },
+    { itemName: "", quantity: 1, unitCost: 0, itemGst: "0%", total: 0, item_type: "", descriptions: [""] },
   ]);
   const [taxable, setTaxable] = useState("no");
   const [selectedTaxRate, setSelectedTaxRate] = useState("0%");
@@ -219,8 +219,27 @@ const CreateInvoice = () => {
   const addItem = () => {
     setInvoiceItems([
       ...invoiceItems,
-      { itemName: "", quantity: 1, unitCost: 0, itemGst: "0%", total: 0, item_type: invoiceType },
+      { itemName: "", quantity: 1, unitCost: 0, itemGst: "0%", total: 0, item_type: invoiceType, descriptions: [""] },
     ]);
+  };
+
+  const addDescription = (itemIndex) => {
+    const updated = [...invoiceItems];
+    updated[itemIndex].descriptions = [...(updated[itemIndex].descriptions || [""]), ""];
+    setInvoiceItems(updated);
+  };
+
+  const removeDescription = (itemIndex, descIndex) => {
+    const updated = [...invoiceItems];
+    updated[itemIndex].descriptions = updated[itemIndex].descriptions.filter((_, i) => i !== descIndex);
+    if (updated[itemIndex].descriptions.length === 0) updated[itemIndex].descriptions = [""];
+    setInvoiceItems(updated);
+  };
+
+  const updateDescription = (itemIndex, descIndex, value) => {
+    const updated = [...invoiceItems];
+    updated[itemIndex].descriptions[descIndex] = value;
+    setInvoiceItems(updated);
   };
 
   const removeItem = (index) => {
@@ -331,6 +350,7 @@ const CreateInvoice = () => {
                 : item.itemName,
           quantity: item.quantity,
           unit_cost: item.unitCost.toString(),
+          description: (item.descriptions || []).filter((d) => d.trim() !== ""),
         };
         return apiClient.post("invoices/invoice-items/", itemData);
       });
@@ -649,7 +669,39 @@ const CreateInvoice = () => {
                         onChange={(val) => updateItem(index, "itemName", val)}
                         icon={invoiceType === "product" ? Disc : FileText}
                       />
+                      {/* Description list */}
+                      <div className="mt-2 space-y-1.5">
+                        {(item.descriptions || [""]).map((desc, descIdx) => (
+                          <div key={descIdx} className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-gray-400 w-5 shrink-0">›</span>
+                            <input
+                              type="text"
+                              value={desc}
+                              onChange={(e) => updateDescription(index, descIdx, e.target.value)}
+                              placeholder={`Description ${descIdx + 1}`}
+                              className="flex-1 bg-gray-50 border border-gray-300 rounded-xl px-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white transition-all placeholder-gray-400"
+                            />
+                            {(item.descriptions || [""]).length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeDescription(index, descIdx)}
+                                className="p-1 text-gray-300 hover:text-red-400 transition-colors shrink-0"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => addDescription(index)}
+                          className="flex items-center gap-1 text-[10px] font-semibold text-gray-400 hover:text-black transition-colors mt-1 pl-6"
+                        >
+                          <Plus className="w-3 h-3" /> Add Description
+                        </button>
+                      </div>
                     </div>
+
 
                     <div className="col-span-6 md:col-span-2">
                       <CustomInput

@@ -4,8 +4,10 @@ import apiClient from "../../api/apiClient";
 import { Mail, ArrowRight } from "lucide-react";
 import PasswordInput from "../../components/PasswordInput";
 import bgImage from "../../assets/images/MB-Team.webp";
+import { useAuth } from "../../context/AuthContext";
 
-const Login = ({ onLogin }) => {
+const Login = () => {
+  const { login } = useAuth();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
   const navigate = useNavigate();
 
@@ -16,7 +18,7 @@ const Login = ({ onLogin }) => {
         password: data.password,
       });
       const { access, refresh } = response.data;
-      onLogin(access, refresh);
+      login(access, refresh);
       navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
