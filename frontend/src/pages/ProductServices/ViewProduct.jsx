@@ -5,6 +5,7 @@ import { Pencil, Trash2, X, Save, Package, ChevronUp, ChevronDown, ChevronLeft, 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCoins } from "@fortawesome/free-solid-svg-icons";
 import Pagination from "../../components/Pagination";
+import { formatAmount } from "../../utils/currencyUtils";
 
 const EditProductModal = ({ isOpen, onClose, product, onUpdate }) => {
   const [formData, setFormData] = useState({ name: "", unit_cost: "" });
@@ -279,7 +280,7 @@ const ViewProduct = () => {
                   <td className="px-8 py-6 whitespace-nowrap">
                     <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-50 border border-gray-300 text-gray-800 whitespace-nowrap">
                       <FontAwesomeIcon icon={faCoins} className="w-3 h-3 mr-1" />
-                      {Number(product.unit_cost).toLocaleString()}
+                      {formatAmount(product.unit_cost)}
                     </div>
                   </td>
                   <td className="px-8 py-6 text-right whitespace-nowrap">

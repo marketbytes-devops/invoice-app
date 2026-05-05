@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import SearchableSelect from "../../components/SearchableSelect";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import { formatAmount } from "../../utils/currencyUtils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faCoins, 
@@ -777,7 +778,7 @@ const CreateInvoice = () => {
                       <FontAwesomeIcon icon={faCoins} className="h-5 w-5 text-gray-400" />
                     </div>
                     <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
-                      {watch("subtotal") || "0.00"} {selectedCurrency}
+                      {formatAmount(watch("subtotal"))} {selectedCurrency}
                     </div>
                   </div>
                 </div>
@@ -789,7 +790,7 @@ const CreateInvoice = () => {
                       <FontAwesomeIcon icon={faCoins} className="h-5 w-5 text-gray-400" />
                     </div>
                     <div className="w-full bg-gray-50 border border-gray-300 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-semibold text-gray-900 text-right">
-                      {watch("totalTax") || "0.00"} {selectedCurrency}
+                      {formatAmount(watch("totalTax"))} {selectedCurrency}
                     </div>
                   </div>
                 </div>
@@ -832,10 +833,10 @@ const CreateInvoice = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-xl font-bold">
-                      {watch("totalDue") || "0.00"} {selectedCurrency}
+                      {formatAmount(watch("totalDue"))} {selectedCurrency}
                     </div>
                     <div className="text-[10px] text-white/70">
-                      Rounded: {roundedTotalDue} {selectedCurrency} ({roundingDisplay})
+                      Rounded: {formatAmount(roundedTotalDue)} {selectedCurrency} ({roundingDisplay})
                     </div>
                   </div>
                 </div>

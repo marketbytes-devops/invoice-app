@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
 import apiClient from "../../api/apiClient";
 import { formatDate } from "../../utils/dateUtils";
+import { formatAmount } from "../../utils/currencyUtils";
 
 const numberToWords = (num, currency) => {
   const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
@@ -327,10 +328,10 @@ const PrintedProformaInvoice = () => {
                         </ul>
                       )}
                     </td>
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{Number(item.quantity || 0).toLocaleString()}</td>
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{Number(item.total_gst || 0).toLocaleString()}</td>
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{Number(item.unit_cost || 0).toLocaleString()}</td>
-                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{Number(item.total || 0).toLocaleString()}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{formatAmount(item.quantity, 0)}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{formatAmount(item.total_gst)}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{formatAmount(item.unit_cost)}</td>
+                    <td className="h-[54.9px] px-4 whitespace-nowrap border-r-4 border-white text-right">{formatAmount(item.total)}</td>
                   </tr>
                 ))}
                 {Array.from({ length: Math.max(0, 7 - items.length) }).map((_, i) => (
@@ -350,7 +351,7 @@ const PrintedProformaInvoice = () => {
                   <td colSpan="3"></td>
                   <td className="text-right font-semibold p-2 whitespace-nowrap">Subtotal :</td>
                     <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
-                      {Number(subtotal || 0).toLocaleString()} {currency_type}
+                      {formatAmount(subtotal)} {currency_type}
                     </td>
                   </tr>
                   {tax_option === "yes" && (
@@ -358,7 +359,7 @@ const PrintedProformaInvoice = () => {
                       <td colSpan="3"></td>
                       <td className="text-right font-semibold p-2 whitespace-nowrap">{displayTaxName} :</td>
                       <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
-                        {Number(gst || 0).toLocaleString()} {currency_type}
+                        {formatAmount(gst)} {currency_type}
                       </td>
                     </tr>
                   )}
@@ -367,7 +368,7 @@ const PrintedProformaInvoice = () => {
                       <td colSpan="3"></td>
                       <td className="text-right font-semibold p-2 whitespace-nowrap">Discount :</td>
                       <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
-                        -{Number(discount).toLocaleString()} {currency_type}
+                        -{formatAmount(discount)} {currency_type}
                       </td>
                     </tr>
                   )}
@@ -376,14 +377,14 @@ const PrintedProformaInvoice = () => {
                       <td colSpan="3"></td>
                       <td className="text-right font-semibold p-2 whitespace-nowrap">Amount Paid :</td>
                       <td colSpan="2" className="text-right font-semibold p-2 whitespace-nowrap">
-                        -{Number(amount_paid).toLocaleString()} {currency_type}
+                        -{formatAmount(amount_paid)} {currency_type}
                       </td>
                     </tr>
                   )}
                   <tr className="bg-black text-white font-bold">
                     <td colSpan="1" className="text-right px-2 py-4 whitespace-nowrap">Grand Total in Figures :</td>
                     <td colSpan="5" className="text-right px-2 py-4 whitespace-nowrap">
-                      {Number(total_due || 0).toLocaleString()} {currency_type}
+                      {formatAmount(total_due)} {currency_type}
                     </td>
                 </tr>
                 <tr className="bg-black text-white font-bold">
@@ -456,7 +457,7 @@ const PrintedProformaInvoice = () => {
             <div className="flex justify-start mb-5">
               <div className="mt-5 mb-5 flex flex-col items-start">
                 <p className="font-bold text-left text-black text-2xl">
-                  {Number(total_due || 0).toLocaleString()} {currency_type || "N/A"}
+                  {formatAmount(total_due)} {currency_type || "N/A"}
                 </p>
                 <div className="mt-2">
                   <p className="bg-black text-white text-lg font-bold text-center px-10 py-2.5 inline-block">
@@ -470,7 +471,7 @@ const PrintedProformaInvoice = () => {
         <div className="mb-4 mt-10">
           <h4 className="font-semibold mb-2">Note:</h4>
           <p className="text-justify">
-            Please make the payment of {Number(total_due || 0).toLocaleString()} {currency_type || "N/A"} to the bank account details provided above. Upon receiving the payment, we will proceed with the services/products as agreed and provide a receipt for the payment recieved.
+            Please make the payment of {formatAmount(total_due)} {currency_type || "N/A"} to the bank account details provided above. Upon receiving the payment, we will proceed with the services/products as agreed and provide a receipt for the payment recieved.
           </p>
           <p className="mt-4 text-justify">
             Thank you for choosing MarketBytes WebWorks Pvt. Ltd. If you have any questions or require further assistance, please don't hesitate to contact us at +91 97781 27272 or accounts@marketbytes.in.

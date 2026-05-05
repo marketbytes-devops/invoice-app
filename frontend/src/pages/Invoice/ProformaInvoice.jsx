@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import SearchableSelect from "../../components/SearchableSelect";
 import { formatDate } from "../../utils/dateUtils";
+import { formatAmount } from "../../utils/currencyUtils";
 import Pagination from "../../components/Pagination";
 
 const formatInvoiceNumber = (num) => {
@@ -75,7 +76,7 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Amount</p>
-              <p className="text-xl font-bold text-gray-900">{invoice.total_due} {invoice.currency_type}</p>
+              <p className="text-xl font-bold text-gray-900">{formatAmount(invoice.total_due)} {invoice.currency_type}</p>
             </div>
           </div>
 
@@ -136,27 +137,27 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
                 <div className="bg-gray-50 rounded-2xl p-5 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500 font-medium">Subtotal</span>
-                    <span className="text-gray-900 font-bold">{invoice.subtotal}</span>
+                    <span className="text-gray-900 font-bold">{formatAmount(invoice.subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500 font-medium">GST ({invoice.tax_rate}%)</span>
-                    <span className="text-gray-900 font-bold">{invoice.gst}</span>
+                    <span className="text-gray-900 font-bold">{formatAmount(invoice.gst)}</span>
                   </div>
                   {parseFloat(invoice.discount) > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
                       <span className="font-medium">Discount</span>
-                      <span className="font-bold">-{invoice.discount}</span>
+                      <span className="font-bold">-{formatAmount(invoice.discount)}</span>
                     </div>
                   )}
                   {parseFloat(invoice.amount_paid) > 0 && (
                     <div className="flex justify-between text-sm text-blue-600">
                       <span className="font-medium">Amount Paid</span>
-                      <span className="font-bold">-{invoice.amount_paid}</span>
+                      <span className="font-bold">-{formatAmount(invoice.amount_paid)}</span>
                     </div>
                   )}
                   <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between items-center">
                     <span className="text-gray-900 font-bold">Total Due</span>
-                    <span className="text-xl font-black text-gray-900">{invoice.total_due} {invoice.currency_type}</span>
+                    <span className="text-xl font-black text-gray-900">{formatAmount(invoice.total_due)} {invoice.currency_type}</span>
                   </div>
                 </div>
               </div>
@@ -193,8 +194,8 @@ const ViewInvoiceModal = ({ invoice, onClose, onEdit, onDelete, onMoveToFinal, o
                         )}
                       </td>
                       <td className="p-4 text-sm font-medium text-gray-700 text-center">{item.quantity}</td>
-                      <td className="p-4 text-sm font-medium text-gray-700 text-right">{item.unit_cost}</td>
-                      <td className="p-4 text-sm font-bold text-gray-900 text-right">{item.total}</td>
+                      <td className="p-4 text-sm font-medium text-gray-700 text-right">{formatAmount(item.unit_cost)}</td>
+                      <td className="p-4 text-sm font-bold text-gray-900 text-right">{formatAmount(item.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -488,7 +489,7 @@ const ProformaInvoice = () => {
                       <p className="text-xs text-gray-400">Due: {formatDate(inv.due_date)}</p>
                     </td>
                     <td className="p-5 text-right whitespace-nowrap">
-                      <p className="text-sm font-black text-gray-900">{Number(inv.total_due).toLocaleString()} {inv.currency_type}</p>
+                      <p className="text-sm font-black text-gray-900">{formatAmount(inv.total_due)} {inv.currency_type}</p>
                     </td>
                     <td className="p-5 text-center whitespace-nowrap">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap">

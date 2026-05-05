@@ -30,7 +30,7 @@ import {
 import { motion } from "framer-motion";
 import apiClient from "../../api/apiClient";
 import { formatDate } from "../../utils/dateUtils";
-import { fetchExchangeRates, convertToINR } from "../../utils/currencyUtils";
+import { fetchExchangeRates, convertToINR, formatAmount } from "../../utils/currencyUtils";
 
 const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color }) => (
   <motion.div
@@ -432,7 +432,7 @@ const Dashboard = () => {
                     <span className="text-sm font-medium text-gray-400 whitespace-nowrap">{formatDate(inv.invoice_date)}</span>
                   </td>
                   <td className="px-8 py-5 text-right whitespace-nowrap">
-                    <span className="text-sm font-black text-gray-900 whitespace-nowrap">{parseFloat(inv.total_due).toLocaleString()} {inv.currency_type}</span>
+                    <span className="text-sm font-black text-gray-900 whitespace-nowrap">{formatAmount(inv.total_due)} {inv.currency_type}</span>
                   </td>
                   <td className="px-8 py-5 text-center whitespace-nowrap">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${inv.is_final ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'

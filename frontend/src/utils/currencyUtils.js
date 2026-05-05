@@ -139,3 +139,19 @@ export const formatINRFull = (amount) => {
   if (!amount || isNaN(amount)) return '₹0.00';
   return `₹${parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
+
+/**
+ * Format amount with comma separation and optional decimals
+ * @param {number|string} amount - Amount to format
+ * @param {number} decimals - Number of decimal places
+ * @returns {string} - Formatted string
+ */
+export const formatAmount = (amount, decimals = 2) => {
+  if (amount === null || amount === undefined || isNaN(amount)) {
+    return (0).toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  }
+  return Number(amount).toLocaleString('en-IN', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+};
